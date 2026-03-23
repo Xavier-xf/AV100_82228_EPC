@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "cstdlib": "c",
+        "time.h": "c",
+        "ak_log.h": "c",
+        "fcntl.h": "c",
+        "future": "c",
+        "ranges": "c",
+        "videoinput.h": "c",
+        "pthread.h": "c",
+        "string.h": "c",
+        "socket.h": "c",
+        "types.h": "c"
+    },
+    "cmake.sourceDirectory": "/home/hare/share/bk_hare/DOOR_BELL/AV100_82228_EPC/AV100_82228_EPC/build"
+}

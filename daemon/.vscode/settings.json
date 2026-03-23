@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "net_camera.h": "c",
+        "gpiocontrol.h": "c",
+        "types.h": "c"
+    }
+}

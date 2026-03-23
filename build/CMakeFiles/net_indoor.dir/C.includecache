@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/daemon/net_indoor.c
+netinet/in.h
+-
+sys/socket.h
+-
+sys/select.h
+-
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+unistd.h
+-
+dirent.h
+-
+sys/stat.h
+-
+stdbool.h
+-
+arpa/inet.h
+-
+pthread.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/daemon/pthread.h
+

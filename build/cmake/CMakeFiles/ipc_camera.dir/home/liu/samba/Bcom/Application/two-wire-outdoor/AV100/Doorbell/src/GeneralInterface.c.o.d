@@ -1,0 +1,28 @@
+cmake/CMakeFiles/ipc_camera.dir/home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/src/GeneralInterface.c.o: \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/src/GeneralInterface.c \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/src/GeneralInterface.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/time.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/features.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_config.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/sys/cdefs.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/include/stddef.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/time.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_clk_tck.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/types.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/wordsize.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/typesizes.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/assert.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/string.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/stdio.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/uClibc_stdio.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/wchar.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/wchar.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/pthreadtypes.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/endian.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/endian.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/byteswap.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap-common.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/byteswap-16.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/include/stdarg.h \
+ /home/liu/samba/Bcom/Application/two-wire-outdoor/AV100/Doorbell/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/include/bits/stdio_lim.h
