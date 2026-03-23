@@ -18,6 +18,8 @@ stdint.h
 stddef.h
 -
 
+../app/hal/drv_adc.h
+
 ../app/hal/drv_gpio.h
 
 ../app/hal/drv_net_raw.h
@@ -103,6 +105,26 @@ stdint.h
 -
 stddef.h
 -
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c
+drv_adc.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.h
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+unistd.h
+-
+fcntl.h
+-
+pthread.h
+-
+assert.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio.c
 drv_gpio.h
@@ -217,6 +239,8 @@ drv_watchdog.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_watchdog.h
 drv_gpio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_gpio.h
+drv_adc.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_adc.h
 svc_network.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_network.h
 app_intercom.h

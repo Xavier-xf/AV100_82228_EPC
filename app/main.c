@@ -22,6 +22,7 @@
 #include "drv_platform.h"   /* AK SDK + 软件心跳看门狗（最先 include）*/
 #include "drv_watchdog.h"
 #include "drv_gpio.h"
+#include "drv_adc.h"
 
 /* ---- service ---- */
 #include "svc_network.h"
@@ -117,7 +118,7 @@ int main(int argc, char *argv[])
     /* ================================================== */
 
 
-    INIT_MODULE(DrvWdtOpen(WDT_TIMEOUT_SEC));    /* 硬件看门狗（我们用 10s）*/
+    // INIT_MODULE(DrvWdtOpen(WDT_TIMEOUT_SEC));    /* 硬件看门狗（我们用 10s）*/
 
 
     INIT_MODULE(DrvGpioInit());    /* GPIO 引脚初始化（LED/继电器/功放，对应原版 LightGpioInit + LockGpioInit）*/
@@ -137,6 +138,8 @@ int main(int argc, char *argv[])
     /* 使能产生回调的驱动（App 层已就绪后再启动）         */
     /* -------------------------------------------------- */
 
+    INIT_MODULE(DrvAdcInit());    /* ADC 按键采集*/
+
     /* -------------------------------------------------- */
     /* 启动完成提示音                                    */
     /* -------------------------------------------------- */
@@ -155,7 +158,7 @@ int main(int argc, char *argv[])
     /*                                                     */
     /* ================================================== */
     while (1) {
-        DrvWdtFeed();
+        // DrvWdtFeed();
         DrvSystemTickFeed();   /* 喂软件心跳看门狗*/
         sleep(MAIN_LOOP_INTERVAL);
     }
