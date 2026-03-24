@@ -25,7 +25,10 @@
 #include "drv_adc.h"
 
 /* ---- service ---- */
+#include "svc_timer.h"
 #include "svc_network.h"
+#include "svc_audio.h"
+#include "svc_voice.h"
 /* ---- app ---- */
 #include "app_intercom.h"
 #include "app_upgrade.h"
@@ -62,6 +65,17 @@
         printf("[MAIN] %s ok\n", #fn);                       \
     } while (0)
 
+static void adc_voltage_cb(int voltage_mv)
+{
+
+
+        if (voltage_mv>1080&&voltage_mv<1300    ){
+
+        SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
+        }
+
+
+}
 
 int main(int argc, char *argv[])
 {
@@ -126,6 +140,14 @@ int main(int argc, char *argv[])
     /* -------------------------------------------------- */
     /* Service 层                                       */
     /* -------------------------------------------------- */
+
+    INIT_MODULE(SvcTimerInit());
+    
+    INIT_MODULE(SvcAudioInit());        /* 音频输出队列（VOICE mtype=1 优先于 INTERCOM mtype=2）*/
+
+
+    INIT_MODULE(SvcVoiceInit());        /* 语音解码播放（PCM/MP3/libmad）*/
+
     INIT_MODULE(SvcNetworkInit());
     /* -------------------------------------------------- */
     /*  App 层（先注册回调和事件订阅）                    */
@@ -144,10 +166,14 @@ int main(int argc, char *argv[])
     /* 启动完成提示音                                    */
     /* -------------------------------------------------- */
 
+    SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
+
     printf("\n###############################################\n");
     printf("# System Ready. Device=DOOR%d\n", door_id);
     printf("###############################################\n\n");
 
+
+        DrvAdcSetCallback(adc_voltage_cb);
 
     /* ================================================== */
     /* Step 9: 主循环                                      */

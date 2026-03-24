@@ -20,6 +20,8 @@ stddef.h
 
 ../app/hal/drv_adc.h
 
+../app/hal/drv_audio_out.h
+
 ../app/hal/drv_gpio.h
 
 ../app/hal/drv_net_raw.h
@@ -34,15 +36,33 @@ stdint.h
 
 ../app/hal/drv_watchdog.h
 
+../app/service/svc_audio.h
+stdint.h
+-
+
 ../app/service/svc_network.h
 stdint.h
 -
+
+../app/service/svc_timer.h
+stddef.h
+-
+
+../app/service/svc_voice.h
+
+../include/anyka3918/ak_ao.h
+ak_common_audio.h
+../include/anyka3918/ak_common_audio.h
+ak_common.h
+../include/anyka3918/ak_common.h
 
 ../include/anyka3918/ak_common.h
 stdio.h
 -
 time.h
 -
+
+../include/anyka3918/ak_common_audio.h
 
 ../include/anyka3918/ak_log.h
 
@@ -125,6 +145,24 @@ assert.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.h
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.c
+drv_audio_out.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.h
+ak_ao.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/ak_ao.h
+ak_common_audio.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/ak_common_audio.h
+pthread.h
+-
+string.h
+-
+math.h
+-
+stdio.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio.c
 drv_gpio.h
@@ -241,12 +279,52 @@ drv_gpio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_gpio.h
 drv_adc.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_adc.h
+svc_timer.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_timer.h
 svc_network.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_network.h
+svc_audio.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_audio.h
+svc_voice.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_voice.h
 app_intercom.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_intercom.h
 app_upgrade.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_upgrade.h
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/mad.h
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.c
+svc_audio.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.h
+svc_timer.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.h
+drv_audio_out.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/drv_audio_out.h
+drv_gpio.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/drv_gpio.h
+sys/types.h
+-
+sys/ipc.h
+-
+sys/msg.h
+-
+pthread.h
+-
+string.h
+-
+stdio.h
+-
+stdlib.h
+-
+unistd.h
+-
+errno.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.h
+stdint.h
+-
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.c
 svc_network.h
@@ -281,4 +359,56 @@ time.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.h
 stdint.h
 -
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.c
+svc_timer.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.h
+string.h
+-
+stdio.h
+-
+unistd.h
+-
+pthread.h
+-
+time.h
+-
+errno.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.h
+stddef.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_voice.c
+svc_voice.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_voice.h
+svc_audio.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.h
+drv_audio_out.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/drv_audio_out.h
+mad.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/mad.h
+sys/types.h
+-
+sys/ipc.h
+-
+sys/msg.h
+-
+pthread.h
+-
+string.h
+-
+stdlib.h
+-
+stdio.h
+-
+unistd.h
+-
+errno.h
+-
+assert.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_voice.h
 
