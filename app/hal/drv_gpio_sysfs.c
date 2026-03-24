@@ -1,11 +1,8 @@
 /**
  * @file    drv_gpio_sysfs.c
- * @brief   通用 GPIO sysfs 操作实现（原 GpioControl.c 改名整合）
- *
- * 改动：
+ * @brief   通用 GPIO sysfs 操作实现
  *   - 函数名加 GpioSysfs 前缀（避免与外部同名冲突）
  *   - bool/GPIO_DIR/GPIO_LEVEL 枚举统一用 drv_gpio_sysfs.h 中定义
- *   - 逻辑与原版完全相同，无任何业务改动
  */
 #include "drv_gpio_sysfs.h"
 #include <stdio.h>

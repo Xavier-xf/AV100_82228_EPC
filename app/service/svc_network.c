@@ -1,19 +1,18 @@
 /**
  * @file    svc_network.c
- * @brief   命令通道网络服务（原 NetMsgComm.c 重写）
+ * @brief   命令通道网络服务
  *
  * ===================== 职责分离 =====================
  *
- *  本文件 = 原版 NetMsgComm.c
  *    职责：命令帧打包/分发，设备 ID 管理，EventBus 发布，
  *          接收线程（含 eth0 异常复位），对外发送接口。
  *
- *  hal/drv_net_raw.c = 原版 NetworkCommon.c（NetworkRaw.c）
+ *  hal/drv_net_raw.c 
  *    职责：Raw Socket 创建/绑定/混杂模式，MAC 头封装，
  *          帧发送（NetRawPacketSend），帧接收（NetRawPacketReceive）。
  *    本文件只调用 drv_net_raw 接口，不做任何 socket 细节操作。
  *
- * ===================== 协议（严格对齐原版 NetMsgComm.h）=====================
+ * ===================== 协议=====================
  *
  *  帧格式（8字节短包）：
  *    [0xAA][src][dst][cmd][arg1][arg2][sum][0x55]
@@ -23,7 +22,7 @@
  *    [0xAA][src][dst][0x62][DP[0..n]][sum][0x55]
  *    DP[0..3] = 包序号, DP[4..7] = 数据长度, DP[8..] = 数据
  *
- *  命令 ID（network_event 枚举绝对值，来自原版 NetMsgComm.h）：
+ *  命令 ID：
  *    0x53 LightEvent
  *    0x54 UnlockEvent           远程开锁
  *    0x55 IdRepeatEvent         心跳

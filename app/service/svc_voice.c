@@ -1,19 +1,6 @@
 /**
  * @file    svc_voice.c
- * @brief   语音播放服务（消息队列 + 互斥锁）
- *
- * 原代码对应：
- *   VoiceRingPlay.c  → SvcVoicePlay + push_pcm_to_audio + 播放队列
- *   VoiceRingTone.c  → voice_decode_thread + decode_mp3 + decode_pcm
- *   VoiceDecode.h    → 弱函数框架（全部删除，改为直接调用）
- *
- * 改进：
- *   ① VoiceToneList(CircularList) → MQ_KEY_VOICE_REQ 消息队列
- *   ② InfoList 空闲槽位查找 → 删除，请求数据直接存在消息体中
- *   ③ AudioFrameCache → 删除，push_pcm_to_audio 用栈缓冲送帧
- *   ④ CircularListLock/Unlock → 删除，mtype=1 优先级保证语音优先
- *   ⑤ VoiceDecodeFinsh(普通int) → s_voc.busy(互斥锁保护)
- *   ⑥ 弱函数(VoiceInfoImport/VoiceDataExport/VoiceDecodeStart/End) → 全部删除
+ * @brief   语音播放服务
  */
 #include "svc_voice.h"
 #include "svc_audio.h"
@@ -82,8 +69,8 @@ static int resolve_path(VoiceId id, char *out, size_t max)
 }
 
 /* =========================================================
- *  PCM 送出（原 VoiceDataExport）
- *  流控与原版一致：半帧等待 + AO缓冲判断追加等待
+ *  PCM 送出
+ *  半帧等待 + AO缓冲判断追加等待
  * ========================================================= */
 static void push_pcm(const uint8_t *pcm, int len)
 {
@@ -101,13 +88,13 @@ static void push_pcm(const uint8_t *pcm, int len)
     /* 流控：固定半帧等待（避免解码过快淹没AO）*/
     usleep((unsigned int)(frame_ms * 500));
 
-    /* AO缓冲充足时追加一帧等待（原条件：AO剩余 > 3×帧大小）*/
+    /* AO缓冲充足时追加一帧等待*/
     if (SvcAudioRemainLen() > len * 3)
         usleep((unsigned int)(frame_ms * 1000));
 }
 
 /* =========================================================
- *  PCM 文件解码（原 PcmVoiceDataDecode）
+ *  PCM 文件解码
  * ========================================================= */
 static int decode_pcm(const VoiceReqMsg *req)
 {
@@ -127,7 +114,7 @@ static int decode_pcm(const VoiceReqMsg *req)
 }
 
 /* =========================================================
- *  MP3 解码（原 Mp3VoiceDataDecode，libmad 回调式）
+ *  MP3 解码
  * ========================================================= */
 typedef struct {
     FILE    *fp;
@@ -167,7 +154,7 @@ static enum mad_flow mp3_output(void *d, const struct mad_header *h, struct mad_
 {
     (void)h;
     Mp3Ctx *ctx = d;
-    /* 强制单声道（与原代码 pcm->channels=1 一致）*/
+    /* 强制单声道*/
     const mad_fixed_t *left = pcm->samples[0];
     unsigned int n = pcm->length;
     while (n--) {
@@ -175,7 +162,7 @@ static enum mad_flow mp3_output(void *d, const struct mad_header *h, struct mad_
         ctx->cache[ctx->cache_len++] = (uint8_t)(s & 0xFF);
         ctx->cache[ctx->cache_len++] = (uint8_t)((s >> 8) & 0xFF);
     }
-    /* 阈值冲洗（原注释：防止数组越界，每帧1152×2字节）*/
+    /* 阈值冲洗*/
     int threshold = VOICE_CACHE_MAX - (VOICE_CACHE_MAX % (1152 * 2));
     if (ctx->cache_len >= threshold) mp3_flush(ctx);
     return MAD_FLOW_CONTINUE;
@@ -222,7 +209,7 @@ static void decode_and_play(const VoiceReqMsg *req)
 }
 
 /* =========================================================
- *  ★ 解码线程（原 VoiceDecodeThread）
+ *  ★ 解码线程
  * ========================================================= */
 static void *voice_decode_thread(void *arg)
 {
@@ -234,7 +221,7 @@ static void *voice_decode_thread(void *arg)
         int mqid = get_mqid();
         if (mqid < 0) { usleep(50 * 1000); continue; }
 
-        /* 阻塞等待请求（原 CircularListRead 的阻塞语义）*/
+        /* 阻塞等待请求*/
         ssize_t ret = msgrcv(mqid, &req, VOICE_REQ_BODY_SIZE, 1, 0);
         if (ret <= 0) {
             /* EINVAL/EIDRM：消息队列被销毁，等待 */
@@ -244,12 +231,10 @@ static void *voice_decode_thread(void *arg)
 
         set_busy(1);
 
-        /* 设置播放音量（原 AudioOutputVolumeSet(TmpInfo->Volume)）*/
+        /* 设置播放音量（*/
         DrvAudioOutSetVolume(req.volume);
 
-        /* 对应原版 VoiceDecodeStart → CircularListLock：
-         * 旧版通过锁住 AudioOutputList 阻止对讲帧在语音播放期间进入播放队列。
-         * 新版用 SvcAudioFlush 清空已积压的对讲帧，防止语音播放后立刻播出
+        /* 用 SvcAudioFlush 清空已积压的对讲帧，防止语音播放后立刻播出
          * 积压的对讲音频（否则会有滞后的回音/杂音）。
          * 后续对讲帧因 mtype=2 优先级低于 mtype=1(VOICE)，
          * 在语音播放期间会积压但不会插入，语音结束后才会播放。*/
@@ -258,7 +243,7 @@ static void *voice_decode_thread(void *arg)
 
         decode_and_play(&req);
 
-        /* 结束回调（原 VoiceDecodeEnd：CircularListUnlock + 调用 End）*/
+        /* 结束回调*/
         if (req.on_end) req.on_end();
 
         set_busy(0);

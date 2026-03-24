@@ -93,6 +93,8 @@ event_bus.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/event_bus.h
 svc_network.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_network.h
+svc_voice.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_voice.h
 drv_watchdog.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_watchdog.h
 pthread.h

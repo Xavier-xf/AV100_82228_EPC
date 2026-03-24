@@ -1,6 +1,6 @@
 /**
  * @file    svc_audio.h
- * @brief   音频输出服务（原 AudioPlay.c 重写）
+ * @brief   音频输出服务
  *
  * ===================== 架构说明 =====================
  *
@@ -22,7 +22,7 @@
  *                          DrvAudioOutWrite(pcm, len)
  *                          SvcTimerSet(TMR_AMP_OFF, 3000ms)
  *
- *  VOICE 帧优先消费，取代原 CircularListLock/Unlock 的"锁队列"机制。
+ *  VOICE 帧优先消费。
  *  当语音在播放时，INTERCOM 帧在队列中等待；语音结束后恢复对讲音频。
  */
 #ifndef _SVC_AUDIO_H_

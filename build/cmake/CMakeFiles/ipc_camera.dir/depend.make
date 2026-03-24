@@ -11,6 +11,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c.o: ../app/common/event_bus.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c.o: ../app/hal/drv_watchdog.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c.o: ../app/service/svc_network.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c.o: ../app/service/svc_voice.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.h
 

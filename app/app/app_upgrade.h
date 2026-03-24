@@ -73,7 +73,6 @@ typedef enum {
 /**
  * @brief 处理来自室内机的长包（数据帧）
  *
- * 对应原 UpgraedOutdoorEventFunc 中的 UpgradeLongPack 分支：
  *   index = DP[0..3], len = DP[4..7], data = DP[8..]
  *
  * @param sender_dev  发送方设备 ID（用于失败应答）
@@ -89,7 +88,6 @@ int AppUpgradeHandleLongPack(uint8_t sender_dev,
 /**
  * @brief 处理来自室内机的短包（控制帧）
  *
- * 对应原 UpgraedOutdoorEventFunc 中的短包分支：
  *   ctrl_arg0 = Packet.Data.Arg[0]
  *   ctrl_arg1 = Packet.Data.Arg[1]
  *

@@ -3,12 +3,11 @@
  * @brief   ADC 采集驱动（AK SARADC sysfs，互斥锁版）
  *
  * 移植说明：
- *   原 AdcControl.c 中的 DrvAdCDetectThread 使用弱函数 AdcDetectHandle 回调，
- *   此处改为注册式回调 DrvAdcSetCallback，并直接通过 sysfs 读取电压值。
+ *   注册式回调 DrvAdcSetCallback，并直接通过 sysfs 读取电压值。
  *
  *   sysfs 路径：/sys/bus/iio/devices/iio:device0/in_voltage0_raw
  *   内核模块：  /usr/modules/ak_saradc.ko
- *   采样间隔：  50ms（与原版 usleep(1000*50) 一致）
+ *   采样间隔：  50ms
  */
 #include "drv_adc.h"
 #include <stdio.h>

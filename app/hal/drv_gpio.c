@@ -1,20 +1,6 @@
 /**
  * @file    drv_gpio.c
  * @brief   门口机 GPIO 业务驱动（灯光 / 电锁 / 功放 / IRCUT / 拨码）
- *
- * ★ 引脚号配置区（来源：原版头文件和源文件汇总）★
- *
- * 来源：
- *   LightControl.h  → Card(27) Key1(24) Key2(50) Keypad(32) Infrared(58)
- *   SpeakAmp.c      → AMP(69)
- *   InfraredDetect.c→ IRCUT_INA(65) IRCUT_INB(66) IR_FEED(70)
- *   Unlock.c        → LOCK(37) GATE(34)
- *   main.c          → DIP_SW(26)
- *
- * ⚠️ 注意：
- *   GATE_EXIT_GPIO=27（Unlock.c）与 PIN_CARD_LIGHT=27（LightControl.h）编号相同。
- *   原版使用同一个引脚，出门按钮（GATE_EXIT）与刷卡指示灯（CARD_LIGHT）复用 GPIO27。
- *   实际是否冲突需确认 PCB。新版保留原分配，若有冲突请修改其中一个。
  */
 #include "drv_gpio.h"
 #include "drv_gpio_sysfs.h"
@@ -46,12 +32,6 @@
  * ========================================================= */
 /**
  * @brief 读取编码拨码开关，判断本机是 DOOR1 还是 DOOR2
- *
- * 原版逻辑（main.c）：
- *   GpioOpen(26, GPIO_DIR_IN, true);
- *   GpioLevelGet(26, &level);
- *   NetworkDevice DevId = level == GPIO_LEVEL_LOW ? DEVICE_OUTDOOR_1 : DEVICE_OUTDOOR_2;
- *
  * @return 1=DOOR1(IP .7)  2=DOOR2(IP .8)
  */
 int DrvGpioDipSwRead(void)
@@ -71,22 +51,22 @@ int DrvGpioDipSwRead(void)
 }
 
 /* =========================================================
- *  DrvGpioInit（对应原版 LightGpioInit + LockGpioInit + SpeakAmpGpioInit）
+ *  DrvGpioInit
  * ========================================================= */
 int DrvGpioInit(void)
 {
-    /* 灯光引脚：输出，默认低电平（对应原版 LightGpioInit）*/
+    /* 灯光引脚：输出，默认低电平*/
     GpioSysfsOpen(PIN_KEY1_LIGHT,     GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_KEY2_LIGHT,     GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_KEYPAD_BL,      GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_CARD_LIGHT,     GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_INFRARED_LIGHT, GPIO_DIR_LOW, false);
 
-    /* 继电器：输出，默认低电平（对应原版 LockGpioInit）*/
+    /* 继电器：输出，默认低电平*/
     GpioSysfsOpen(PIN_LOCK_DOOR, GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_LOCK_GATE, GPIO_DIR_LOW, false);
 
-    /* 功放：输出，默认低电平（对应原版 SpeakAmpGpioInit）*/
+    /* 功放：输出，默认低电平*/
     GpioSysfsOpen(PIN_AMP_EN, GPIO_DIR_LOW, false);
 
     DrvGpioAmpDisable();
@@ -95,7 +75,7 @@ int DrvGpioInit(void)
 }
 
 /* =========================================================
- *  灯光控制（对应原版 LightControl.c 宏展开函数）
+ *  灯光控制
  * ========================================================= */
 void DrvGpioCardLightSet(int on)
 {
@@ -124,13 +104,7 @@ void DrvGpioInfraredLightSet(int on)
 
 /* =========================================================
  *  继电器（开锁/开闸）
- *
- *  原版 Unlock() 调用：
- *    GpioLevelSet(LOCK_GPIO, GPIO_LEVEL_HIGH);  ← 开
- *    SetTimer(time * 1000, LockTimer, LockColse, NULL);
- *    LockColse: GpioLevelSet(LOCK_GPIO, GPIO_LEVEL_LOW); ← 关
- *
- *  新版：开/关分离为两个接口，定时器由 app_access.c 管理
+ *  开/关分离为两个接口，定时器由 app_access.c 管理
  * ========================================================= */
 void DrvGpioLockSet(GpioLockType type, int on)
 {
@@ -142,7 +116,7 @@ void DrvGpioLockSet(GpioLockType type, int on)
 }
 
 /* =========================================================
- *  功放控制（对应原版 SpeakAmpEnable / SpeakAmpDisable）
+ *  功放控制
  * ========================================================= */
 int DrvGpioLockOpen(GpioLockType type, int duration_ms)
 {

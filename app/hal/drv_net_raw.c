@@ -1,6 +1,6 @@
 /**
  * @file    drv_net_raw.c
- * @brief   链路层原始套接字工具库（原 NetworkCommon.c 整合）
+ * @brief   链路层原始套接字工具库
  */
 #include "drv_net_raw.h"
 #include <net/if.h>

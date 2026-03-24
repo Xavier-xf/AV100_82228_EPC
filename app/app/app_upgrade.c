@@ -7,12 +7,11 @@
  *       先发应答，再执行升级
  *    ③ 升级线程中先关看门狗，再执行升级，保证顺序
  *    ④ 状态机（IDLE/RECEIVING/PROCESSING/DONE/ERROR）替代裸 static 变量
- *    ⑤ 互斥锁保护所有共享状态，无原子操作
  */
 #include "app_upgrade.h"
 #include "event_bus.h"
 #include "svc_network.h"
-// #include "svc_voice.h"
+#include "svc_voice.h"
 #include "drv_watchdog.h"
 #include <pthread.h>
 #include <stdio.h>
@@ -30,7 +29,7 @@
 #define UPGRADE_PKG_SHA1   "image.sha1"
 
 /* =========================================================
- *  内部状态（互斥锁保护，无原子操作）
+ *  内部状态
  * ========================================================= */
 typedef struct {
     pthread_mutex_t   lock;
@@ -276,11 +275,11 @@ static void *upgrade_thread(void *arg)
     printf("[AppUpgrade] *** UPGRADE THREAD START ***\n");
     set_state(UPGRADE_STATE_PROCESSING);
 
-    // /* ---- 先播放语音提示（对应原版 VoiceRingPlay(Unlock16k, 90)）---- */
-    // SvcVoicePlaySimple(VOICE_Unlock16k, 90);
+    /* ---- 先播放语音提示---- */
+    SvcVoicePlaySimple(VOICE_Unlock16k, 90);
 
-    /* ---- 等待 2s（原版 sleep(2)），让室内机收到应答后准备接收状态）----
-     * 原版在回调中 sleep(2) 阻塞网络线程；这里在独立线程中等待，不影响网络 */
+    /* ---- 等待 2s，让室内机收到应答后准备接收状态）----
+     * 在独立线程中等待，不影响网络 */
     sleep(2);
 
     /* ---- 关闭看门狗（升级期间防止超时重启）---- */
@@ -364,8 +363,7 @@ static void cancel_upgrade(void)
 
 /**
  * @brief 处理长包（数据帧）
- *
- * 原版协议：
+ *协议：
  *   int arg1 = DP[0]<<24|DP[1]<<16|DP[2]<<8|DP[3];  // 包序号
  *   int arg2 = DP[4]<<24|DP[5]<<16|DP[6]<<8|DP[7];  // 数据长度
  *   data = &DP[8]
@@ -385,7 +383,7 @@ int AppUpgradeHandleLongPack(uint8_t sender_dev,
     printf("[AppUpgrade] long pack index=%u len=%u\n", index, data_len);
 
     if (recv_pack(index, data_len, data) == 0) {
-        /* 收包失败 → 应答失败（对应原版 NetworkMsgSned Arg1=3）*/
+        /* 收包失败 → 应答失败*/
         send_reply(sender_dev, UPGRADE_REPLY_FAIL, 1);
         return 0;
     }
@@ -394,11 +392,6 @@ int AppUpgradeHandleLongPack(uint8_t sender_dev,
 
 /**
  * @brief 处理短包（控制帧）
- *
- * 对应原版三个分支：
- *   CheckOnlineStatus (Arg[0] & 0x01) → 应答在线
- *   UpdateOver+UpdataFinish (Arg[0]&0x02 && Arg[1]&0x01) → 执行升级
- *   UpdateOver+UpdataFail   (Arg[0]&0x02 && Arg[1]&0x02) → 取消
  */
 void AppUpgradeHandleCtrlPack(uint8_t sender_dev,
                                uint8_t ctrl_arg0, uint8_t ctrl_arg1)
@@ -432,10 +425,10 @@ void AppUpgradeHandleCtrlPack(uint8_t sender_dev,
                     return;
                 }
 
-                /* 先发"开始执行"应答（对应原版 Data.Arg1=2 先 NetworkMsgSned）*/
+                /* 先发"开始执行"应答*/
                 send_reply(sender_dev, UPGRADE_REPLY_EXECUTE, 1);
 
-                /* 在独立线程中执行升级（替换原版的 sleep(2)+UpgradeProcess(1)）*/
+                /* 在独立线程中执行升级*/
                 start_upgrade_thread(sender_dev, pack_path);
 
             } else {
@@ -445,7 +438,7 @@ void AppUpgradeHandleCtrlPack(uint8_t sender_dev,
             return;
         }
 
-        /* UpdataFail: Arg[1] & 0x02 → 取消（对应原版 UpgradeProcess(0)）*/
+        /* UpdataFail: Arg[1] & 0x02 → 取消*/
         if (ctrl_arg1 & 0x02) {
             cancel_upgrade();
             return;

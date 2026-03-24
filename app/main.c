@@ -39,7 +39,7 @@
 #define WDT_TIMEOUT_SEC      10   /* 硬件看门狗超时（秒）*/
 #define MAIN_LOOP_INTERVAL   5    /* 主循环间隔（秒），需 < WDT_TIMEOUT/2 */
 
-/* 设备 ID（对应原版 NetworkDevice 枚举）*/
+/* 设备 ID*/
 #define DEVICE_OUTDOOR_1     7
 #define DEVICE_OUTDOOR_2     8
 
@@ -70,8 +70,11 @@ static void adc_voltage_cb(int voltage_mv)
 
 
         if (voltage_mv>1080&&voltage_mv<1300    ){
+            static int  i=1;
+                    if(i>30) i=1;
+                    printf("[MAIN] voiceid=%d\n",i);
+        SvcVoicePlaySimple(i++, VOICE_VOL_DEFAULT);
 
-        SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
         }
 
 
@@ -89,7 +92,6 @@ int main(int argc, char *argv[])
     /* Step 0: AK SDK 初始化                               */
     /*                                                     */
     /* 必须最先执行，是所有 ak_* API 的运行前提。           */
-    /* 对应原版：AKPlatformSdkInit()                        */
     /* ================================================== */
     INIT_CRITICAL(DrvPlatformInit());
 
@@ -135,24 +137,24 @@ int main(int argc, char *argv[])
     // INIT_MODULE(DrvWdtOpen(WDT_TIMEOUT_SEC));    /* 硬件看门狗（我们用 10s）*/
 
 
-    INIT_MODULE(DrvGpioInit());    /* GPIO 引脚初始化（LED/继电器/功放，对应原版 LightGpioInit + LockGpioInit）*/
+    INIT_MODULE(DrvGpioInit());    /* GPIO 引脚初始化（LED/继电器/功放）*/
 
     /* -------------------------------------------------- */
     /* Service 层                                       */
     /* -------------------------------------------------- */
 
-    INIT_MODULE(SvcTimerInit());
+    INIT_MODULE(SvcTimerInit()); /* 定时器调度线程*/
     
     INIT_MODULE(SvcAudioInit());        /* 音频输出队列（VOICE mtype=1 优先于 INTERCOM mtype=2）*/
 
 
     INIT_MODULE(SvcVoiceInit());        /* 语音解码播放（PCM/MP3/libmad）*/
 
-    INIT_MODULE(SvcNetworkInit());
+    INIT_MODULE(SvcNetworkInit());    /* 网络命令通道 */
     /* -------------------------------------------------- */
     /*  App 层（先注册回调和事件订阅）                    */
     /* -------------------------------------------------- */
-    INIT_MODULE(AppIntercomInit());
+    INIT_MODULE(AppIntercomInit());/* 对讲状态机*/
 
     INIT_MODULE(AppUpgradeInit());    /* 固件升级（清理残留临时文件）*/
 

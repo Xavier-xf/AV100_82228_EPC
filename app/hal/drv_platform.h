@@ -15,14 +15,6 @@
  *
  * ===================== 系统心跳看门狗 =====================
  *
- *  原版 systemtick_init / systemtick_thread：
- *    - 一个独立线程每 100ms 检查 current_system_timestamp
- *    - 若超过 10s 未被喂（reset_system_timestamp 未被调用），调用 exit(0)
- *    - exit(0) 触发硬件看门狗超时 → 系统重启
- *
- *  用途：防止 load_isp_conf 等操作损坏主流程导致系统僵死。
- *
- *  新版接口：
  *    DrvSystemTickInit()  — 启动监控线程
  *    DrvSystemTickFeed()  — 喂软件看门狗（在主循环中每秒调用）
  */
@@ -30,7 +22,7 @@
 #define _DRV_PLATFORM_H_
 
 /**
- * @brief AK 平台 SDK 初始化（对应原版 AKPlatformSdkInit）
+ * @brief AK 平台 SDK 初始化
  *
  * 执行：
  *   ak_sdk_init(&config)                   初始化 AK SDK 运行环境
@@ -45,7 +37,7 @@
 int DrvPlatformInit(void);
 
 /**
- * @brief 启动软件系统心跳监控线程（对应原版 systemtick_init）
+ * @brief 启动软件系统心跳监控线程
  *
  * 启动后台线程，每 100ms 检查心跳时间戳。
  * 若超过 10s 未喂（DrvSystemTickFeed 未被调用），调用 exit(0) 触发重启。
@@ -55,7 +47,7 @@ int DrvPlatformInit(void);
 void DrvSystemTickInit(void);
 
 /**
- * @brief 喂软件看门狗（对应原版 reset_system_timestamp）
+ * @brief 喂软件看门狗
  *
  * 在主循环中每次喂硬件狗时同时调用此函数。
  * 最长间隔不超过 5s（主循环 sleep(5)，硬件狗 10s，软件狗 10s）。

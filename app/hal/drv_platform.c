@@ -1,17 +1,8 @@
 /**
  * @file    drv_platform.c
  * @brief   AK 芯片平台 SDK 初始化 + 软件系统心跳看门狗
- *
- * 原版 main.c 对应代码：
- *   AKPlatformSdkInit()     → DrvPlatformInit()
- *   systemtick_init()       → DrvSystemTickInit()
- *   reset_system_timestamp()→ DrvSystemTickFeed()
- *   feed_dog()              → 主循环中 DrvWdtFeed() + DrvSystemTickFeed()
- *
  * ===================== 软件心跳看门狗原理 =====================
  *
- *  问题背景：
- *    原版注释"为了防止启动被 load_isp_conf 损坏，增加心跳检测"
  *    load_isp_conf 等初始化操作有时会导致主流程僵死，
  *    硬件看门狗本身需要主动喂，如果主循环卡死则无法喂狗，
  *    系统会在硬件看门狗超时（10s）后重启。
@@ -23,9 +14,6 @@
  *    监控线程每 100ms 检查：若当前时间 - 上次喂狗时间 > 10s → exit(0)
  *    主循环每 5s：DrvWdtFeed() + DrvSystemTickFeed()（同时喂两个狗）
  *
- *  注意：原版使用 ak_get_ostime + ak_diff_ms_time，
- *        新版使用 gettimeofday（更通用，不依赖 AK 时间接口）。
- *        行为完全等效。
  */
 #include "drv_platform.h"
 #include <string.h>

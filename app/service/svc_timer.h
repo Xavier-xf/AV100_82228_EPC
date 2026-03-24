@@ -1,13 +1,13 @@
 /**
  * @file    svc_timer.h
- * @brief   软件定时器服务（原 Timer.c 重写）
+ * @brief   软件定时器服务
  *
  * 设计要点：
  *   所有定时器 ID 在此集中枚举，全局唯一。
  *   回调在定时器线程中执行，回调内可安全调用 SvcTimerSet/Stop/Refresh。
  *   线程安全：所有接口均可在任意线程调用。
  *
- * 原版定时器 ID 对照（原 Timer.h TimerID 枚举）：
+ * 定时器 ID 对照：
  *   CallBusyTimer       → TMR_CALL_BUSY
  *   AmpTimer            → TMR_AMP_OFF
  *   KeypadTimer         → TMR_KEYPAD_BACKLIGHT
@@ -47,8 +47,8 @@ typedef enum {
     TMR_ALARM_LIGHT,           /* 报警灯闪烁（500ms 循环）              */
 
     /* --- 继电器 --- */
-    TMR_UNLOCK_HOLD,           /* 门锁保持时间（对应原版 LockTimer）    */
-    TMR_UNGATE_HOLD,           /* 门闸保持时间（对应原版 GateTimer）    */
+    TMR_UNLOCK_HOLD,           /* 门锁保持时间    */
+    TMR_UNGATE_HOLD,           /* 门闸保持时间    */
 
     /* --- 键盘管理菜单 --- */
     TMR_ADMIN_TIMEOUT,         /* 管理员模式操作超时（30s）             */
@@ -67,8 +67,8 @@ typedef enum {
     TMR_SVP_ACTIVE,            /* SVP 人形检测激活保活（3s）            */
 
     /* --- 红外夜视 ---
-     *   TMR_IR_DEBOUNCE  对应原版 IrFeedTimer（光敏变化 1s 去抖）
-     *   TMR_IRCUT_CLOSE  对应原版 IrCurCloseTimer（IRCUT 电机 100ms 停止）
+     *   TMR_IR_DEBOUNCE （光敏变化 1s 去抖）
+     *   TMR_IRCUT_CLOSE  （IRCUT 电机 100ms 停止）
      */
     TMR_IR_DEBOUNCE,           /* 光敏变化去抖（1s）                    */
     TMR_IRCUT_CLOSE,           /* IRCUT 电机停止延迟（100ms）           */

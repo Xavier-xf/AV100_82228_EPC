@@ -1,6 +1,6 @@
 /**
  * @file    drv_watchdog.c
- * @brief   硬件看门狗驱动实现（原 ak_drv_wdt.c 重写）
+ * @brief   硬件看门狗驱动实现
  */
 #include "drv_watchdog.h"
 #include <unistd.h>

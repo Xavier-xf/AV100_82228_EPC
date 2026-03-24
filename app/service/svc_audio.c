@@ -1,18 +1,6 @@
 /**
  * @file    svc_audio.c
- * @brief   音频输出服务（消息队列 + 互斥锁版）
- *
- * 原代码对应：
- *   AudioPlay.c     CircularList管理 + AODataExport + SpeakAmp + AmpTimer
- *   AudioOutput.c   AudioOutputThread + Pcm16bitVolumeCover + 弱函数钩子
- *
- * 改进：
- *   ① CircularList → System V 消息队列 (MQ_KEY_AUDIO_OUT)
- *   ② 两路来源用 mtype 区分优先级：VOICE(1) > INTERCOM(2)
- *      取代原 CircularListLock/Unlock 暂停对讲音频的机制
- *   ③ 所有 atomic_* → pthread_mutex_t 保护的普通变量
- *   ④ AudioOutputThread → audio_output_thread（读队列→写硬件）
- *   ⑤ AODataExport/AODataFree 弱函数全部删除
+ * @brief   音频输出服务
  */
 #include "svc_audio.h"
 #include "svc_timer.h"

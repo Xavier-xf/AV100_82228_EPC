@@ -1,6 +1,6 @@
 /**
  * @file    drv_gpio_sysfs.h
- * @brief   通用 GPIO sysfs 操作库（原 GpioControl.c 重命名整合）
+ * @brief   通用 GPIO sysfs 操作库
  *
  * 提供 sysfs GPIO 的：导出/方向/电平读写/边沿触发
  * 供 drv_gpio.c（门锁/灯光/功放）调用，不含业务逻辑。

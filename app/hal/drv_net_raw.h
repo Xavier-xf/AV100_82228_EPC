@@ -1,6 +1,6 @@
 /**
  * @file    drv_net_raw.h
- * @brief   链路层原始套接字工具库（原 NetworkCommon.c 重命名整合）
+ * @brief   链路层原始套接字工具库
  *
  * 供 svc_network / svc_intercom_stream 调用，消除重复的 Raw Socket 代码。
  * 不含任何业务逻辑，纯工具函数。
@@ -26,7 +26,7 @@ int  NetRawIfrAddrConfig(int fd, const char *iface, struct sockaddr_ll *sll);
 
 /**
  * @brief 封装链路层数据头（60字节 MAC 头 + 2字节协议类型）
- *        目的 MAC 固定为 01:01:01:01:01:01（与原版一致）
+ *        目的 MAC 固定为 01:01:01:01:01:01
  *        结果写入 buf[0..61]
  */
 int  NetRawPacketHead(uint8_t *buf, const char *iface, int protocol);
@@ -40,7 +40,7 @@ int  NetRawPacketSend(int fd, struct sockaddr_ll *sll,
 
 /**
  * @brief 带超时的 Raw Socket 接收（返回有效负载长度，-1=超时/错误）
- *        已自动剥除 60 字节 MAC 头（原版 RawPacketReceive 行为）
+ *        已自动剥除 60 字节 MAC 头
  */
 int  NetRawPacketReceive(int fd, uint8_t *buf, int size,
                           unsigned int timeout_ms);

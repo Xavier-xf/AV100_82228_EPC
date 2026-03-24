@@ -1,17 +1,12 @@
 /**
  * @file    svc_voice.h
- * @brief   本地语音播放服务（PCM / MP3，消息队列 + 互斥锁）
- *
- * 对应原文件：
- *   VoiceRingPlay.c   → 语音请求投递 + VoiceInfoImport/VoiceDataExport 重定义
- *   VoiceRingTone.c   → VoiceDecodeThread + MP3/PCM 解码核心
- *   VoiceDecode.h     → VoiceInfo / VoiceFrame 数据结构（已整合）
+ * @brief   本地语音播放服务（PCM / MP3）
  */
 #ifndef _SVC_VOICE_H_
 #define _SVC_VOICE_H_
 
 /* =========================================================
- *  语音列表（与原 VoiceRingPlay.h 完全一致）
+ *  语音列表
  * ========================================================= */
 #define VOICE_LIST(V)   \
     V(Unlock16k)        \
