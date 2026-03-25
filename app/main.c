@@ -23,7 +23,7 @@
 #include "drv_watchdog.h"
 #include "drv_gpio.h"
 #include "drv_adc.h"
-
+#include "drv_audio_in.h"
 /* ---- service ---- */
 #include "svc_timer.h"
 #include "svc_network.h"
@@ -133,11 +133,11 @@ int main(int argc, char *argv[])
     /*       产生回调的驱动，在 App 注册回调之后再启动。    */
     /* ================================================== */
 
-
     // INIT_MODULE(DrvWdtOpen(WDT_TIMEOUT_SEC));    /* 硬件看门狗（我们用 10s）*/
 
-
     INIT_MODULE(DrvGpioInit());    /* GPIO 引脚初始化（LED/继电器/功放）*/
+
+    INIT_MODULE(DrvAudioInInit());        /* 音频输入（启动采集线程，默认未采集）*/
 
     /* -------------------------------------------------- */
     /* Service 层                                       */

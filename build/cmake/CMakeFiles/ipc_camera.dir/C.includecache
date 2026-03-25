@@ -20,6 +20,8 @@ stddef.h
 
 ../app/hal/drv_adc.h
 
+../app/hal/drv_audio_in.h
+
 ../app/hal/drv_audio_out.h
 
 ../app/hal/drv_gpio.h
@@ -49,6 +51,12 @@ stddef.h
 -
 
 ../app/service/svc_voice.h
+
+../include/anyka3918/ak_ai.h
+ak_common.h
+../include/anyka3918/ak_common.h
+ak_common_audio.h
+../include/anyka3918/ak_common_audio.h
 
 ../include/anyka3918/ak_ao.h
 ak_common_audio.h
@@ -147,6 +155,24 @@ assert.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.h
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c
+drv_audio_in.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.h
+ak_ai.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/ak_ai.h
+ak_common_audio.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/ak_common_audio.h
+pthread.h
+-
+unistd.h
+-
+string.h
+-
+stdio.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.c
 drv_audio_out.h
@@ -281,6 +307,8 @@ drv_gpio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_gpio.h
 drv_adc.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_adc.h
+drv_audio_in.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_audio_in.h
 svc_timer.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_timer.h
 svc_network.h

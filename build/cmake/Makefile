@@ -233,6 +233,33 @@ home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.s:
 	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.s
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.s
 
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.o
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.o
+
+# target to build an object file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.o:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.o
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.o
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.i: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.i
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.i
+
+# target to preprocess a source file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.i:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.i
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.i
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.s: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.s
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.s
+
+# target to generate assembly for a file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.s:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.s
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.s
+
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.c.o
 
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.o
@@ -551,6 +578,9 @@ help:
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.s"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.o"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.i"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.s"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.s"

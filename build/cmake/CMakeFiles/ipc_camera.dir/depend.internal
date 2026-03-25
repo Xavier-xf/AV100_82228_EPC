@@ -21,6 +21,12 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.o
  /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c
  /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.o
+ ../include/anyka3918/ak_ai.h
+ ../include/anyka3918/ak_common.h
+ ../include/anyka3918/ak_common_audio.h
+ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c
+ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.c.o
  ../include/anyka3918/ak_ao.h
  ../include/anyka3918/ak_common.h
@@ -50,6 +56,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
  ../app/app/app_upgrade.h
  ../app/common/event_bus.h
  ../app/hal/drv_adc.h
+ ../app/hal/drv_audio_in.h
  ../app/hal/drv_gpio.h
  ../app/hal/drv_platform.h
  ../app/hal/drv_watchdog.h
