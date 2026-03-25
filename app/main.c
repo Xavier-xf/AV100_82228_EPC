@@ -73,7 +73,7 @@ static void adc_voltage_cb(int voltage_mv)
             static int  i=1;
                     if(i>30) i=1;
                     printf("[MAIN] voiceid=%d\n",i);
-        SvcVoicePlaySimple(i++, VOICE_VOL_DEFAULT);
+        SvcVoicePlaySimple(20, VOICE_VOL_DEFAULT);
 
         }
 

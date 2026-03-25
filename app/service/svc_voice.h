@@ -25,7 +25,7 @@ typedef enum {
 } VoiceId;
 
 #define VOICE_BASE_PATH   "/app/voice/"
-#define VOICE_VOL_DEFAULT  100
+#define VOICE_VOL_DEFAULT  90
 
 typedef void (*VoiceEventCb)(void);
 

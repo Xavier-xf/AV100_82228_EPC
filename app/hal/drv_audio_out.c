@@ -89,23 +89,23 @@ static void setup_params(int handle_id)
     struct ak_audio_aslc_attr aslc = {16384, 8, 0};
     ak_ao_set_aslc_attr(handle_id, &aslc);
 
-    /* EQ（default_ao_eq_attr，来自 ak_audio_config.h）*/
+    /* EQ（default_ao_eq_attr*/
     struct ak_audio_eq_attr eq = {
-1024,
-5,
-{1000, 4500, 4200, 1000, 1250, 0, 0, 0, 0, 0},
-{-2048, -8192, -16384, 0, 0, 0, 0, 0, 0, 0},
-{716, 614, 614, 716, 716, 0, 0, 0, 0, 0},
-{TYPE_HPF, TYPE_PF1, TYPE_HSF, TYPE_PF1, TYPE_PF1, TYPE_PF1, TYPE_PF1, TYPE_PF1, TYPE_PF1, TYPE_PF1},
-0,
-0,
-0,
-0,
-0,
-0,
-1,
-{1, 1, 1, 0, 0, 0, 0, 0, 0, 0}
-};
+        1024,
+        5,
+        {1000, 4500, 4200, 1000, 1250, 0, 0, 0, 0, 0},
+        {-2048, -8192, -16384, 0, 0, 0, 0, 0, 0, 0},
+        {716, 614, 614, 716, 716, 0, 0, 0, 0, 0},
+        {TYPE_HPF, TYPE_PF1, TYPE_HSF, TYPE_PF1, TYPE_PF1, TYPE_PF1, TYPE_PF1, TYPE_PF1, TYPE_PF1, TYPE_PF1},
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        {1, 1, 1, 0, 0, 0, 0, 0, 0, 0}
+    };
     ak_ao_set_eq_attr(handle_id, &eq);
 
     /* 增益（default_ao_gain = 2）*/
