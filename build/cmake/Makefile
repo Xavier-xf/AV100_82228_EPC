@@ -125,6 +125,33 @@ ipc_camera/fast:
 	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/build
 .PHONY : ipc_camera/fast
 
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.o
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.o
+
+# target to build an object file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.o:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.o
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.o
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.i: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.i
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.i
+
+# target to preprocess a source file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.i:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.i
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.i
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.s: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.s
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.s
+
+# target to generate assembly for a file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.s:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.s
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.s
+
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o
 
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.o
@@ -341,6 +368,33 @@ home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.s:
 	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.s
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.s
 
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.o
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.o
+
+# target to build an object file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.o:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.o
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.o
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.i: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.i
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.i
+
+# target to preprocess a source file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.i:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.i
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.i
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.s: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.s
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.s
+
+# target to generate assembly for a file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.s:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.s
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.s
+
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_net_raw.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_net_raw.c.o
 
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_net_raw.o
@@ -394,6 +448,33 @@ home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.s: hom
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.c.s:
 	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.c.s
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.c.s
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.o
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.o
+
+# target to build an object file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.o:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.o
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.o
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.i: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.i
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.i
+
+# target to preprocess a source file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.i:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.i
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.i
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.s: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.s
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.s
+
+# target to generate assembly for a file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.s:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.s
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.c.s
 
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_watchdog.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_watchdog.c.o
 
@@ -476,6 +557,33 @@ home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.c.s:
 	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.c.s
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.c.s
 
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.o
+
+# target to build an object file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.i: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.i
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.i
+
+# target to preprocess a source file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.i:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.i
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.i
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.s: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.s
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.s
+
+# target to generate assembly for a file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.s:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.s
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.s
+
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.c.o
 
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.o
@@ -502,6 +610,33 @@ home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.s: 
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.c.s:
 	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.c.s
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.c.s
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.o
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.o
+
+# target to build an object file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.o:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.o
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.o
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.i: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.i
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.i
+
+# target to preprocess a source file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.i:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.i
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.i
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.s: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.s
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.s
+
+# target to generate assembly for a file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.s:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.s
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.s
 
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.c.o
 
@@ -566,6 +701,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... ipc_camera"
 	@echo "... edit_cache"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.o"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.i"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.s"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.s"
@@ -590,12 +728,18 @@ help:
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.s"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.o"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.i"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.s"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_net_raw.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_net_raw.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_net_raw.s"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.s"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.o"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.i"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_video_in.s"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_watchdog.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_watchdog.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_watchdog.s"
@@ -605,9 +749,15 @@ help:
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.s"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.o"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.i"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.s"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.s"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.o"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.i"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.s"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.s"

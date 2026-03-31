@@ -24,15 +24,18 @@
 #include "drv_gpio.h"
 #include "drv_adc.h"
 #include "drv_audio_in.h"
+#include "drv_video_in.h"
 /* ---- service ---- */
 #include "svc_timer.h"
-#include "svc_network.h"
 #include "svc_audio.h"
 #include "svc_voice.h"
+#include "svc_network.h"
+#include "svc_svp.h"
+#include "svc_intercom_stream.h"
 /* ---- app ---- */
 #include "app_intercom.h"
 #include "app_upgrade.h"
-
+#include "app_doorbell.h"
 /* =========================================================
  *  常量
  * ========================================================= */
@@ -65,20 +68,6 @@
         printf("[MAIN] %s ok\n", #fn);                       \
     } while (0)
 
-static void adc_voltage_cb(int voltage_mv)
-{
-
-
-        if (voltage_mv>1080&&voltage_mv<1300    ){
-            static int  i=1;
-                    if(i>30) i=1;
-                    printf("[MAIN] voiceid=%d\n",i);
-        SvcVoicePlaySimple(20, VOICE_VOL_DEFAULT);
-
-        }
-
-
-}
 
 int main(int argc, char *argv[])
 {
@@ -138,7 +127,8 @@ int main(int argc, char *argv[])
     INIT_MODULE(DrvGpioInit());    /* GPIO 引脚初始化（LED/继电器/功放）*/
 
     INIT_MODULE(DrvAudioInInit());        /* 音频输入（启动采集线程，默认未采集）*/
-
+    /* 视频输入（第三路 SVP 回调在 SvcSvpInit 后注册）*/
+    INIT_MODULE(DrvVideoInInit());
     /* -------------------------------------------------- */
     /* Service 层                                       */
     /* -------------------------------------------------- */
@@ -151,9 +141,21 @@ int main(int argc, char *argv[])
     INIT_MODULE(SvcVoiceInit());        /* 语音解码播放（PCM/MP3/libmad）*/
 
     INIT_MODULE(SvcNetworkInit());    /* 网络命令通道 */
+
+        /* SVP 人形检测（第三路 320×180）*/
+    /* 第三路通道数据类型 VI_DATA_TYPE_RGB_LINEINTL（对应 VideoTransfer.c 配置）*/
+    // INIT_MODULE(SvcSvpInit(320, 180, 0, VI_DATA_TYPE_RGB_LINEINTL));
+
+
+    /* 对讲音视频流（对应原版 NetVideoTransferInit + NetAudioTransferInit）
+     *   协议号由 SvcIntercomStreamStart 时按 peer_dev_id 动态计算 */
+    INIT_MODULE(SvcIntercomStreamInit());
     /* -------------------------------------------------- */
     /*  App 层（先注册回调和事件订阅）                    */
     /* -------------------------------------------------- */
+
+        /* 门铃按键（注册 ADC 回调）*/
+    INIT_MODULE(AppDoorbellInit());
     INIT_MODULE(AppIntercomInit());/* 对讲状态机*/
 
     INIT_MODULE(AppUpgradeInit());    /* 固件升级（清理残留临时文件）*/
@@ -174,8 +176,6 @@ int main(int argc, char *argv[])
     printf("# System Ready. Device=DOOR%d\n", door_id);
     printf("###############################################\n\n");
 
-
-        DrvAdcSetCallback(adc_voltage_cb);
 
     /* ================================================== */
     /* Step 9: 主循环                                      */

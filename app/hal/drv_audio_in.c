@@ -84,7 +84,7 @@ static void setup_params(int handle_id)
     ak_ai_set_aslc_attr(handle_id, &aslc);
     ak_ai_set_eq_attr(handle_id, &eq);
     ak_ai_set_gain(handle_id, 3);
-    ak_ai_set_volume(handle_id, 0);
+
 }
 
 static int open_device(void)

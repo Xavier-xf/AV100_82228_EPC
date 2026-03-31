@@ -88,7 +88,7 @@ static void push_pcm(const uint8_t *pcm, int len)
     /* 流控：固定半帧等待（避免解码过快淹没AO）*/
     usleep((unsigned int)(frame_ms * 500));
 
-    /* AO缓冲充足时追加一帧等待*/
+    /* AO缓冲充足时追加一帧等待（原条件：AO剩余 > 3×帧大小）*/
     if (SvcAudioRemainLen() > len * 3)
         usleep((unsigned int)(frame_ms * 1000));
 }
@@ -226,7 +226,7 @@ static void *voice_decode_thread(void *arg)
         int mqid = get_mqid();
         if (mqid < 0) { usleep(50 * 1000); continue; }
 
-        /* 阻塞等待请求*/
+        /* 阻塞等待请求（原 CircularListRead 的阻塞语义）*/
         ssize_t ret = msgrcv(mqid, &req, VOICE_REQ_BODY_SIZE, 1, 0);
         if (ret <= 0) {
             /* EINVAL/EIDRM：消息队列被销毁，等待 */
@@ -236,26 +236,27 @@ static void *voice_decode_thread(void *arg)
 
         set_busy(1);
 
-        /* 设置播放音量（*/
+        /* 设置播放音量（原 AudioOutputVolumeSet(TmpInfo->Volume)）*/
         DrvAudioOutSetVolume(req.volume);
 
-        /* 用 SvcAudioFlush 清空已积压的对讲帧，防止语音播放后立刻播出
-         * 积压的对讲音频（否则会有滞后的回音/杂音）。
-         * 后续对讲帧因 mtype=2 优先级低于 mtype=1(VOICE)，
-         * 在语音播放期间会积压但不会插入，语音结束后才会播放。*/
-        SvcAudioFlush(AUDIO_SRC_INTERCOM);
+        /* ★ 对应旧版 VoiceDecodeStart → CircularListLock：
+         * 加锁同时清空已积压的对讲帧，语音播放期间新到的对讲帧
+         * 在 SvcAudioFeed 中被丢弃，AO 队列只有语音帧，播放流畅。*/
+        SvcAudioVoiceLock(1);
         if (req.on_start) req.on_start();
 
         decode_and_play(&req);
 
-        /* 结束回调*/
         if (req.on_end) req.on_end();
+        /* ★ 对应旧版 VoiceDecodeEnd → CircularListUnlock */
+        SvcAudioVoiceLock(0);
 
         set_busy(0);
         printf("[SvcVoice] done id=%d\n", req.id);
     }
     return NULL;
 }
+
 
 /* =========================================================
  *  公开接口
