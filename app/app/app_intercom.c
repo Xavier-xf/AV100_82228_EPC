@@ -45,7 +45,7 @@ static void enter_stream(IntercomState new_state, uint8_t peer_dev)
         return;
     }
 
-    /* ★ 允许从 MONITORING 升级到 TALKING（对应旧版：先收 StreamStatus 再收 OutdoorTalk）*/
+    /* ★ 允许从 MONITORING 升级到 TALKING*/
     if (s_icom.state == INTERCOM_STATE_MONITORING && new_state == INTERCOM_STATE_TALKING) {
         s_icom.state = INTERCOM_STATE_TALKING;
         pthread_mutex_unlock(&s_icom.lock);
@@ -73,11 +73,6 @@ static void enter_stream(IntercomState new_state, uint8_t peer_dev)
 
 static void exit_stream(void)
 {
-        DrvGpioKey1LightSet(0);
-    DrvGpioKey2LightSet(0);
-    DrvGpioInfraredLightSet(0);
-    DrvGpioKeypadLightSet(0);
-    
     pthread_mutex_lock(&s_icom.lock);
     if (s_icom.state == INTERCOM_STATE_IDLE) { pthread_mutex_unlock(&s_icom.lock); return; }
     s_icom.state = INTERCOM_STATE_IDLE;
@@ -91,6 +86,7 @@ static void exit_stream(void)
 static void on_call_start(EventId id, const void *arg, size_t len)
 {
     (void)id; (void)len;
+
     const NetCallArg *call = (const NetCallArg *)arg;
     uint8_t my_dev = SvcNetworkLocalDeviceGet();
     if (call->channel != 0 && (my_dev != (uint8_t)(0x06 + call->channel))) {
@@ -103,12 +99,13 @@ static void on_call_start(EventId id, const void *arg, size_t len)
 static void on_call_end(EventId id, const void *arg, size_t len)
 {
     (void)id; (void)arg; (void)len;
-    exit_stream();
+    printf("[AppIntercom] HANG received, wait watchdog timeout\n");
 }
 
 static void on_stream_status(EventId id, const void *arg, size_t len)
 {
     (void)id; (void)len;
+
     const NetStreamStatus *st = (const NetStreamStatus *)arg;
     IntercomState cur = AppIntercomGetState();
     if (st->leave_msg_enable) {
@@ -119,13 +116,13 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
         long diff_ms = (long)(now.tv_sec  - last_leave_time.tv_sec)  * 1000
                      + (long)(now.tv_nsec - last_leave_time.tv_nsec) / 1000000;
         if (diff_ms > 3000) {
-            last_leave_time = now;
             /* leave_msg_lang 由室内机在 arg0>>2 位传入 */
             int lang_idx = st->leave_msg_lang;
             VoiceId vid = (VoiceId)(VOICE_LeaveMsgEng + lang_idx);
             SvcVoicePlaySimple(vid, VOICE_VOL_DEFAULT);
         }
-        return;
+        last_leave_time = now;
+        printf("last_leave_time.tv_sec=%ld,last_leave_time.tv_nsec=%ld\n",last_leave_time.tv_sec,last_leave_time.tv_nsec);
     }
     if (cur == INTERCOM_STATE_TALKING || cur == INTERCOM_STATE_MONITORING) {
         SvcIntercomStreamRefresh(st);
@@ -133,10 +130,6 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
         return;
     }
     if (cur == INTERCOM_STATE_IDLE) {
-        /* ★ 进入监控模式时开灯（对应旧版 MonitorTimer 分支的 Key1/Key2LightControl(1)）*/
-        DrvGpioKey1LightSet(1);
-        DrvGpioKey2LightSet(1);
-        DrvGpioInfraredLightSet(/* DarkModeStatus() */ 1);
         enter_stream(INTERCOM_STATE_MONITORING, st->sender_dev);
     }
 }

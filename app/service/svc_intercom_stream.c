@@ -674,9 +674,6 @@ int SvcIntercomStreamStart(StreamMode mode, uint8_t peer_dev_id)
 
     DrvAudioInStart();
     DrvVideoInStart();
-    if (mode == STREAM_MODE_TALK) {
-        DrvGpioAmpEnable();
-    }
     SvcTimerSet(TMR_INTERCOM_WATCHDOG, STREAM_WATCHDOG_MS, on_stream_watchdog, NULL);
 
     printf("[SvcStream] started ok\n");
@@ -734,7 +731,6 @@ void SvcIntercomStreamUpgradeToTalk(void)
     s_stm.mode = STREAM_MODE_TALK;
     pthread_mutex_unlock(&s_stm.lock);
     
-    DrvAudioInStart();
     DrvGpioAmpEnable();
     printf("[SvcStream] upgraded to TALK mode\n");
 }

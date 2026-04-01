@@ -1,19 +1,17 @@
 /**
  * @file    svc_network.c
- * @brief   命令通道网络服务（原 NetMsgComm.c 重写）
+ * @brief   命令通道网络服务
  *
  * ===================== 职责分离 =====================
- *
- *  本文件 = 原版 NetMsgComm.c
  *    职责：命令帧打包/分发，设备 ID 管理，EventBus 发布，
  *          接收线程（含 eth0 异常复位），对外发送接口。
  *
- *  hal/drv_net_raw.c = 原版 NetworkCommon.c（NetworkRaw.c）
+ *  hal/drv_net_raw.c
  *    职责：Raw Socket 创建/绑定/混杂模式，MAC 头封装，
  *          帧发送（NetRawPacketSend），帧接收（NetRawPacketReceive）。
  *    本文件只调用 drv_net_raw 接口，不做任何 socket 细节操作。
  *
- * ===================== 协议（严格对齐原版 NetMsgComm.h）=====================
+ * ===================== 协议=====================
  *
  *  帧格式（8字节短包）：
  *    [0xAA][src][dst][cmd][arg1][arg2][sum][0x55]
@@ -23,7 +21,7 @@
  *    [0xAA][src][dst][0x62][DP[0..n]][sum][0x55]
  *    DP[0..3] = 包序号, DP[4..7] = 数据长度, DP[8..] = 数据
  *
- *  命令 ID（network_event 枚举绝对值，来自原版 NetMsgComm.h）：
+ *  命令 ID：
  *    0x53 LightEvent
  *    0x54 UnlockEvent           远程开锁
  *    0x55 IdRepeatEvent         心跳
@@ -72,7 +70,7 @@
 #include <time.h>
 
 /* =========================================================
- *  协议常量（对应原版 NetMsgComm.h）
+ *  协议常量
  * ========================================================= */
 #define NET_IFACE          "eth0"     /* NETWORK_INTERFACE_NAME */
 #define ETH_P_CMD          0xFFFF     /* 自定义以太网协议号 */
@@ -86,8 +84,7 @@
 #define DEVICE_OUTDOOR_2   8
 #define DEVICE_ALL         0xFF
 
-/* 命令 ID（使用枚举取代多个 #define，对应原版 network_event 枚举绝对值）
- * 枚举优点：switch 时编译器可检查漏 case（-Wswitch），类型安全，IDE 可跳转 */
+/* 命令 ID */
 typedef enum {
     CMD_LIGHT_EVENT    = 0x53,
     CMD_UNLOCK         = 0x54,   /* UnlockEvent           */
@@ -118,17 +115,14 @@ typedef enum {
 
 /* =========================================================
  *  模块状态结构体
- *
- *  原版对应：NetSendFd / NetRecvFd / NetSendMutex / LocalDeviceId / LocalSll
- *  搜索 s_net.xxx 可精确定位到本文件，不会命中其他模块的 s_net.running 等
  * ========================================================= */
 typedef struct {
-    pthread_mutex_t send_mutex;       /* 发送锁（对应原版 NetSendMutex）*/
+    pthread_mutex_t send_mutex;       /* 发送锁*/
     pthread_mutex_t state_lock;       /* 状态读写锁 */
-    int             send_fd;          /* 发送 socket（对应原版 NetSendFd）*/
+    int             send_fd;          /* 发送 socket*/
     int             recv_fd;          /* 接收 socket（由接收线程管理）*/
-    struct sockaddr_ll send_sll;      /* 发送地址（对应原版 LocalSll）*/
-    uint8_t         local_dev;        /* 本机设备ID（对应原版 LocalDeviceId）*/
+    struct sockaddr_ll send_sll;      /* 发送地址*/
+    uint8_t         local_dev;        /* 本机设备ID*/
     int             running;          /* 接收线程运行标志 */
 } SvcNetCtx;
 
@@ -150,7 +144,7 @@ static uint8_t get_local_dev(void)
 }
 
 /* =========================================================
- *  NetworkCodePack（完整还原原版）
+ *  NetworkCodePack
  *  dst[6] = (src+dst+cmd+arg1+arg2) & 0xFF
  * ========================================================= */
 static void net_code_pack(uint8_t dst_dev, uint8_t cmd,
@@ -177,21 +171,20 @@ static void net_msg_send(uint8_t dst, uint8_t cmd, uint8_t arg1, uint8_t arg2)
     uint8_t buf[NET_PACK_LEN];
     net_code_pack(dst, cmd, arg1, arg2, buf);
 
-    pthread_mutex_lock(&s_net.send_mutex);   /* 对应原版 NetSendMutex */
+    pthread_mutex_lock(&s_net.send_mutex);   
     pthread_mutex_lock(&s_net.state_lock);
     int fd = s_net.send_fd;
     struct sockaddr_ll sll = s_net.send_sll;
     pthread_mutex_unlock(&s_net.state_lock);
 
     if (fd >= 0) {
-        /* 调 drv_net_raw：对应原版 RawPacketSend */
         NetRawPacketSend(fd, &sll, buf, NET_PACK_LEN, NET_IFACE, ETH_P_CMD);
     }
     pthread_mutex_unlock(&s_net.send_mutex);
 }
 
 /* =========================================================
- *  EthInterfaceState（完整还原原版，保留在 service 层
+ *  EthInterfaceState
  *  因为它是"网口异常复位"的业务决策，不属于纯 HAL 操作）
  * ========================================================= */
 static int eth_interface_state(const char *iface, int enable)
@@ -215,9 +208,7 @@ static int eth_interface_state(const char *iface, int enable)
 }
 
 /* =========================================================
- *  RawPacketHandle（完整还原原版分发逻辑）
- *
- *  原版过滤：
+ *  RawPacketHandle
  *    buf[0] == NET_COMMON_CMD_START
  *    buf[len-1] == NET_COMMON_CMD_END
  *    buf[1] < DEVICE_OUTDOOR_1       ← 来自室内机
@@ -236,7 +227,7 @@ static void raw_packet_handle(const uint8_t *buf, int len)
     uint8_t cmd     = buf[3];
     uint8_t arg0    = buf[4];
     uint8_t arg1    = buf[5];
-    /* buf[6] = sum，不验证（与原版一致）*/
+    /* buf[6] = sum，不验证*/
 
     /* buf[1] < DEVICE_OUTDOOR_1(7)：只处理来自室内机的帧 */
     if (src_dev == 0 || src_dev >= DEVICE_OUTDOOR_1) return;
@@ -245,11 +236,10 @@ static void raw_packet_handle(const uint8_t *buf, int len)
     uint8_t my_dev = get_local_dev();
     if (dst_dev != DEVICE_ALL && dst_dev != my_dev) return;
 
-    /* ---- 命令分发（对应原版 HandleFuncGroup[cmd].proc 调用）---- */
+    /* ---- 命令分发---- */
     switch ((NetCmdId)cmd) {
 
     /* ---- IdRepeatEvent (0x55)：心跳 ----
-     * 原版 IdRepeatEventFunc：
      *   每 1s 处理一次（DiffClockTimeMs > 1000）
      *   HeartCount 0→StreamStatusEvent 1→CompileTimeEvent 交替
      */
@@ -275,7 +265,6 @@ static void raw_packet_handle(const uint8_t *buf, int len)
     }
 
     /* ---- UnlockEvent (0x54)：远程开锁 ----
-     * 原版 UnlockEventFunc：
      *   UNLOCK_TIME = Arg[0]
      *   UNLOCK_TYPE = Arg[1] & 0x03
      *   语言索引    = (Arg[1] & 0x3C) >> 2
@@ -293,7 +282,6 @@ static void raw_packet_handle(const uint8_t *buf, int len)
     }
 
     /* ---- StreamStatusEvent (0x59)：流控/监控保活 ----
-     * 原版 StreamStatusEventFunc：
      *   KEY_FRAME_REQUEST    = !(Arg[0] & 0x01)
      *   LEAVE_MESSAGE_ENABLE = Arg[0] & 0x02
      *   LEAVE_MSG_VOICE_INDEX= LeaveMsgEng + (Arg[0] >> 2)
@@ -305,9 +293,9 @@ static void raw_packet_handle(const uint8_t *buf, int len)
             .sender_dev       = src_dev,
             .key_frame_req    = (uint8_t)(!(arg0 & 0x01)),
             .leave_msg_enable = (uint8_t)((arg0 & 0x02) >> 1),
-            .leave_msg_lang   = (uint8_t)(arg0 >> 2),      /* 原版 Arg[0]>>2 */
+            .leave_msg_lang   = (uint8_t)(arg0 >> 2),    
             .monitor_enable   = (uint8_t)((arg0 & 0x08) >> 3),
-            .audio_volume     = (uint8_t)((arg1) * 3 + 66),/* 原版 AUDIO_TALK_VOLUME */
+            .audio_volume     = (uint8_t)((arg1) * 3 + 66),
         };
         printf("[SvcNet] STREAM_STATUS kf=%d leave=%d(lang=%d) monitor=%d vol=%d\n",
                st.key_frame_req, st.leave_msg_enable, st.leave_msg_lang,
@@ -317,12 +305,10 @@ static void raw_packet_handle(const uint8_t *buf, int len)
     }
 
     /* ---- OutdoorTalkEvent (0x57)：室内机接听 ----
-     * 原版 OutdoorTalkEventFunc：
      *   CommCh = Arg[0]
      *   if (!TimerEnablestatus(CommunicateTimer) &&
      *       (DEVICE_OUTDOOR_1 + CommCh - 1) == NetLocalDeviceIDGet())
      *   → 进入通话
-     * 新版：发布事件，由 app_intercom 判断 CommCh 与本机 ID 的对应关系
      */
     case CMD_OUTDOOR_TALK: {
         NetCallArg ca = { .sender_dev = src_dev, .channel = arg0 };
@@ -332,8 +318,6 @@ static void raw_packet_handle(const uint8_t *buf, int len)
     }
 
     /* ---- OutdoorHangEvent (0x75)：挂断 ----
-     * 原版 OutdoorHangEventFunc：空实现（挂断靠超时）
-     * 新版：发布事件让 app_intercom 主动处理
      */
     case CMD_OUTDOOR_HANG:
         printf("[SvcNet] OUTDOOR_HANG from=0x%02X\n", src_dev);
@@ -341,7 +325,6 @@ static void raw_packet_handle(const uint8_t *buf, int len)
         break;
 
     /* ---- OutdoorResetEvent (0x65)：恢复出厂 ----
-     * 原版 OutdoorResetEventFunc：UserConfigReset()
      */
     case CMD_OUTDOOR_RESET:
         printf("[SvcNet] OUTDOOR_RESET from=0x%02X\n", src_dev);
@@ -349,11 +332,9 @@ static void raw_packet_handle(const uint8_t *buf, int len)
         break;
 
     /* ---- UpgraedOutdoorEvent (0x62)：固件升级 ----
-     * 原版 UpgraedOutdoorEventFunc（完整协议还原）：
-     *
      * UpgradeLongPack = (DataLen > 8)
      *   长包：
-     *     DP = &buf[4]（原版 Packet.Data.DP = &buf[4]）
+     *     DP = &buf[4]
      *     arg1_val = DP[0]<<24|DP[1]<<16|DP[2]<<8|DP[3]  ← 包序号
      *     arg2_val = DP[4]<<24|DP[5]<<16|DP[6]<<8|DP[7]  ← 数据长度
      *     data     = &DP[8]
@@ -400,7 +381,6 @@ static void raw_packet_handle(const uint8_t *buf, int len)
     }
 
     /* ---- MotionSensitivityEvent (0x63)：移动侦测灵敏度 ----
-     * 原版 MotionSensitivityEventFunc：
      *   SvpMdFiltersSet(SvpSensit[Sensitivity][0], SvpSensit[Sensitivity][1])
      */
     case CMD_MOTION_SENS: {
@@ -418,56 +398,33 @@ static void raw_packet_handle(const uint8_t *buf, int len)
         break;
 
     default:
-        /* 忽略（对应原版 HandleFuncGroup[cmd].proc == NULL 时跳过）*/
+        /* 忽略*/
         break;
     }
 }
 
 /* =========================================================
- *  NetMsgReceiveSockCreate（还原原版流程）
  *  创建接收 socket，设混杂模式，绑定网卡
- *  调用 drv_net_raw：NetRawPromiscuousSet / NetRawIfrBind
+ *  调用 drv_net_raw： NetRawIfrBind
  * ========================================================= */
 static int recv_sock_create(void)
 {
     int fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_CMD));
     if (fd < 0) { perror("[SvcNet] recv socket create failed"); return -1; }
 
-    /* 对应原版 PromiscuousModeConfig(NETWORK_INTERFACE_NAME) */
     if (NetRawPromiscuousSet(NET_IFACE) < 0) { close(fd); return -1; }
 
-    /* 对应原版 RawNetIfrBind(NetRecvFd, NETWORK_INTERFACE_NAME, ETH_P_CMD) */
     if (NetRawIfrBind(fd, NET_IFACE, ETH_P_CMD) < 0) { close(fd); return -1; }
 
     return fd;
 }
 
-/* =========================================================
- *  NetMsgReceiveThread（完整还原原版线程逻辑）
- *
- *  原版流程：
- *    NetMsgReceiveSockCreate()        ← 创建 socket
- *    while(1):
- *      NetworkCmdReceive(buf, size)   ← RawPacketReceive(fd, buf, size, 5000)
- *      if len > 0:
- *          EthReset = 0
- *          RawPacketHandle(buf, len)
- *      else if len==0 && EthReset==0:
- *          EthReset=1, eth down, usleep(1000), eth up, continue
- *      [ak timeval 看门狗：此处已由 svc_intercom_stream 的 TMR_INTERCOM_WATCHDOG 替代]
- *      usleep(1000)
- *    exit: close(fd)
- *
- *  NetworkCmdReceive = RawPacketReceive(fd, buf, size, 5000)
- *  → 由 drv_net_raw::NetRawPacketReceive 实现，已剥 MAC 头
- * ========================================================= */
 static void *net_recv_thread(void *arg)
 {
     (void)arg;
-    static uint8_t recv_buf[1024 + 73];  /* 与原版 RecvBuffer 大小一致 */
-    int eth_reset = 1;                    /* 原版 EthReset = 1 */
+    static uint8_t recv_buf[1024 + 73];  
+    int eth_reset = 1;                   
 
-    /* 对应原版 NetMsgReceiveSockCreate() */
     int fd = recv_sock_create();
     if (fd < 0) {
         printf("[SvcNet] recv sock create fail, thread exit\n");
@@ -489,7 +446,7 @@ static void *net_recv_thread(void *arg)
         memset(recv_buf, 0, sizeof(recv_buf));
 
         /* NetworkCmdReceive = RawPacketReceive(NetRecvFd, buf, size, 5000)
-         * drv_net_raw 内部已完成 MAC 头剥除（与原版 RawPacketReceive 行为一致）*/
+         * drv_net_raw 内部已完成 MAC 头剥除*/
         int recv_len = NetRawPacketReceive(fd, recv_buf, sizeof(recv_buf), 5000);
 
         if (recv_len > 0) {
@@ -497,7 +454,7 @@ static void *net_recv_thread(void *arg)
             eth_reset = 0;
             raw_packet_handle(recv_buf, recv_len);
         } else if (recv_len == 0 && eth_reset == 0) {
-            /* select 超时（0），且之前曾收到过数据 → 复位网口（原版逻辑）*/
+            /* select 超时（0），且之前曾收到过数据 → 复位网口*/
             eth_reset = 1;
             printf("[SvcNet] Raw Socket Receive Anomaly!!!\n");
             eth_interface_state(NET_IFACE, 0);
@@ -507,10 +464,10 @@ static void *net_recv_thread(void *arg)
         }
         /* recv_len < 0（错误）或 recv_len==0 且 eth_reset==1 → 继续等待 */
 
-        usleep(1000);   /* 原版 usleep(1000) */
+        usleep(1000);  
     }
 
-    /* exit 标签：关闭 socket（原版 goto exit 逻辑）*/
+    /* exit 标签：关闭 socket*/
     pthread_mutex_lock(&s_net.state_lock);
     s_net.recv_fd = -1;
     pthread_mutex_unlock(&s_net.state_lock);
@@ -519,9 +476,6 @@ static void *net_recv_thread(void *arg)
     return NULL;
 }
 
-/* =========================================================
- *  NetMsgSendSockCreate（还原原版，调用 drv_net_raw）
- * ========================================================= */
 static int send_sock_create(void)
 {
     int fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_CMD));
@@ -542,7 +496,7 @@ int SvcNetworkSend(const NetMsg *msg)
 
 /**
  * @brief 门铃通知（DoorbellEvent 0x56）
- * 原版：Data.Cmd=DoorbellEvent, Data.Arg1=status, Data.Arg2=key+1
+ * Data.Cmd=DoorbellEvent, Data.Arg1=status, Data.Arg2=key+1
  */
 void SvcNetworkDoorbellNotify(int key_index, int status)
 {
@@ -552,7 +506,6 @@ void SvcNetworkDoorbellNotify(int key_index, int status)
 
 /**
  * @brief 流状态应答（StreamStatusEvent 0x59，回复心跳 case 0）
- * 原版：
  *   Arg1 = (0<<2) | TimerEnablestatus(SVPTimer) | (TimerEnablestatus(CommunicateTimer)<<1)
  *   Arg2 = DOOR_CAMERA_MODEL
  */
@@ -566,7 +519,6 @@ void SvcNetworkStreamStatusSend(uint8_t svp_active, uint8_t comm_active)
 
 /**
  * @brief 版本信息（CompileTimeEvent 0x70，回复心跳 case 1）
- * 原版：
  *   ver = MAJOR*10000 + MINOR*100 + PATCH
  *   Arg1 = ver & 0xFF
  *   Arg2 = (ver >> 8) & 0xFF
@@ -605,14 +557,7 @@ uint8_t SvcNetworkLocalDeviceGet(void)
 }
 
 /* =========================================================
- *  SvcNetworkInit（还原原版 NetMsgCommInit）
- *
- *  原版：
- *    ifconfig eth0 IP netmask 255.255.255.0
- *    NetMsgReceiveTaskCreate()        ← 创建接收线程
- *    NetMsgSendSockCreate()           ← 创建发送 socket
- *    CreateCircularList(&NetCmdList)  ← 已删除（不再需要）
- *
+ *  SvcNetworkInit
  *  分层调用：
  *    recv_sock_create → NetRawPromiscuousSet + NetRawIfrBind（drv_net_raw）
  *    send_sock_create → socket()
@@ -635,7 +580,6 @@ int SvcNetworkInit(void)
     int sfd = send_sock_create();
     if (sfd < 0) return -1;
 
-    /* 对应原版 RawNetIfrAddrConfig(NetSendFd, NETWORK_INTERFACE_NAME, &LocalSll) */
     struct sockaddr_ll sll;
     if (NetRawIfrAddrConfig(sfd, NET_IFACE, &sll) < 0) {
         close(sfd); return -1;
