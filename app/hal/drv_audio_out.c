@@ -1,36 +1,6 @@
 /**
  * @file    drv_audio_out.c
- * @brief   音频输出驱动（原 AudioOutput.c 重写）
- *
- * ===================== 与原版对比 =====================
- *
- *  原版设计：
- *    AudioOutputThread → while(1) { AODataExport(弱函数) → 音量缩放 → ak_ao_send_frame }
- *    AODataExport / AODataFree 是弱函数，由 AudioPlay.c 重定义，挂接 CircularList 队列
- *    SetupAudioOutputArgument 是弱函数，由 AudioTransfer.c 重定义
- *
- *  新版设计：
- *    删除独立 AudioOutputThread：改由 svc_audio.c 的消费者线程主动调用 DrvAudioOutWrite()
- *    删除弱函数钩子：svc_audio.c 直接持有消息队列，不需要 AODataExport/Free 中转
- *    SetupAudioOutputArgument 弱函数 → 内部 static setup_params()（参数不变）
- *    atomic_int AudioVolume → pthread_mutex_t + int volume（互斥锁，无原子操作）
- *
- *  原版 AK AO API（实际存在的）：
- *    ak_ao_open()         打开 AO 设备
- *    ak_ao_send_frame()   写入 PCM 数据（对应原版直接 sendframe）
- *    ak_ao_get_buf_status()  获取缓冲区状态（AudioOutputRemainLen）
- *    ak_ao_close()        关闭
- *
- *  注意：ak_ao_start_play / ak_ao_stop_play 在 AK SDK 中不存在，
- *        原版直接 open 后就可以 send_frame，不需要额外 start。
- *
- * ===================== 参数来源 =====================
- *
- *  原版通过 AudioParam.c + #include "ak_common_audio.h" 定义，
- *  编译时 make.sh 调用 add_audio_param_file() 将其替换为实际参数。
- *
- *  为避免弱函数和外部文件依赖，这里将参数直接内联在 setup_params()，
- *  值与原版 ak_audio_config.h 中 default_ao_* 完全一致。
+ * @brief   音频输出驱动
  */
 #include "drv_audio_out.h"
 #include "ak_ao.h"
@@ -43,7 +13,7 @@
 /* =========================================================
  *  常量
  * ========================================================= */
-#define PCM_VOLUME_BUF_MAX  4096   /* 原版 #define PCM_SIZE_MAX 4096 */
+#define PCM_VOLUME_BUF_MAX  4096  
 
 /* =========================================================
  *  模块状态结构体
@@ -62,13 +32,13 @@ static DrvAudioOutCtx s_ao = {
 };
 
 /* =========================================================
- *  PCM 音量缩放（原 Pcm16bitVolumeCover，逻辑不变）
+ *  PCM 音量缩放
  *
  *  公式：dB 增益 = volume - 96，线性倍数 = 10^(dB/20)
  *  例：volume=90 → gain ≈ 0.501（轻微衰减）
  *      volume=96 → gain = 1.000（原始电平）
  *
- *  src 数据原地修改（in-place），与原版一致。
+ *  src 数据原地修改（in-place）。
  * ========================================================= */
 static void pcm_volume_scale(unsigned char *src, int size, int volume)
 {
@@ -93,16 +63,6 @@ static void pcm_volume_scale(unsigned char *src, int size, int volume)
 
 /* =========================================================
  *  音频参数设置
- *
- *  对应原版 SetupAudioOutputArgument 弱函数（被 AudioTransfer.c 重定义），
- *  参数完全对应原版 ak_audio_config.h 的 default_ao_* 值。
- *
- *  原版：
- *    ak_ao_set_nr_attr(HandleId, &default_ao_nr_attr);   {-40, 0, 1}
- *    ak_ao_set_aslc_attr(HandleId, &default_ao_aslc_attr); {16384, 8, 0}  ← 注意：原版是 {19660,0,0}，被 AudioTransfer 重定义为 {16384,8,0}
- *    ak_ao_set_eq_attr(HandleId, &default_ao_eq_attr);
- *    ak_ao_set_gain(HandleId, default_ao_gain);           = 2
- *    ak_ao_set_volume(HandleId, 3);                      ← 原 AudioOutput.c 的弱函数里也设置了 volume=3
  * ========================================================= */
 static void setup_params(int handle_id)
 {
@@ -144,15 +104,8 @@ static void setup_params(int handle_id)
  * ========================================================= */
 
 /**
- * @brief 初始化音频输出设备（对应原 AudioOutputInit → AudioOutputOpen）
- *
- * 原版 AudioOutputThread 调用流程：
- *   AudioOutputOpen()
- *     ak_ao_open(&AO.param, &AO.HandleId)
- *     SetupAudioOutputArgument(AO.HandleId)
- *   while(1): AODataExport → pcm_volume_scale → ak_ao_send_frame → AODataFree
- *
- * 新版：只做 open + setup，输出循环在 svc_audio.c 中
+ * @brief 初始化音频输出设备
+ *只做 open + setup，输出循环在 svc_audio.c 中
  */
 int DrvAudioOutInit(void)
 {
@@ -162,13 +115,11 @@ int DrvAudioOutInit(void)
         return 0;   /* 已初始化 */
     }
 
-    /* 原版 AO.param 的默认值 */
     s_ao.param.dev_id                    = DEV_ADC;
     s_ao.param.pcm_data_attr.sample_rate = AK_AUDIO_SAMPLE_RATE_16000;
     s_ao.param.pcm_data_attr.channel_num = AUDIO_CHANNEL_MONO;
     s_ao.param.pcm_data_attr.sample_bits = AK_AUDIO_SMPLE_BIT_16;
 
-    /* ak_ao_open：原版直接 open 后就可以 send_frame，无需 start_play */
     if (ak_ao_open(&s_ao.param, &s_ao.handle_id) != 0) {
         printf("[DrvAudioOut] ak_ao_open fail\n");
         s_ao.handle_id = -1;
@@ -176,7 +127,6 @@ int DrvAudioOutInit(void)
         return -1;
     }
 
-    /* 对应原版 SetupAudioOutputArgument(AO.HandleId) */
     setup_params(s_ao.handle_id);
 
     pthread_mutex_unlock(&s_ao.lock);
@@ -185,13 +135,8 @@ int DrvAudioOutInit(void)
 }
 
 /**
- * @brief 写入 PCM 帧（对应原版 AudioOutputThread 里的核心循环体）
+ * @brief 写入 PCM 帧
  *
- * 原版：
- *   Pcm16bitVolumeCover(Frame->Data, Frame->Len, AO.AudioVolume);
- *   ak_ao_send_frame(AO.HandleId, Frame->Data, Frame->Len, NULL);
- *
- * 新版：
  *   pcm_volume_scale(data, len, volume);   ← 同 Pcm16bitVolumeCover
  *   ak_ao_send_frame(handle, data, len, NULL);  ← 完全一致
  *
@@ -206,26 +151,19 @@ int DrvAudioOutWrite(unsigned char *data, unsigned int len)
 
     if (handle < 0 || !data || len == 0) return -1;
 
-    /* 原地音量缩放（对应原版 Pcm16bitVolumeCover）*/
+    /* 原地音量缩放*/
     pcm_volume_scale(data, (int)len, vol);
 
-    /* 写入 AK AO 硬件（对应原版 ak_ao_send_frame(AO.HandleId, Frame->Data, Frame->Len, NULL)）*/
+    /* 写入 AK AO 硬件（*/
     return ak_ao_send_frame(s_ao.handle_id, data, (int)len, NULL);
 }
 
 /**
- * @brief 设置音量（对应原版 AudioOutputVolumeSet）
- *
- * 原版：
- *   if (volume <= 0 || volume == 100) return;
- *   if (volume == atomic_load(&AO.AudioVolume)) return;
- *   atomic_store(&AO.AudioVolume, volume);
- *
- * 新版：用互斥锁替代原子操作，逻辑完全对应。
+ * @brief 设置音量
  */
 void DrvAudioOutSetVolume(int volume)
 {
-    /* 对应原版：volume<=0 或 volume==100 直接返回 */
+    /* volume<=0 或 volume==100 直接返回 */
     if (volume <= 0 || volume == 100) return;
 
     pthread_mutex_lock(&s_ao.lock);
@@ -234,12 +172,7 @@ void DrvAudioOutSetVolume(int volume)
 }
 
 /**
- * @brief 查询 AO 缓冲区剩余数据量（对应原版 AudioOutputRemainLen）
- *
- * 原版：
- *   struct ak_dev_buf_status Status;
- *   ak_ao_get_buf_status(AO.HandleId, &Status);
- *   return Status.buf_remain_len;
+ * @brief 查询 AO 缓冲区剩余数据量
  */
 int DrvAudioOutRemainLen(void)
 {

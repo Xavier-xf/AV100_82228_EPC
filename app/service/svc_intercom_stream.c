@@ -1,6 +1,6 @@
 /**
  * @file    svc_intercom_stream.c
- * @brief   对讲媒体流服务（消息队列 + 互斥锁，无原子操作）
+ * @brief   对讲媒体流服务
  */
 #include "svc_intercom_stream.h"
 #include "svc_timer.h"
@@ -166,8 +166,7 @@ static int video_net_port(uint8_t dev_id)
     return (int)(VIDEO_NET_PROTO_BASE | ((dev_id - 1) & 0x0Fu));
 }
 
-/* ★ 音频协议号用本机 ID，与旧版 AudioNetSocketProtocolSet(localDevId) 一致
- * 旧版：NetAudioProtocol = 0x2600 | ((localId-1)<<4) | (localId-1)
+/* ★ 音频协议号用本机 ID
  * 例：本机 ID=0x07 → proto = 0x2666 */
 static int open_audio_tx_socket(void)
 {
@@ -212,7 +211,7 @@ static int open_audio_rx_socket(void)
     return fd;
 }
 
-/* ★ 视频端口用本机 ID，与旧版 NetVideoProtocol = 0x1600|(localId-1) 一致
+/* ★ 视频端口用本机 ID
  * 例：本机 ID=0x07 → port = 0x1606 */
 static int open_video_tx_socket(void)
 {
@@ -239,7 +238,7 @@ static int open_video_tx_socket(void)
 }
 
 /* =========================================================
- *  网络发包（协议与原版完全兼容）
+ *  网络发包
  * ========================================================= */
 #define AUDIO_PAYLOAD_OFFSET 60
 #define AUDIO_HDR_LEN        17
@@ -247,13 +246,13 @@ static int open_video_tx_socket(void)
 
 static void net_audio_send(int fd, const uint8_t *alaw, uint32_t alaw_size)
 {
-    /* 缓冲区布局（完全对应原版 NetAudioPackageSend）：
+    /* 缓冲区布局：
      *   buf[0..59]  = 以太网 MAC 头（由 NetRawPacketHead 每包填充）
      *   buf[60..76] = 音频起始码(4B) + 帧总大小(4B) + PTS(4B) + 帧序号(4B) + 帧类型(1B)
      *   buf[77..]   = G711 alaw 音频数据
      * 后续分片：
      *   buf[0..59]  = MAC 头（重新填充）
-     *   buf[60..]   = 剩余音频数据（无起始码，对应原版）
+     *   buf[60..]   = 剩余音频数据
      */
     static uint8_t *buf = NULL;
     if (!buf) { buf = malloc(AUDIO_PKG_MAX); if (!buf) return; }
@@ -271,12 +270,12 @@ static void net_audio_send(int fd, const uint8_t *alaw, uint32_t alaw_size)
     uint32_t remain = alaw_size, sent = 0;
     int first = 1;
     while (remain > 0) {
-        /* 每包均重新填充 MAC 头（对应原版每次循环调用 RawPacketHead）*/
+        /* 每包均重新填充 MAC 头*/
         NetRawPacketHead(buf, NET_IFACE, proto);
 
         if (first) {
             first = 0;
-            /* 音频起始码 + 帧头（偏移 60，对应原版 buf[60..76]）*/
+            /* 音频起始码 + 帧头（偏移 60）*/
             memcpy(&buf[AUDIO_PAYLOAD_OFFSET], AUDIO_START_CODE, 4);
             buf[AUDIO_PAYLOAD_OFFSET+4]=(uint8_t)((alaw_size>>24)&0xFF);
             buf[AUDIO_PAYLOAD_OFFSET+5]=(uint8_t)((alaw_size>>16)&0xFF);
@@ -299,7 +298,7 @@ static void net_audio_send(int fd, const uint8_t *alaw, uint32_t alaw_size)
                    (struct sockaddr *)&addr, sizeof(addr));
             sent += copy; remain -= copy;
         } else {
-            /* 后续分片：直接发剩余数据，无起始码（对应原版后续包逻辑）*/
+            /* 后续分片：直接发剩余数据，无起始码*/
             uint32_t copy = remain;
             if (copy > (uint32_t)(AUDIO_PKG_MAX - AUDIO_PAYLOAD_OFFSET))
                 copy = (uint32_t)(AUDIO_PKG_MAX - AUDIO_PAYLOAD_OFFSET);
@@ -382,33 +381,15 @@ static void *audio_tx_thread(void *arg)
 }
 
 /**
- * @brief 对讲音频接收处理（对应原版 AudioReceiveHandle）
- *
- * 原版问题背景（AudioTransfer.c 注释）：
- *   "数据丢入AO存在延时，延时时长可能比音频数据持续时长还长，
- *    可能导致播放时出现断续，因此将数据缓存起来，达到一定大小后丢入，
- *    减少丢入次数和延时时间。AO每次最大数据为4096，
- *    网络接收为G711，需要解压，解压后大小*2"
- *
- * 原版：
- *   #define AUDIO_FRAME_SIZE 2048
- *   static unsigned int  AlawSize = 0;
- *   static unsigned char AlawBuffer[AUDIO_FRAME_SIZE];
- *   if (AlawSize + Framesize >= AUDIO_FRAME_SIZE):
- *       alaw_to_pcm16(AlawSize, AlawBuffer, pcm)
- *       push pcm (AlawSize*2 字节) 到 AO
- *       AlawSize = 0
- *   memcpy(&AlawBuffer[AlawSize], alaw, Framesize)
- *   AlawSize += Framesize
- *
+ * @brief 对讲音频接收处理
  * 关键：累积满 2048 字节 G711（= 4096 字节 PCM）再一次性丢入 AO，
  * 而不是每包立即解码，避免 AO 每次写入量太小导致音频断续。
  */
-#define INTERCOM_ALAW_ACCUM_SIZE  2048   /* 对应原版 AUDIO_FRAME_SIZE */
+#define INTERCOM_ALAW_ACCUM_SIZE  2048   
 
 static void audio_rx_handle(const uint8_t *alaw, uint32_t alaw_size)
 {
-    /* 静态积累缓冲（对应原版 AlawBuffer / AlawSize）*/
+    /* 静态积累缓冲*/
     static unsigned char accum_buf[INTERCOM_ALAW_ACCUM_SIZE];
     static unsigned int  accum_len = 0;
 
@@ -426,7 +407,7 @@ static void audio_rx_handle(const uint8_t *alaw, uint32_t alaw_size)
         accum_len += to_copy;
         offset    += to_copy;
 
-        /* 累积满 2048 字节（原版 AlawSize + Framesize >= AUDIO_FRAME_SIZE）*/
+        /* 累积满 2048 字节*/
         if (accum_len >= INTERCOM_ALAW_ACCUM_SIZE) {
             uint32_t pcm_len = accum_len * 2;   /* G711→PCM 大小翻倍 */
             if (pcm_len > AUDIO_MSG_PCM_MAX) pcm_len = AUDIO_MSG_PCM_MAX;
@@ -438,7 +419,7 @@ static void audio_rx_handle(const uint8_t *alaw, uint32_t alaw_size)
             alaw_to_pcm16(accum_len, (const char *)accum_buf, (char *)msg.pcm);
 
             if (msgsnd(mqid, &msg, AUDIO_RX_BODY, IPC_NOWAIT) < 0) {
-                /* 队列满丢弃（对应原版 AudioFrameCache[i].Data != NULL 返回 -1）*/
+                /* 队列满丢弃*/
             }
             accum_len = 0;
         }
@@ -458,8 +439,8 @@ static void *audio_rx_thread(void *arg)
         pthread_mutex_unlock(&s_stm.lock);
         if (!active || fd < 0) { usleep(10*1000); continue; }
 
-        /* 使用 NetRawPacketReceive 接收（自动剥除 MAC 头，对应原版 RawPacketReceive）
-         * 返回有效载荷长度，timeout=5ms（对应原版 RawPacketReceive timeout=5）*/
+        /* 使用 NetRawPacketReceive 接收
+         * 返回有效载荷长度，timeout=5ms*/
         int len = NetRawPacketReceive(fd, recv_buf, sizeof(recv_buf), 5);
         if (len <= 0) continue;
 
@@ -746,7 +727,7 @@ void SvcIntercomStreamRefresh(const void *status)
 
 void SvcIntercomStreamSetVolume(uint8_t raw_vol)
 {
-    /* raw_vol 是原始网络参数（未换算），此处换算一次（对应旧版 AUDIO_TALK_VOLUME）*/
+    /* raw_vol 是原始网络参数（未换算），此处换算一次*/
     DrvAudioOutSetVolume((int)raw_vol * 3 + 66);
 }
 
