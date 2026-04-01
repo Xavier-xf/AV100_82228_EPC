@@ -97,6 +97,10 @@ void SvcIntercomStreamSetVolume(uint8_t raw_vol);
  */
 void SvcIntercomStreamRequestKeyFrame(void);
 
+/**
+ * @brief 将当前流从监控模式升级为通话模式（开启双向音频）
+ */
+void SvcIntercomStreamUpgradeToTalk(void);
 
 /**
  * @brief 初始化流服务（在 main 中调用，仅一次）

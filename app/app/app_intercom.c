@@ -51,9 +51,7 @@ static void enter_stream(IntercomState new_state, uint8_t peer_dev)
         pthread_mutex_unlock(&s_icom.lock);
 
         printf("[AppIntercom] upgrade MONITORING → TALKING peer=0x%02X\n", peer_dev);
-        /* 切换流模式为双向通话 */
-        SvcIntercomStreamStop();
-        SvcIntercomStreamStart(STREAM_MODE_TALK, peer_dev);
+        SvcIntercomStreamUpgradeToTalk();
         return;
     }
 
@@ -113,7 +111,6 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
     (void)id; (void)len;
     const NetStreamStatus *st = (const NetStreamStatus *)arg;
     IntercomState cur = AppIntercomGetState();
-DrvGpioKey1LightSet(1);   
     if (st->leave_msg_enable) {
         /* 留言提示音：跟室内机设置的语言走（原版 LeaveMsgEng + (arg0>>2)）*/
         static struct timespec last_leave_time = {0};

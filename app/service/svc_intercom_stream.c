@@ -728,7 +728,16 @@ int SvcIntercomStreamStop(void)
 }
 
 int SvcIntercomStreamActive(void) { return get_active(); }
-
+void SvcIntercomStreamUpgradeToTalk(void)
+{
+    pthread_mutex_lock(&s_stm.lock);
+    s_stm.mode = STREAM_MODE_TALK;
+    pthread_mutex_unlock(&s_stm.lock);
+    
+    DrvAudioInStart();
+    DrvGpioAmpEnable();
+    printf("[SvcStream] upgraded to TALK mode\n");
+}
 void SvcIntercomStreamRefresh(const void *status)
 {
     const NetStreamStatus *s = (const NetStreamStatus *)status;

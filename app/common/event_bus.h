@@ -76,7 +76,7 @@ typedef enum
     EVT_FINGERPRINT_VERIFIED, /* Arg: int* perm  验证通过       */
     EVT_FINGERPRINT_ENROLLED, /* Arg: int* slot  录入完成       */
     EVT_FINGERPRINT_ERROR,    /* Arg: NULL  操作失败            */
-EVT_MOTION_DETECTED,
+    EVT_MOTION_DETECTED,
     /* --- 固件升级（预留扩展点，当前无订阅方）--- */
     /* 说明：
      *   升级失败 → app_upgrade.c 直接调用 SvcNetworkUpgradeReply(FAIL)，无需事件
