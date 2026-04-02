@@ -25,6 +25,8 @@ stddef.h
 ../app/hal/drv_audio_in.h
 
 ../app/hal/drv_audio_out.h
+stdbool.h
+-
 
 ../app/hal/drv_gpio.h
 
@@ -275,6 +277,8 @@ stdio.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.h
+stdbool.h
+-
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio.c
 drv_gpio.h

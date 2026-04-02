@@ -97,25 +97,44 @@ static void *audio_output_thread(void *arg)
 {
     (void)arg;
     AudioOutMsg msg;
+    /* 用于检测"播放结束"：有过数据且队列+AO缓冲均空才触发 restart */
+    int  played_since_restart = 0;
     printf("[SvcAudio] output thread start\n");
 
     while (1) {
         int mqid = get_mqid();
         if (mqid < 0) { usleep(10 * 1000); continue; }
 
-        /* ★ mtype=-2：优先取 mtype 最小的（VOICE=1 优先于 INTERCOM=2）
-         * 阻塞等待，播放节奏最平滑 */
-        ssize_t ret = msgrcv(mqid, &msg, MSG_BODY_SIZE, -MTYPE_INTERCOM, 0);
-        if (ret <= 0) { usleep(1000); continue; }
-        if (msg.len == 0) continue;
+        /* 非阻塞取帧：mtype=-MTYPE_INTERCOM 保证 VOICE(1) 优先于 INTERCOM(2) */
+        ssize_t ret = msgrcv(mqid, &msg, MSG_BODY_SIZE, -MTYPE_INTERCOM, IPC_NOWAIT);
+        if (ret > 0 && msg.len > 0) {
+            played_since_restart = 1;
 
-        DrvGpioAmpEnable();
-        if (SvcTimerActive(TMR_AMP_OFF))
-            SvcTimerRefresh(TMR_AMP_OFF, AMP_OFF_DELAY_MS);
-        else
-            SvcTimerSet(TMR_AMP_OFF, AMP_OFF_DELAY_MS, on_amp_off, NULL);
+            DrvGpioAmpEnable();
+            if (SvcTimerActive(TMR_AMP_OFF))
+                SvcTimerRefresh(TMR_AMP_OFF, AMP_OFF_DELAY_MS);
+            else
+                SvcTimerSet(TMR_AMP_OFF, AMP_OFF_DELAY_MS, on_amp_off, NULL);
 
-        DrvAudioOutWrite(msg.pcm, msg.len);
+            DrvAudioOutWrite(msg.pcm, msg.len);
+        } else {
+            /* 队列空：等 AO 硬件缓冲也排空后做轻量级 restart，
+             * 防止 AO 长时间打开导致内部缓存积累出错 */
+            if (played_since_restart && DrvAudioOutRemainLen() == 0) {
+                DrvAudioOutRestart();
+                played_since_restart = 0;
+                printf("[SvcAudio] ao restarted after playback done\n");
+            }
+            usleep(5 * 1000);   /* 5 ms，控制轮询频率 */
+        }
+
+        /* 溢出检测：缓冲区状态异常时完整重启 AO（close + open）*/
+        if (DrvAudioOutIsOverflow()) {
+            printf("[SvcAudio] ao overflow, reinit\n");
+            DrvAudioOutDeinit();
+            DrvAudioOutInit();
+            played_since_restart = 0;
+        }
     }
     return NULL;
 }

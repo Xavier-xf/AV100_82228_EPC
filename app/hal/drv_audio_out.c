@@ -115,7 +115,7 @@ int DrvAudioOutInit(void)
         return 0;   /* 已初始化 */
     }
 
-    s_ao.param.dev_id                    = DEV_ADC;
+    s_ao.param.dev_id                    = DEV_DAC;
     s_ao.param.pcm_data_attr.sample_rate = AK_AUDIO_SAMPLE_RATE_16000;
     s_ao.param.pcm_data_attr.channel_num = AUDIO_CHANNEL_MONO;
     s_ao.param.pcm_data_attr.sample_bits = AK_AUDIO_SMPLE_BIT_16;
@@ -185,6 +185,43 @@ int DrvAudioOutRemainLen(void)
     struct ak_dev_buf_status st;
     ak_ao_get_buf_status(handle, &st);
     return st.buf_remain_len;
+}
+
+/**
+ * @brief 轻量级重启 AO
+ *
+ * 先 cancel（立即停止播放并清空硬件缓冲），再 restart（恢复运行）。
+ * 不关闭设备，避免反复 open/close 带来的延迟。
+ * 在播放结束后调用，防止 AO 缓冲区长时间积累。
+ */
+void DrvAudioOutRestart(void)
+{
+    pthread_mutex_lock(&s_ao.lock);
+    if (s_ao.handle_id >= 0) {
+        ak_ao_cancel(s_ao.handle_id);
+        ak_ao_restart(s_ao.handle_id);
+    }
+    pthread_mutex_unlock(&s_ao.lock);
+}
+
+/**
+ * @brief 检测 AO 缓冲区是否异常溢出
+ *
+ * buf_remain_len > buf_total_len << 1 表示缓冲区处于异常状态
+ * （正常情况下 remain_len 不会超过 total_len）。
+ * 检测到溢出时，上层应调用 DrvAudioOutDeinit + DrvAudioOutInit 完整重启。
+ */
+bool DrvAudioOutIsOverflow(void)
+{
+    pthread_mutex_lock(&s_ao.lock);
+    int handle = s_ao.handle_id;
+    pthread_mutex_unlock(&s_ao.lock);
+
+    if (handle < 0) return false;
+
+    struct ak_dev_buf_status st;
+    if (ak_ao_get_buf_status(handle, &st) != 0) return false;
+    return st.buf_remain_len > (st.buf_total_len << 1);
 }
 
 int DrvAudioOutDeinit(void)
