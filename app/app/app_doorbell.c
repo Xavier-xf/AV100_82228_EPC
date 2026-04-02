@@ -127,13 +127,13 @@ static void on_call_key_for_light(EventId id, const void *arg, size_t len)
     else if (key_idx == 1) DrvGpioKey2LightSet(1);
 }
 
-static void on_call_end_for_light(EventId id, const void *arg, size_t len)
-{
-    (void)id; (void)arg; (void)len;
-    /* 通话/监控结束，熄灭所有呼叫灯 */
-    DrvGpioKey1LightSet(0);
-    DrvGpioKey2LightSet(0);
-}
+// static void on_call_end_for_light(EventId id, const void *arg, size_t len)
+// {
+//     (void)id; (void)arg; (void)len;
+//     /* 通话/监控结束，熄灭所有呼叫灯 */
+//     DrvGpioKey1LightSet(0);
+//     DrvGpioKey2LightSet(0);
+// }
 
 /* =========================================================
  *  初始化
@@ -145,7 +145,7 @@ int AppDoorbellInit(void)
 
     /* 订阅通话/监控结束事件，熄灭按键灯 */
     EventBusSubscribe(EVT_CALL_KEY_PRESSED, on_call_key_for_light);
-    EventBusSubscribe(EVT_NET_CALL_END,     on_call_end_for_light);
+    // EventBusSubscribe(EVT_NET_CALL_END,     on_call_end_for_light);
 
     printf("[AppDoorbell] init ok\n");
     return 0;

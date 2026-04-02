@@ -41,7 +41,7 @@
 #define VIDEO_BCAST_ADDR       "255.255.255.255"
 #define MQ_KEY_AUDIO_TX        ((key_t)0xDA01)
 #define MQ_KEY_AUDIO_RX        ((key_t)0xDA02)
-#define MQ_KEY_VIDEO_TX        ((key_t)0xDA03)   /* 修复：0xDV01 不是合法十六进制 */
+#define MQ_KEY_VIDEO_TX        ((key_t)0xDA03)  
 #define AUDIO_MSG_PCM_MAX      4096
 #define VIDEO_POOL_SLOTS       4
 #define VIDEO_FRAME_MAX        (128 * 1024)
@@ -653,8 +653,8 @@ int SvcIntercomStreamStart(StreamMode mode, uint8_t peer_dev_id)
     s_stm.active = 1;
     pthread_mutex_unlock(&s_stm.lock);
 
-    DrvAudioInStart();
     DrvVideoInStart();
+    DrvAudioInStart();
     SvcTimerSet(TMR_INTERCOM_WATCHDOG, STREAM_WATCHDOG_MS, on_stream_watchdog, NULL);
 
     printf("[SvcStream] started ok\n");

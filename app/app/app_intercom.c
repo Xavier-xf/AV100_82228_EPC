@@ -68,6 +68,10 @@ static void enter_stream(IntercomState new_state, uint8_t peer_dev)
                     ? STREAM_MODE_TALK : STREAM_MODE_MONITOR;
     printf("[AppIntercom] enter state=%d mode=%d peer=0x%02X\n",
            new_state, mode, peer_dev);
+
+    DrvGpioKey1LightSet(1);
+    DrvGpioKey2LightSet(1);
+    SvcTimerStop(TMR_CALL_BUSY);
     SvcIntercomStreamStart(mode, peer_dev);
 }
 
@@ -77,9 +81,10 @@ static void exit_stream(void)
     if (s_icom.state == INTERCOM_STATE_IDLE) { pthread_mutex_unlock(&s_icom.lock); return; }
     s_icom.state = INTERCOM_STATE_IDLE;
     pthread_mutex_unlock(&s_icom.lock);
-
     printf("[AppIntercom] exit → IDLE\n");
     SvcIntercomStreamStop();
+    DrvGpioKey1LightSet(0);
+    DrvGpioKey2LightSet(0);
 }
 
 /* ---- 事件回调 ---- */
@@ -115,7 +120,7 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
         clock_gettime(CLOCK_MONOTONIC, &now);
         long diff_ms = (long)(now.tv_sec  - last_leave_time.tv_sec)  * 1000
                      + (long)(now.tv_nsec - last_leave_time.tv_nsec) / 1000000;
-        if (diff_ms > 3000) {
+        if (diff_ms > 4000) {
             /* leave_msg_lang 由室内机在 arg0>>2 位传入 */
             int lang_idx = st->leave_msg_lang;
             VoiceId vid = (VoiceId)(VOICE_LeaveMsgEng + lang_idx);
@@ -124,13 +129,13 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
         last_leave_time = now;
         printf("last_leave_time.tv_sec=%ld,last_leave_time.tv_nsec=%ld\n",last_leave_time.tv_sec,last_leave_time.tv_nsec);
     }
+    if (cur == INTERCOM_STATE_IDLE) {
+        enter_stream(INTERCOM_STATE_MONITORING, st->sender_dev);
+    }
     if (cur == INTERCOM_STATE_TALKING || cur == INTERCOM_STATE_MONITORING) {
         SvcIntercomStreamRefresh(st);
         if (st->key_frame_req) SvcIntercomStreamRequestKeyFrame();
         return;
-    }
-    if (cur == INTERCOM_STATE_IDLE) {
-        enter_stream(INTERCOM_STATE_MONITORING, st->sender_dev);
     }
 }
 
@@ -154,7 +159,6 @@ static void on_heartbeat_send(EventId id, const void *arg, size_t len)
 
 static void on_call_key_for_network(EventId id, const void *arg, size_t len)
 {
-    DrvGpioKeypadLightSet(1);   /* 通话中再按键→保持高亮 */
     (void)id; (void)len;
     int key_idx = *(const int *)arg;
     int security = SvcTimerActive(TMR_SECURITY_TRIGGER) ? 0 : 1;
