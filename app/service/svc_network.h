@@ -36,6 +36,10 @@ void    SvcNetworkVersionSend(void);
 /** @brief 升级应答（UpgraedOutdoorEvent 0x62，arg1: 1=在线 2=开始 3=失败）*/
 void    SvcNetworkUpgradeReply(uint8_t dst_dev, uint8_t arg1, uint8_t arg2);
 
+/** @brief 移动侦测通知室内机（MotionDelectEvent 0x61）
+ *   SVP 检测到人形/运动时调用，通知所有室内机触发推送等处理 */
+void    SvcNetworkMotionDetectNotify(void);
+
 /* =========================================================
  *  设备 ID
  * ========================================================= */

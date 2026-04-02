@@ -24,36 +24,17 @@
  *
  * ===================== 对外事件 =====================
  *
- *  EVT_MOTION_DETECTED：检测到人形/运动时发布
- *    Arg: SvpDetectResult*（total=0 表示仅运动无人形）
+ *  EVT_SVP_MOTION_DETECTED：检测到人形/运动时发布
+ *    Arg: SvpMotionEvent*（event_bus.h，total=0 表示仅运动无人形）
+ *    同时发送 CMD_MOTION_DETECT(0x61) 网络通知给所有室内机
  *
  *  TMR_SVP_ACTIVE：检测到目标后激活 3s（原 SVPTimer）
- *    供 svc_network 心跳帧填写 svp_active 标志位
+ *    供 svc_network 心跳帧填写 svp_active 标志位（SvcSvpIsActive）
  */
 #ifndef _SVC_SVP_H_
 #define _SVC_SVP_H_
 
 #include "drv_video_in.h"
-#include "ak_svp.h"   /* AK_SVP_RECT_T */
-
-/* =========================================================
- *  SVP 检测结果结构体
- *  EventBus 事件 EVT_MOTION_DETECTED 的参数类型
- *  对应旧版 SmartVisionPlatformCallback(int Total, AK_SVP_RECT_T *Src)
- * ========================================================= */
-#define SVP_DETECT_BOX_MAX  10
-
-typedef struct {
-    int           total;                       /* 检测到的目标数（0=无目标）*/
-    struct {
-        unsigned long left;
-        unsigned long top;
-        unsigned long right;
-        unsigned long bottom;
-        int           is_face;   /* 0=人体 1=人脸 */
-    } boxes[SVP_DETECT_BOX_MAX];
-} SvpDetectResult;
-
 
 /**
  * @brief 送入一帧视频（由 drv_video_in 回调调用，仅处理第三路小分辨率帧）

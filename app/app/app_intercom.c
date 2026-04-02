@@ -150,11 +150,15 @@ static void on_heartbeat_send(EventId id, const void *arg, size_t len)
 {
     (void)id; (void)arg; (void)len;
     IntercomState cur = AppIntercomGetState();
+    /* svp_active  = SVP 近期有检测（TMR_SVP_ACTIVE 活跃）
+     *               对应参考代码 TimerEnablestatus(SVPTimer)，bit0 of Arg1
+     * comm_active = 当前正在通话
+     *               对应参考代码 TimerEnablestatus(CommunicateTimer)，bit1 of Arg1
+     * svc_network.c 已在 heart_count==1 时直接调用 SvcNetworkVersionSend()，
+     * 此处无需重复发送版本信息。 */
     SvcNetworkStreamStatusSend(
-        SvcTimerActive(TMR_INTERCOM_WATCHDOG) ? 1 : 0,
-        (cur == INTERCOM_STATE_TALKING) ? 1 : 0);
-    static int toggle = 0;
-    if ((toggle ^= 1)) SvcNetworkVersionSend();
+        (uint8_t)(SvcSvpIsActive() ? 1 : 0),
+        (uint8_t)((cur == INTERCOM_STATE_TALKING) ? 1 : 0));
 }
 
 static void on_call_key_for_network(EventId id, const void *arg, size_t len)

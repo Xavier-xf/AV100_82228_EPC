@@ -542,6 +542,16 @@ void SvcNetworkUpgradeReply(uint8_t dst_dev, uint8_t arg1, uint8_t arg2)
            dst_dev, arg1, arg2);
 }
 
+/**
+ * @brief 移动侦测通知（MotionDelectEvent CMD_MOTION_DETECT 0x61）
+ *   SVP 检测到人形/运动时向所有室内机广播，室内机据此触发 APP 推送等。
+ *   对应旧版 SmartVisionPlatformCallback 触发后由上层发送的通知包。
+ */
+void SvcNetworkMotionDetectNotify(void)
+{
+    net_msg_send(DEVICE_ALL, CMD_MOTION_DETECT, 0, 0);
+}
+
 void SvcNetworkLocalDeviceSet(uint8_t dev_id)
 {
     pthread_mutex_lock(&s_net.state_lock);

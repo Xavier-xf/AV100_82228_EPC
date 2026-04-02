@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 
         /* SVP 人形检测（第三路 320×180）*/
     /* 第三路通道数据类型 VI_DATA_TYPE_RGB_LINEINTL（对应 VideoTransfer.c 配置）*/
-    // INIT_MODULE(SvcSvpInit(320, 180, 0, VI_DATA_TYPE_RGB_LINEINTL));
+    INIT_MODULE(SvcSvpInit(320, 180, 0, VI_DATA_TYPE_RGB_LINEINTL));
 
 
     /* 对讲音视频流（对应原版 NetVideoTransferInit + NetAudioTransferInit）

@@ -21,6 +21,7 @@
 
 #include "svc_svp.h"
 #include "svc_timer.h"
+#include "svc_network.h"
 #include "event_bus.h"
 #include "drv_motion_detect.h"
 
@@ -117,52 +118,69 @@ static void compute_iou2(SvpBox a, SvpBox b, double *r_iou_a, double *r_iou_b)
  *  发布检测结果（原 SmartVisionPlatformCallback 逻辑）
  *
  *  原版中：
- *    - ak_vi_draw_box()  → 在视频帧上画框（保留，属于视频渲染，在此层调用）
+ *    - ak_vi_draw_box()   → 在视频帧上画框（保留，属于视频渲染，在此层调用）
  *    - SetTimer(SVPTimer) → SvcTimerSet(TMR_SVP_ACTIVE, 3000)
- *    - 用户可重定义此函数 → 改为 EventBusPublish
+ *    - 用户可重定义此函数 → 改为 EventBusPublish(EVT_SVP_MOTION_DETECTED)
+ *    - 同时发送网络通知  → SvcNetworkMotionDetectNotify() (CMD_MOTION_DETECT 0x61)
  * ========================================================= */
 static void dispatch_detection(int total, const AK_SVP_OUTPUT_T *output)
 {
-    SvpDetectResult result;
-    memset(&result, 0, sizeof(result));
-    result.total = (total > SVP_DETECT_BOX_MAX) ? SVP_DETECT_BOX_MAX : total;
+    SvpMotionEvent evt;
+    memset(&evt, 0, sizeof(evt));
+    evt.total = total;
+
+    struct ak_vi_box_group box_info;
+    memset(&box_info, 0, sizeof(box_info));
+    box_info.draw_frame_num = -1;
 
     if (total > 0 && output) {
-        /* 画框（视频显示，HAL 层操作）*/
-        struct ak_vi_box_group box_info;
-        memset(&box_info, 0, sizeof(box_info));
-        box_info.draw_frame_num = -1;
+        evt.boxes_valid = 1;
 
         pthread_mutex_lock(&s_svp.lock);
         int chn_w = s_svp.chn_w;
         int chn_h = s_svp.chn_h;
         pthread_mutex_unlock(&s_svp.lock);
 
-        for (int i = 0; i < result.total; i++) {
+        /* SvpMotionEvent.boxes 容量为 4，超出部分只画框不填事件 */
+        for (int i = 0; i < total; i++) {
             const AK_SVP_RECT_T *src = &output->target_boxes[i];
-            /* 坐标从第三路分辨率映射到主通道分辨率（原 RectMap 逻辑）*/
-            box_info.box[i].left   = (int)((long)src->left   * 1920 / chn_w);
-            box_info.box[i].top    = (int)((long)src->top    * 1080 / chn_h);
-            box_info.box[i].width  = (int)((long)(src->right  - src->left) * 1920 / chn_w);
-            box_info.box[i].height = (int)((long)(src->bottom - src->top)  * 1080 / chn_h);
-            box_info.box[i].enable    = 1;
-            box_info.box[i].color_id  = (int)src->label;
-            box_info.box[i].line_width = 2;
+            /* 坐标从第三路分辨率映射到主通道 1920×1080（原 RectMap 逻辑）*/
+            int x = (int)((long)src->left  * 1920 / chn_w);
+            int y = (int)((long)src->top   * 1080 / chn_h);
+            int w = (int)((long)(src->right  - src->left) * 1920 / chn_w);
+            int h = (int)((long)(src->bottom - src->top)  * 1080 / chn_h);
 
-            result.boxes[i].left   = src->left;
-            result.boxes[i].top    = src->top;
-            result.boxes[i].right  = src->right;
-            result.boxes[i].bottom = src->bottom;
-            result.boxes[i].is_face = (src->label != AK_SVP_HUMAN_SHAPE) ? 1 : 0;
+            if (i < (int)(sizeof(box_info.box) / sizeof(box_info.box[0]))) {
+                box_info.box[i].left      = x;
+                box_info.box[i].top       = y;
+                box_info.box[i].width     = w;
+                box_info.box[i].height    = h;
+                box_info.box[i].enable    = 1;
+                box_info.box[i].color_id  = (int)src->label;
+                box_info.box[i].line_width = 2;
+            }
+
+            if (i < 4) {
+                evt.boxes[i].x     = x;
+                evt.boxes[i].y     = y;
+                evt.boxes[i].w     = w;
+                evt.boxes[i].h     = h;
+                evt.boxes[i].score = (int)src->score;
+            }
         }
-        ak_vi_draw_box(VIDEO_CHN0, &box_info);
+
+        /* 刷新 SVP 活跃定时器 3s（只在有检测结果时）*/
+        SvcTimerSet(TMR_SVP_ACTIVE, 3000, NULL, NULL);
+
+        /* 通知室内机有移动侦测（只在有检测结果时，避免无检测时刷屏）*/
+        SvcNetworkMotionDetectNotify();
     }
 
-    /* 刷新 SVP 活跃定时器（原 SetTimer(SVPTimer, 3000)）*/
-    SvcTimerSet(TMR_SVP_ACTIVE, 3000, NULL, NULL);
+    /* 始终调用 draw_box：total==0 时用空 BoxInfo 清除屏幕上的框 */
+    ak_vi_draw_box(VIDEO_CHN0, &box_info);
 
-    /* 发布检测事件（取代弱函数重定义机制）*/
-    EventBusPublish(EVT_MOTION_DETECTED, &result, sizeof(result));
+    /* 发布移动侦测事件（total==0 也发布，订阅者可据此判断无检测）*/
+    EventBusPublish(EVT_SVP_MOTION_DETECTED, &evt, sizeof(evt));
 }
 
 /* =========================================================
@@ -385,9 +403,10 @@ void SvcSvpSetSensitivity(int sensitivity)
         int small = s_sensitivity_map[sensitivity].flt_small;
         DrvMotionDetectFiltersSet(dev, big, small);
         DrvMotionDetectEnable(dev, 1);
-    } else {
-        DrvMotionDetectEnable(dev, 0);
     }
+    /* sensitivity==0：只关闭 SVP 触发（s_svp.enable=0），MD 继续运行。
+     * 对应参考代码 SvpMdFiltersSet(0,0) → EnableCallback=0，不停止 MD 线程。
+     * 这样灵敏度重新置非0时无需重新初始化 MD，响应更快。 */
 
     printf("[SvcSvp] sensitivity=%d\n", sensitivity);
 }
