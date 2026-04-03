@@ -107,14 +107,12 @@ int NetRawPacketSend(int fd, struct sockaddr_ll *sll,
 
 int NetRawPacketReceive(int fd, uint8_t *buf, int size, unsigned int timeout_ms)
 {
-    static uint8_t *rbuf = NULL;
-    static int rbuf_size = 0;
-    if (rbuf_size < size) {
-        free(rbuf);
-        rbuf = malloc((size_t)size);
-        if (!rbuf) return -1;
-        rbuf_size = size;
-    }
+    /* 不使用 static 缓冲：audio_rx_thread 与 net_recv_thread 并发调用此函数，
+     * static 共享缓冲会导致数据竞争，引起命令包丢失/损坏。
+     * 改用栈上固定大小缓冲，以太帧最大 1514 字节 + 60 字节 MAC 头 = 1574 字节，
+     * 取 2048 保留余量，满足所有调用场合。*/
+    uint8_t rbuf[MAC_HEAD_LEN + 2048];
+    int recv_max = (int)sizeof(rbuf);
 
     fd_set fds;
     struct timeval tv;
@@ -125,10 +123,11 @@ int NetRawPacketReceive(int fd, uint8_t *buf, int size, unsigned int timeout_ms)
     int ret = select(fd + 1, &fds, NULL, NULL, &tv);
     if (ret <= 0) return ret;
 
-    int n = (int)recvfrom(fd, rbuf, (size_t)size, 0, NULL, NULL);
+    int n = (int)recvfrom(fd, rbuf, (size_t)recv_max, 0, NULL, NULL);
     if (n <= MAC_HEAD_LEN) return -1;
 
     int payload = n - MAC_HEAD_LEN;
+    if (payload > size) payload = size;
     memcpy(buf, &rbuf[MAC_HEAD_LEN], (size_t)payload);
     return payload;
 }

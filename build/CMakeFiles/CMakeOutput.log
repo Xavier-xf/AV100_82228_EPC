@@ -28,28 +28,28 @@ The CXX compiler identification is GNU, found in "/home/xiaoxiao/workspace/82228
 Determining if the C compiler works passed with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_17d4b/fast"
-/usr/bin/make -f CMakeFiles/cmTC_17d4b.dir/build.make CMakeFiles/cmTC_17d4b.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_d6e28/fast"
+/usr/bin/make -f CMakeFiles/cmTC_d6e28.dir/build.make CMakeFiles/cmTC_d6e28.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building C object CMakeFiles/cmTC_17d4b.dir/testCCompiler.c.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc    -o CMakeFiles/cmTC_17d4b.dir/testCCompiler.c.o   -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp/testCCompiler.c
-Linking C executable cmTC_17d4b
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_17d4b.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc      CMakeFiles/cmTC_17d4b.dir/testCCompiler.c.o  -o cmTC_17d4b 
+Building C object CMakeFiles/cmTC_d6e28.dir/testCCompiler.c.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc    -o CMakeFiles/cmTC_d6e28.dir/testCCompiler.c.o   -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_d6e28
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d6e28.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc      CMakeFiles/cmTC_d6e28.dir/testCCompiler.c.o  -o cmTC_d6e28 
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
 Detecting C compiler ABI info compiled with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_4bac7/fast"
-/usr/bin/make -f CMakeFiles/cmTC_4bac7.dir/build.make CMakeFiles/cmTC_4bac7.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_f285c/fast"
+/usr/bin/make -f CMakeFiles/cmTC_f285c.dir/build.make CMakeFiles/cmTC_f285c.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building C object CMakeFiles/cmTC_4bac7.dir/CMakeCCompilerABI.c.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc    -o CMakeFiles/cmTC_4bac7.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c
-Linking C executable cmTC_4bac7
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4bac7.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc     -v CMakeFiles/cmTC_4bac7.dir/CMakeCCompilerABI.c.o  -o cmTC_4bac7 
+Building C object CMakeFiles/cmTC_f285c.dir/CMakeCCompilerABI.c.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc    -o CMakeFiles/cmTC_f285c.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c
+Linking C executable cmTC_f285c
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f285c.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc     -v CMakeFiles/cmTC_f285c.dir/CMakeCCompilerABI.c.o  -o cmTC_f285c 
 使用内建 specs。
 COLLECT_GCC=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc.br_real
 COLLECT_LTO_WRAPPER=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper
@@ -59,8 +59,8 @@ COLLECT_LTO_WRAPPER=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compil
 gcc 版本 4.9.4 (Buildroot 2018.02.7_V1.0.05-gec2d034) 
 COMPILER_PATH=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/bin/
 LIBRARY_PATH=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_4bac7' '-mcpu=arm926ej-s' '-mfloat-abi=soft' '-mabi=aapcs-linux' '-marm' '-mtls-dialect=gnu'
- /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2 -plugin /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so -plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper -plugin-opt=-fresolution=/tmp/ccKUvn3x.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot --eh-frame-hdr -dynamic-linker /lib/ld-uClibc.so.0 -X -m armelf_linux_eabi -o cmTC_4bac7 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4 -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib CMakeFiles/cmTC_4bac7.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtend.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_f285c' '-mcpu=arm926ej-s' '-mfloat-abi=soft' '-mabi=aapcs-linux' '-marm' '-mtls-dialect=gnu'
+ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2 -plugin /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so -plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper -plugin-opt=-fresolution=/tmp/ccDSU572.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot --eh-frame-hdr -dynamic-linker /lib/ld-uClibc.so.0 -X -m armelf_linux_eabi -o cmTC_f285c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4 -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib CMakeFiles/cmTC_f285c.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtend.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crtn.o
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
@@ -68,14 +68,14 @@ Parsed C implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_4bac7/fast"]
-  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_4bac7.dir/build.make CMakeFiles/cmTC_4bac7.dir/build]
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_f285c/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_f285c.dir/build.make CMakeFiles/cmTC_f285c.dir/build]
   ignore line: [make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”]
-  ignore line: [Building C object CMakeFiles/cmTC_4bac7.dir/CMakeCCompilerABI.c.o]
-  ignore line: [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc    -o CMakeFiles/cmTC_4bac7.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c]
-  ignore line: [Linking C executable cmTC_4bac7]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_4bac7.dir/link.txt --verbose=1]
-  ignore line: [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc     -v CMakeFiles/cmTC_4bac7.dir/CMakeCCompilerABI.c.o  -o cmTC_4bac7 ]
+  ignore line: [Building C object CMakeFiles/cmTC_f285c.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc    -o CMakeFiles/cmTC_f285c.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-3.10/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTC_f285c]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f285c.dir/link.txt --verbose=1]
+  ignore line: [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc     -v CMakeFiles/cmTC_f285c.dir/CMakeCCompilerABI.c.o  -o cmTC_f285c ]
   ignore line: [使用内建 specs。]
   ignore line: [COLLECT_GCC=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc.br_real]
   ignore line: [COLLECT_LTO_WRAPPER=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper]
@@ -85,13 +85,13 @@ Parsed C implicit link information from above output:
   ignore line: [gcc 版本 4.9.4 (Buildroot 2018.02.7_V1.0.05-gec2d034) ]
   ignore line: [COMPILER_PATH=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/bin/]
   ignore line: [LIBRARY_PATH=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_4bac7' '-mcpu=arm926ej-s' '-mfloat-abi=soft' '-mabi=aapcs-linux' '-marm' '-mtls-dialect=gnu']
-  link line: [ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2 -plugin /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so -plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper -plugin-opt=-fresolution=/tmp/ccKUvn3x.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot --eh-frame-hdr -dynamic-linker /lib/ld-uClibc.so.0 -X -m armelf_linux_eabi -o cmTC_4bac7 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4 -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib CMakeFiles/cmTC_4bac7.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtend.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crtn.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_f285c' '-mcpu=arm926ej-s' '-mfloat-abi=soft' '-mabi=aapcs-linux' '-marm' '-mtls-dialect=gnu']
+  link line: [ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2 -plugin /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so -plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper -plugin-opt=-fresolution=/tmp/ccDSU572.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot --eh-frame-hdr -dynamic-linker /lib/ld-uClibc.so.0 -X -m armelf_linux_eabi -o cmTC_f285c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4 -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib CMakeFiles/cmTC_f285c.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtend.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crtn.o]
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2] ==> ignore
     arg [-plugin] ==> ignore
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so] ==> ignore
     arg [-plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper] ==> ignore
-    arg [-plugin-opt=-fresolution=/tmp/ccKUvn3x.res] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccDSU572.res] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
     arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -105,7 +105,7 @@ Parsed C implicit link information from above output:
     arg [-m] ==> ignore
     arg [armelf_linux_eabi] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_4bac7] ==> ignore
+    arg [cmTC_f285c] ==> ignore
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o] ==> ignore
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o] ==> ignore
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o] ==> ignore
@@ -114,7 +114,7 @@ Parsed C implicit link information from above output:
     arg [-L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib] ==> dir [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib]
     arg [-L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib] ==> dir [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib]
     arg [-L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib] ==> dir [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib]
-    arg [CMakeFiles/cmTC_4bac7.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [CMakeFiles/cmTC_f285c.dir/CMakeCCompilerABI.c.o] ==> ignore
     arg [-lgcc] ==> lib [gcc]
     arg [--as-needed] ==> ignore
     arg [-lgcc_s] ==> lib [gcc_s]
@@ -141,14 +141,14 @@ Parsed C implicit link information from above output:
 Detecting C [-std=c11] compiler features compiled with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_681e0/fast"
-/usr/bin/make -f CMakeFiles/cmTC_681e0.dir/build.make CMakeFiles/cmTC_681e0.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_f50fb/fast"
+/usr/bin/make -f CMakeFiles/cmTC_f50fb.dir/build.make CMakeFiles/cmTC_f50fb.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building C object CMakeFiles/cmTC_681e0.dir/feature_tests.c.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc   -std=c11 -o CMakeFiles/cmTC_681e0.dir/feature_tests.c.o   -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.c
-Linking C executable cmTC_681e0
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_681e0.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc      CMakeFiles/cmTC_681e0.dir/feature_tests.c.o  -o cmTC_681e0 
+Building C object CMakeFiles/cmTC_f50fb.dir/feature_tests.c.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc   -std=c11 -o CMakeFiles/cmTC_f50fb.dir/feature_tests.c.o   -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_f50fb
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f50fb.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc      CMakeFiles/cmTC_f50fb.dir/feature_tests.c.o  -o cmTC_f50fb 
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
@@ -161,14 +161,14 @@ make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/bu
 Detecting C [-std=c99] compiler features compiled with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_d8a83/fast"
-/usr/bin/make -f CMakeFiles/cmTC_d8a83.dir/build.make CMakeFiles/cmTC_d8a83.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_0d61a/fast"
+/usr/bin/make -f CMakeFiles/cmTC_0d61a.dir/build.make CMakeFiles/cmTC_0d61a.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building C object CMakeFiles/cmTC_d8a83.dir/feature_tests.c.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc   -std=c99 -o CMakeFiles/cmTC_d8a83.dir/feature_tests.c.o   -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.c
-Linking C executable cmTC_d8a83
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d8a83.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc      CMakeFiles/cmTC_d8a83.dir/feature_tests.c.o  -o cmTC_d8a83 
+Building C object CMakeFiles/cmTC_0d61a.dir/feature_tests.c.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc   -std=c99 -o CMakeFiles/cmTC_0d61a.dir/feature_tests.c.o   -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_0d61a
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0d61a.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc      CMakeFiles/cmTC_0d61a.dir/feature_tests.c.o  -o cmTC_0d61a 
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
@@ -181,14 +181,14 @@ make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/bu
 Detecting C [-std=c90] compiler features compiled with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_60171/fast"
-/usr/bin/make -f CMakeFiles/cmTC_60171.dir/build.make CMakeFiles/cmTC_60171.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_09c3e/fast"
+/usr/bin/make -f CMakeFiles/cmTC_09c3e.dir/build.make CMakeFiles/cmTC_09c3e.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building C object CMakeFiles/cmTC_60171.dir/feature_tests.c.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc   -std=c90 -o CMakeFiles/cmTC_60171.dir/feature_tests.c.o   -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.c
-Linking C executable cmTC_60171
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_60171.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc      CMakeFiles/cmTC_60171.dir/feature_tests.c.o  -o cmTC_60171 
+Building C object CMakeFiles/cmTC_09c3e.dir/feature_tests.c.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc   -std=c90 -o CMakeFiles/cmTC_09c3e.dir/feature_tests.c.o   -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.c
+Linking C executable cmTC_09c3e
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_09c3e.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-gcc      CMakeFiles/cmTC_09c3e.dir/feature_tests.c.o  -o cmTC_09c3e 
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
@@ -199,28 +199,28 @@ make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/bu
 Determining if the CXX compiler works passed with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_60030/fast"
-/usr/bin/make -f CMakeFiles/cmTC_60030.dir/build.make CMakeFiles/cmTC_60030.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_d47af/fast"
+/usr/bin/make -f CMakeFiles/cmTC_d47af.dir/build.make CMakeFiles/cmTC_d47af.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building CXX object CMakeFiles/cmTC_60030.dir/testCXXCompiler.cxx.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++     -o CMakeFiles/cmTC_60030.dir/testCXXCompiler.cxx.o -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
-Linking CXX executable cmTC_60030
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_60030.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++       CMakeFiles/cmTC_60030.dir/testCXXCompiler.cxx.o  -o cmTC_60030 
+Building CXX object CMakeFiles/cmTC_d47af.dir/testCXXCompiler.cxx.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++     -o CMakeFiles/cmTC_d47af.dir/testCXXCompiler.cxx.o -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTC_d47af
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d47af.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++       CMakeFiles/cmTC_d47af.dir/testCXXCompiler.cxx.o  -o cmTC_d47af 
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
 Detecting CXX compiler ABI info compiled with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_bbdea/fast"
-/usr/bin/make -f CMakeFiles/cmTC_bbdea.dir/build.make CMakeFiles/cmTC_bbdea.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_0a3a2/fast"
+/usr/bin/make -f CMakeFiles/cmTC_0a3a2.dir/build.make CMakeFiles/cmTC_0a3a2.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building CXX object CMakeFiles/cmTC_bbdea.dir/CMakeCXXCompilerABI.cpp.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++     -o CMakeFiles/cmTC_bbdea.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp
-Linking CXX executable cmTC_bbdea
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bbdea.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++      -v CMakeFiles/cmTC_bbdea.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_bbdea 
+Building CXX object CMakeFiles/cmTC_0a3a2.dir/CMakeCXXCompilerABI.cpp.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++     -o CMakeFiles/cmTC_0a3a2.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTC_0a3a2
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0a3a2.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++      -v CMakeFiles/cmTC_0a3a2.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_0a3a2 
 使用内建 specs。
 COLLECT_GCC=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++.br_real
 COLLECT_LTO_WRAPPER=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper
@@ -230,8 +230,8 @@ COLLECT_LTO_WRAPPER=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compil
 gcc 版本 4.9.4 (Buildroot 2018.02.7_V1.0.05-gec2d034) 
 COMPILER_PATH=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/bin/
 LIBRARY_PATH=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/
-COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bbdea' '-shared-libgcc' '-mcpu=arm926ej-s' '-mfloat-abi=soft' '-mabi=aapcs-linux' '-marm' '-mtls-dialect=gnu'
- /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2 -plugin /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so -plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper -plugin-opt=-fresolution=/tmp/ccefWHuJ.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot --eh-frame-hdr -dynamic-linker /lib/ld-uClibc.so.0 -X -m armelf_linux_eabi -o cmTC_bbdea /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4 -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib CMakeFiles/cmTC_bbdea.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtend.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crtn.o
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0a3a2' '-shared-libgcc' '-mcpu=arm926ej-s' '-mfloat-abi=soft' '-mabi=aapcs-linux' '-marm' '-mtls-dialect=gnu'
+ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2 -plugin /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so -plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper -plugin-opt=-fresolution=/tmp/cc78cwJk.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot --eh-frame-hdr -dynamic-linker /lib/ld-uClibc.so.0 -X -m armelf_linux_eabi -o cmTC_0a3a2 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4 -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib CMakeFiles/cmTC_0a3a2.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtend.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crtn.o
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
@@ -239,14 +239,14 @@ Parsed CXX implicit link information from above output:
   link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
   ignore line: [Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp]
   ignore line: []
-  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_bbdea/fast"]
-  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_bbdea.dir/build.make CMakeFiles/cmTC_bbdea.dir/build]
+  ignore line: [Run Build Command:"/usr/bin/make" "cmTC_0a3a2/fast"]
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTC_0a3a2.dir/build.make CMakeFiles/cmTC_0a3a2.dir/build]
   ignore line: [make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”]
-  ignore line: [Building CXX object CMakeFiles/cmTC_bbdea.dir/CMakeCXXCompilerABI.cpp.o]
-  ignore line: [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++     -o CMakeFiles/cmTC_bbdea.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp]
-  ignore line: [Linking CXX executable cmTC_bbdea]
-  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bbdea.dir/link.txt --verbose=1]
-  ignore line: [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++      -v CMakeFiles/cmTC_bbdea.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_bbdea ]
+  ignore line: [Building CXX object CMakeFiles/cmTC_0a3a2.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++     -o CMakeFiles/cmTC_0a3a2.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-3.10/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTC_0a3a2]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_0a3a2.dir/link.txt --verbose=1]
+  ignore line: [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++      -v CMakeFiles/cmTC_0a3a2.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_0a3a2 ]
   ignore line: [使用内建 specs。]
   ignore line: [COLLECT_GCC=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++.br_real]
   ignore line: [COLLECT_LTO_WRAPPER=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper]
@@ -256,13 +256,13 @@ Parsed CXX implicit link information from above output:
   ignore line: [gcc 版本 4.9.4 (Buildroot 2018.02.7_V1.0.05-gec2d034) ]
   ignore line: [COMPILER_PATH=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/bin/]
   ignore line: [LIBRARY_PATH=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib/:/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/]
-  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_bbdea' '-shared-libgcc' '-mcpu=arm926ej-s' '-mfloat-abi=soft' '-mabi=aapcs-linux' '-marm' '-mtls-dialect=gnu']
-  link line: [ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2 -plugin /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so -plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper -plugin-opt=-fresolution=/tmp/ccefWHuJ.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot --eh-frame-hdr -dynamic-linker /lib/ld-uClibc.so.0 -X -m armelf_linux_eabi -o cmTC_bbdea /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4 -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib CMakeFiles/cmTC_bbdea.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtend.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crtn.o]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTC_0a3a2' '-shared-libgcc' '-mcpu=arm926ej-s' '-mfloat-abi=soft' '-mabi=aapcs-linux' '-marm' '-mtls-dialect=gnu']
+  link line: [ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2 -plugin /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so -plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper -plugin-opt=-fresolution=/tmp/cc78cwJk.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --sysroot=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot --eh-frame-hdr -dynamic-linker /lib/ld-uClibc.so.0 -X -m armelf_linux_eabi -o cmTC_0a3a2 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4 -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib -L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib CMakeFiles/cmTC_0a3a2.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtend.o /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crtn.o]
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/collect2] ==> ignore
     arg [-plugin] ==> ignore
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/liblto_plugin.so] ==> ignore
     arg [-plugin-opt=/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../libexec/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/lto-wrapper] ==> ignore
-    arg [-plugin-opt=-fresolution=/tmp/ccefWHuJ.res] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/cc78cwJk.res] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
     arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
     arg [-plugin-opt=-pass-through=-lc] ==> ignore
@@ -276,7 +276,7 @@ Parsed CXX implicit link information from above output:
     arg [-m] ==> ignore
     arg [armelf_linux_eabi] ==> ignore
     arg [-o] ==> ignore
-    arg [cmTC_bbdea] ==> ignore
+    arg [cmTC_0a3a2] ==> ignore
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crt1.o] ==> ignore
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib/crti.o] ==> ignore
     arg [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/crtbegin.o] ==> ignore
@@ -285,7 +285,7 @@ Parsed CXX implicit link information from above output:
     arg [-L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib] ==> dir [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/../lib/gcc/arm-anykav500-linux-uclibcgnueabi/4.9.4/../../../../arm-anykav500-linux-uclibcgnueabi/lib]
     arg [-L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib] ==> dir [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/lib]
     arg [-L/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib] ==> dir [/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/arm-anykav500-linux-uclibcgnueabi/sysroot/usr/lib]
-    arg [CMakeFiles/cmTC_bbdea.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [CMakeFiles/cmTC_0a3a2.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
     arg [-lstdc++] ==> lib [stdc++]
     arg [-lm] ==> lib [m]
     arg [-lgcc_s] ==> lib [gcc_s]
@@ -310,14 +310,14 @@ Parsed CXX implicit link information from above output:
 Detecting CXX [-std=c++14] compiler features compiled with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_8fc02/fast"
-/usr/bin/make -f CMakeFiles/cmTC_8fc02.dir/build.make CMakeFiles/cmTC_8fc02.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_e87a1/fast"
+/usr/bin/make -f CMakeFiles/cmTC_e87a1.dir/build.make CMakeFiles/cmTC_e87a1.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building CXX object CMakeFiles/cmTC_8fc02.dir/feature_tests.cxx.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++    -std=c++14 -o CMakeFiles/cmTC_8fc02.dir/feature_tests.cxx.o -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_8fc02
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8fc02.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++       CMakeFiles/cmTC_8fc02.dir/feature_tests.cxx.o  -o cmTC_8fc02 
+Building CXX object CMakeFiles/cmTC_e87a1.dir/feature_tests.cxx.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++    -std=c++14 -o CMakeFiles/cmTC_e87a1.dir/feature_tests.cxx.o -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_e87a1
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e87a1.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++       CMakeFiles/cmTC_e87a1.dir/feature_tests.cxx.o  -o cmTC_e87a1 
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
@@ -383,14 +383,14 @@ make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/bu
 Detecting CXX [-std=c++11] compiler features compiled with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_bb094/fast"
-/usr/bin/make -f CMakeFiles/cmTC_bb094.dir/build.make CMakeFiles/cmTC_bb094.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_8e1b9/fast"
+/usr/bin/make -f CMakeFiles/cmTC_8e1b9.dir/build.make CMakeFiles/cmTC_8e1b9.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building CXX object CMakeFiles/cmTC_bb094.dir/feature_tests.cxx.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++    -std=c++11 -o CMakeFiles/cmTC_bb094.dir/feature_tests.cxx.o -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_bb094
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bb094.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++       CMakeFiles/cmTC_bb094.dir/feature_tests.cxx.o  -o cmTC_bb094 
+Building CXX object CMakeFiles/cmTC_8e1b9.dir/feature_tests.cxx.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++    -std=c++11 -o CMakeFiles/cmTC_8e1b9.dir/feature_tests.cxx.o -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_8e1b9
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8e1b9.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++       CMakeFiles/cmTC_8e1b9.dir/feature_tests.cxx.o  -o cmTC_8e1b9 
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
@@ -456,14 +456,14 @@ make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/bu
 Detecting CXX [-std=c++98] compiler features compiled with the following output:
 Change Dir: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_9ae3e/fast"
-/usr/bin/make -f CMakeFiles/cmTC_9ae3e.dir/build.make CMakeFiles/cmTC_9ae3e.dir/build
+Run Build Command:"/usr/bin/make" "cmTC_21970/fast"
+/usr/bin/make -f CMakeFiles/cmTC_21970.dir/build.make CMakeFiles/cmTC_21970.dir/build
 make[1]: 进入目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
-Building CXX object CMakeFiles/cmTC_9ae3e.dir/feature_tests.cxx.o
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++    -std=c++98 -o CMakeFiles/cmTC_9ae3e.dir/feature_tests.cxx.o -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.cxx
-Linking CXX executable cmTC_9ae3e
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9ae3e.dir/link.txt --verbose=1
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++       CMakeFiles/cmTC_9ae3e.dir/feature_tests.cxx.o  -o cmTC_9ae3e 
+Building CXX object CMakeFiles/cmTC_21970.dir/feature_tests.cxx.o
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++    -std=c++98 -o CMakeFiles/cmTC_21970.dir/feature_tests.cxx.o -c /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/feature_tests.cxx
+Linking CXX executable cmTC_21970
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_21970.dir/link.txt --verbose=1
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/compilat_tool/arm-anykav500-linux-uclibcgnueabi/bin/arm-anykav500-linux-uclibcgnueabi-g++       CMakeFiles/cmTC_21970.dir/feature_tests.cxx.o  -o cmTC_21970 
 make[1]: 离开目录“/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/CMakeFiles/CMakeTmp”
 
 
