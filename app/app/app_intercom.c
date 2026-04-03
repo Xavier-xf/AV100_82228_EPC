@@ -113,14 +113,18 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
 
     const NetStreamStatus *st = (const NetStreamStatus *)arg;
     IntercomState cur = AppIntercomGetState();
+
+    /* 关键帧请求：旧版在流控最前面处理，确保首包即可拿到 IDR */
+    if (st->key_frame_req) SvcIntercomStreamRequestKeyFrame();
+
     if (st->leave_msg_enable) {
-        /* 留言提示音：跟室内机设置的语言走*/
+        /* 留言提示音：跟室内机设置的语言走；旧版防抖 3000ms */
         static struct timespec last_leave_time = {0};
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         long diff_ms = (long)(now.tv_sec  - last_leave_time.tv_sec)  * 1000
                      + (long)(now.tv_nsec - last_leave_time.tv_nsec) / 1000000;
-        if (diff_ms > 4500) {
+        if (diff_ms > 3000) {
             /* leave_msg_lang 由室内机在 arg0>>2 位传入 */
             int lang_idx = st->leave_msg_lang;
             VoiceId vid = (VoiceId)(VOICE_LeaveMsgEng + lang_idx);
@@ -134,7 +138,6 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
     }
     if (cur == INTERCOM_STATE_TALKING || cur == INTERCOM_STATE_MONITORING) {
         SvcIntercomStreamRefresh(st);
-        if (st->key_frame_req) SvcIntercomStreamRequestKeyFrame();
         return;
     }
 }
@@ -150,12 +153,12 @@ static void on_heartbeat_send(EventId id, const void *arg, size_t len)
 {
     (void)id; (void)arg; (void)len;
     IntercomState cur = AppIntercomGetState();
-    /* svp_active  = SVP 近期有检测（TMR_SVP_ACTIVE 活跃）
-     *               对应参考代码 TimerEnablestatus(SVPTimer)，bit0 of Arg1
-     * comm_active = 当前正在通话
-     *               对应参考代码 TimerEnablestatus(CommunicateTimer)，bit1 of Arg1
-     * svc_network.c 已在 heart_count==1 时直接调用 SvcNetworkVersionSend()，
-     * 此处无需重复发送版本信息。 */
+    /* svp_active  = SVP 近期有检测，对应 TimerEnablestatus(SVPTimer)
+     * comm_active 对应旧版 TimerEnablestatus(CommunicateTimer)：
+     *   旧版仅在通话（OutdoorTalkEvent）和 TUYA_MONITOR_ENABLE 时才置 1，
+     *   留言模式（MonitorTimer）时为 0。新版与旧版保持一致：仅 TALKING 时为 1。
+     *   若改为 MONITORING 也置 1，室内机会误判为已在通话中，
+     *   停止发送 StreamStatus → 看门狗超时 → 监控立即退出。 */
     SvcNetworkStreamStatusSend(
         (uint8_t)(SvcSvpIsActive() ? 1 : 0),
         (uint8_t)((cur == INTERCOM_STATE_TALKING) ? 1 : 0));

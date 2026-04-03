@@ -79,7 +79,7 @@ void DrvMotionDetectSetCallback(DrvMdCallback cb)
 static void apply_default_param(int dev_id, MdParam *p)
 {
     p->dev_id = dev_id;
-    p->move_size_min = 1500;
+    p->move_size_min = 2;
     p->move_size_max = 300;
     p->flt_big       = 7000;
     p->flt_small     = 3500;
