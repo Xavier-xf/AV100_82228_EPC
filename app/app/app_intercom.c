@@ -120,7 +120,7 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
         clock_gettime(CLOCK_MONOTONIC, &now);
         long diff_ms = (long)(now.tv_sec  - last_leave_time.tv_sec)  * 1000
                      + (long)(now.tv_nsec - last_leave_time.tv_nsec) / 1000000;
-        if (diff_ms > 4000) {
+        if (diff_ms > 4500) {
             /* leave_msg_lang 由室内机在 arg0>>2 位传入 */
             int lang_idx = st->leave_msg_lang;
             VoiceId vid = (VoiceId)(VOICE_LeaveMsgEng + lang_idx);

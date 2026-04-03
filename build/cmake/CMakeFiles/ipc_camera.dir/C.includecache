@@ -629,6 +629,8 @@ svc_svp.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.h
 svc_timer.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.h
+svc_network.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.h
 event_bus.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/event_bus.h
 drv_motion_detect.h

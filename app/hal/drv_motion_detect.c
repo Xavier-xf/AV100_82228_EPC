@@ -287,7 +287,7 @@ int DrvMotionDetectGetResult(int dev_id, MdResult *out)
         return -1;
     }
     *out = s_md_result[dev_id].result;
-    memset(&s_md_result[dev_id].result, 0, sizeof(MdResult));
+
     pthread_mutex_unlock(&s_md_result[dev_id].lock);
     return 0;
 }

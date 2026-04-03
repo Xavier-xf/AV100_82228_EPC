@@ -156,6 +156,10 @@ static int video_dev_init(void)
         printf("[DrvVideoIn] ak_venc_open fail\n");
         ak_vi_close(s_vi.param.DevId); return -1;
     }
+        /* 设置画框颜色表（对应旧版 VideoInputDevInit 的 ak_vi_set_box_color_table 调用）
+     * 必须在 ak_vi_draw_box 之前设置，否则 draw_box 画出的框不可见 */
+    unsigned int color_table[] = {0xff00ff00};
+    ak_vi_set_box_color_table(s_vi.param.DevId, color_table);
     printf("[DrvVideoIn] device init ok\n");
     return 0;
 }
