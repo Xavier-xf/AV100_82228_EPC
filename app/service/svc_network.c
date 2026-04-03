@@ -104,14 +104,6 @@ typedef enum {
     CMD_GATE2_UNLOCK   = 0x99,   /* Gate2UnlockEvent       */
 } NetCmdId;
 
-#ifndef MAJOR_VER
-#define MAJOR_VER 1
-#define MINOR_VER 0
-#define PATCH_VER 0
-#endif
-#ifndef DOOR_CAMERA_MODEL
-#define DOOR_CAMERA_MODEL 0
-#endif
 
 /* =========================================================
  *  模块状态结构体
@@ -511,9 +503,8 @@ void SvcNetworkDoorbellNotify(int key_index, int status)
  */
 void SvcNetworkStreamStatusSend(uint8_t svp_active, uint8_t comm_active)
 {
-    uint8_t arg1 = (uint8_t)((0 << 2)
-                             | (svp_active  & 0x01)
-                             | ((comm_active & 0x01) << 1));
+    uint8_t arg1 = (uint8_t)((0 << 2)| (svp_active  & 0x01)| ((comm_active & 0x01) << 1));
+    printf("[SvcNet] stream status → Arg1=0x%02X Arg2=%d\n", arg1, DOOR_CAMERA_MODEL);
     net_msg_send(DEVICE_ALL, CMD_STREAM_STATUS, arg1, DOOR_CAMERA_MODEL);
 }
 
@@ -525,7 +516,7 @@ void SvcNetworkStreamStatusSend(uint8_t svp_active, uint8_t comm_active)
  */
 void SvcNetworkVersionSend(void)
 {
-    unsigned int ver = MAJOR_VER * 10000u + MINOR_VER * 100u + PATCH_VER;
+    unsigned int ver = MAJOR_VER * 10000 + MINOR_VER * 100 + PATCH_VER;
     net_msg_send(DEVICE_ALL, CMD_COMPILE_TIME,
                  (uint8_t)(ver & 0xFF), (uint8_t)((ver >> 8) & 0xFF));
 }
