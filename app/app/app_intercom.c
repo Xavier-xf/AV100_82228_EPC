@@ -3,7 +3,7 @@
  * @brief   对讲业务状态机
  */
 #include "app_intercom.h"
-#include    "svc_svp.h"
+#include "svc_svp.h"
 #include "app_upgrade.h"
 #include "event_bus.h"
 #include "utils.h"
@@ -12,6 +12,8 @@
 #include "svc_timer.h"
 #include "svc_intercom_stream.h"
 #include "drv_gpio.h"
+#include "drv_infrared.h"
+#include "drv_video_in.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <time.h>
@@ -72,6 +74,9 @@ static void enter_stream(IntercomState new_state, uint8_t peer_dev)
 
     DrvGpioKey1LightSet(1);
     DrvGpioKey2LightSet(1);
+    /* 进入监控/通话时，夜间模式下开红外补光灯（对应旧版 InfraredLightControl(DarkModeStatus())）*/
+    if (DrvInfraredIsNight())
+        DrvGpioInfraredLightSet(1);
     SvcTimerStop(TMR_CALL_BUSY);
     SvcIntercomStreamStart(mode, peer_dev);
 }
@@ -86,6 +91,8 @@ static void exit_stream(void)
     SvcIntercomStreamStop();
     DrvGpioKey1LightSet(0);
     DrvGpioKey2LightSet(0);
+    /* 退出时关红外补光灯（对应旧版 CommunicateOuttime → InfraredLightControl(0)）*/
+    DrvGpioInfraredLightSet(0);
 }
 
 /* ---- 事件回调 ---- */
@@ -122,16 +129,13 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
         /* 留言提示音：跟室内机设置的语言走；旧版防抖 3000ms */
         static struct timespec last_leave_time = {0};
         unsigned long long diff_ms = UtilsDiffMs(&last_leave_time);
-        printf("[AppIntercom] leave_msg_enable, diff_ms=%llu\n", diff_ms);
         if (diff_ms > 3000) {
             int lang_idx = st->leave_msg_lang;
             VoiceId vid = (VoiceId)(VOICE_LeaveMsgEng + lang_idx);
             SvcVoicePlaySimple(vid, VOICE_VOL_DEFAULT);
         }
-
         // 获取当前时间并更新
         UtilsGetTime(&last_leave_time);
-        printf("last_leave_time.tv_sec=%ld,last_leave_time.tv_nsec=%ld\n",last_leave_time.tv_sec,last_leave_time.tv_nsec);
     }
     if (cur == INTERCOM_STATE_IDLE) {
         enter_stream(INTERCOM_STATE_MONITORING, st->sender_dev);
@@ -201,6 +205,48 @@ static void on_motion_sensitivity(EventId id, const void *arg, size_t len)
     SvcSvpSetSensitivity(sens);
 }
 
+/* ---- 红外夜视事件回调 ---- */
+
+/* IRCUT 电机 100ms 脉冲停止（对应旧版 IrCurClose 定时器回调）*/
+static void ircut_close_cb(void *arg)
+{
+    (void)arg;
+    DrvGpioIrcutStop();
+}
+
+/**
+ * 夜视模式（对应旧版 InfraredDebounce 中 StableLevel=1 的分支）：
+ *   1. 切换视频为夜视（灰度），对应 VideoSwitchMode(1)
+ *   2. 驱动 IRCUT 电机到夜视位，100ms 后停止
+ *   3. 若当前在监控/通话中，开红外补光灯
+ */
+static void on_infrared_night(EventId id, const void *arg, size_t len)
+{
+    (void)id; (void)arg; (void)len;
+    printf("[AppIntercom] IR → 夜视\n");
+    DrvVideoInSwitchMode(1);
+    DrvGpioIrcutNight();
+    SvcTimerSet(TMR_IRCUT_CLOSE, 100, ircut_close_cb, NULL);
+    if (AppIntercomGetState() != INTERCOM_STATE_IDLE)
+        DrvGpioInfraredLightSet(1);
+}
+
+/**
+ * 白天模式（对应旧版 InfraredDebounce 中 StableLevel=0 的分支）：
+ *   1. 切换视频为白天（彩色），对应 VideoSwitchMode(0)
+ *   2. 驱动 IRCUT 电机到白天位，100ms 后停止
+ *   3. 关红外补光灯（白天不需要）
+ */
+static void on_infrared_day(EventId id, const void *arg, size_t len)
+{
+    (void)id; (void)arg; (void)len;
+    printf("[AppIntercom] IR → 白天\n");
+    DrvVideoInSwitchMode(0);
+    DrvGpioIrcutDay();
+    SvcTimerSet(TMR_IRCUT_CLOSE, 100, ircut_close_cb, NULL);
+    DrvGpioInfraredLightSet(0);
+}
+
 int AppIntercomInit(void)
 {
     EventBusSubscribe(EVT_CALL_KEY_PRESSED,         on_call_key_for_network);
@@ -211,6 +257,8 @@ int AppIntercomInit(void)
     EventBusSubscribe(EVT_NET_UPGRADE_CMD,           on_upgrade_cmd);
     EventBusSubscribe(EVT_NET_MOTION_SENSITIVITY,    on_motion_sensitivity);
     EventBusSubscribe(EVT_INTERCOM_STREAM_WATCHDOG,  on_stream_watchdog);
+    EventBusSubscribe(EVT_INFRARED_NIGHT_MODE,       on_infrared_night);
+    EventBusSubscribe(EVT_INFRARED_DAY_MODE,         on_infrared_day);
     printf("[AppIntercom] init ok\n");
     return 0;
 }

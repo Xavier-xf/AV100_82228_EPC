@@ -13,6 +13,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/common/event_bus.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/common/utils.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/hal/drv_gpio.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/hal/drv_infrared.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/hal/drv_video_in.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/service/svc_intercom_stream.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/service/svc_network.h
@@ -63,6 +64,11 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.h
 
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o: ../app/common/event_bus.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.h
+
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.o: ../include/anyka3918/ak_common.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.o: ../include/anyka3918/ak_log.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.o: ../include/anyka3918/ak_md.h
@@ -96,6 +102,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/main.c.o: ../app/hal/drv_adc.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/main.c.o: ../app/hal/drv_audio_in.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/main.c.o: ../app/hal/drv_gpio.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/main.c.o: ../app/hal/drv_infrared.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/main.c.o: ../app/hal/drv_platform.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/main.c.o: ../app/hal/drv_video_in.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/main.c.o: ../app/hal/drv_watchdog.h

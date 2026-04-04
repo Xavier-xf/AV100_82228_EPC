@@ -24,6 +24,10 @@
 /* 功放（来源：SpeakAmp.c: #define APEAK_AMP_GPIO 69）*/
 #define PIN_AMP_EN         69   /* 功放使能（APEAK_AMP_GPIO）   */
 
+/* IRCUT 滤光片电机（来源：InfraredDetect.c）*/
+#define PIN_IRCUT_INA      65   /* IRCUT 电机 A 相（夜视：LOW）  */
+#define PIN_IRCUT_INB      66   /* IRCUT 电机 B 相（夜视：HIGH） */
+
 /* 拨码开关（来源：main.c: GpioOpen(26, GPIO_DIR_IN, true)）*/
 #define PIN_DIP_SW         26   /* DOOR1/DOOR2 选择拨码         */
 
@@ -61,6 +65,10 @@ int DrvGpioInit(void)
     GpioSysfsOpen(PIN_KEYPAD_BL,      GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_CARD_LIGHT,     GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_INFRARED_LIGHT, GPIO_DIR_LOW, false);
+
+    /* IRCUT 电机：输出，默认低电平（对应旧版 GpioOpen(65/66, GPIO_DIR_LOW, false)）*/
+    GpioSysfsOpen(PIN_IRCUT_INA, GPIO_DIR_LOW, false);
+    GpioSysfsOpen(PIN_IRCUT_INB, GPIO_DIR_LOW, false);
 
     /* 继电器：输出，默认低电平*/
     GpioSysfsOpen(PIN_LOCK_DOOR, GPIO_DIR_LOW, false);
@@ -134,4 +142,32 @@ void DrvGpioAmpEnable(void)
 void DrvGpioAmpDisable(void)
 {
     GpioSysfsLevelSet(PIN_AMP_EN, GPIO_LEVEL_LOW);
+}
+
+/* =========================================================
+ *  IRCUT 滤光片电机控制
+ *  对应旧版 InfraredDetect.c：GpioLevelSet(IRCUT_INA/INB_GPIO, ...)
+ *  用法：DrvGpioIrcutNight/Day() 给电机一个方向脉冲，
+ *        100ms 后由定时器回调调用 DrvGpioIrcutStop() 停止电机。
+ * ========================================================= */
+
+/** 夜视：INB=HIGH INA=LOW（切换到夜视滤光片）*/
+void DrvGpioIrcutNight(void)
+{
+    GpioSysfsLevelSet(PIN_IRCUT_INA, GPIO_LEVEL_LOW);
+    GpioSysfsLevelSet(PIN_IRCUT_INB, GPIO_LEVEL_HIGH);
+}
+
+/** 白天：INA=HIGH INB=LOW（切换到白天滤光片）*/
+void DrvGpioIrcutDay(void)
+{
+    GpioSysfsLevelSet(PIN_IRCUT_INA, GPIO_LEVEL_HIGH);
+    GpioSysfsLevelSet(PIN_IRCUT_INB, GPIO_LEVEL_LOW);
+}
+
+/** 电机停止（脉冲结束后调用，两相均置低）对应旧版 IrCurClose */
+void DrvGpioIrcutStop(void)
+{
+    GpioSysfsLevelSet(PIN_IRCUT_INA, GPIO_LEVEL_LOW);
+    GpioSysfsLevelSet(PIN_IRCUT_INB, GPIO_LEVEL_LOW);
 }

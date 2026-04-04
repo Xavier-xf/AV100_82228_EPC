@@ -10,6 +10,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.c.o"
   "CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio.c.o"
   "CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.o"
+  "CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o"
   "CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.o"
   "CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_net_raw.c.o"
   "CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.c.o"

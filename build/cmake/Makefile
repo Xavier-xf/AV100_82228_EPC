@@ -395,6 +395,33 @@ home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.s:
 	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.s
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.s
 
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.o
+
+# target to build an object file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.i: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.i
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.i
+
+# target to preprocess a source file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.i:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.i
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.i
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.s: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.s
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.s
+
+# target to generate assembly for a file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.s:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.s
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.s
+
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c.o
 
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.o
@@ -758,6 +785,9 @@ help:
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.s"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.o"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.i"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.s"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.s"

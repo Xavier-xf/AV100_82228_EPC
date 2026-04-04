@@ -34,6 +34,8 @@ stdbool.h
 
 ../app/hal/drv_gpio.h
 
+../app/hal/drv_infrared.h
+
 ../app/hal/drv_motion_detect.h
 ak_md.h
 ../app/hal/ak_md.h
@@ -177,6 +179,10 @@ svc_intercom_stream.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_intercom_stream.h
 drv_gpio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_gpio.h
+drv_infrared.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_infrared.h
+drv_video_in.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_video_in.h
 pthread.h
 -
 stdio.h
@@ -330,6 +336,22 @@ fcntl.h
 stdbool.h
 -
 
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c
+drv_infrared.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.h
+drv_gpio_sysfs.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.h
+event_bus.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/event_bus.h
+pthread.h
+-
+stdio.h
+-
+unistd.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.h
+
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c
 ak_common.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/ak_common.h
@@ -475,6 +497,8 @@ drv_watchdog.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_watchdog.h
 drv_gpio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_gpio.h
+drv_infrared.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_infrared.h
 drv_adc.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_adc.h
 drv_audio_in.h

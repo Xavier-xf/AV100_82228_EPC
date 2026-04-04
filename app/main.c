@@ -22,6 +22,7 @@
 #include "drv_platform.h"   /* AK SDK + 软件心跳看门狗（最先 include）*/
 #include "drv_watchdog.h"
 #include "drv_gpio.h"
+#include "drv_infrared.h"
 #include "drv_adc.h"
 #include "drv_audio_in.h"
 #include "drv_video_in.h"
@@ -165,6 +166,10 @@ int main(int argc, char *argv[])
     /* -------------------------------------------------- */
 
     INIT_MODULE(DrvAdcInit());    /* ADC 按键采集*/
+
+    /* 红外夜视检测（必须在 AppIntercomInit 注册订阅后调用，
+     * 因 DrvInfraredInit 会立即发布初始状态事件）        */
+    INIT_MODULE(DrvInfraredInit());
 
     /* -------------------------------------------------- */
     /* 启动完成提示音                                    */

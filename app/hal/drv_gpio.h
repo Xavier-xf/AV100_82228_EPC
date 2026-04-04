@@ -58,10 +58,19 @@ int DrvGpioLockOpen(GpioLockType type, int duration_ms);
 /* =========================================================
  *  功放使能（Speaker Amplifier）
  * ========================================================= */
-/** @brief 红外补光灯控制 */
+/** @brief 红外补光灯控制（GPIO 58）*/
 void DrvGpioInfraredLightSet(int on);
 
 void DrvGpioAmpEnable(void);
 void DrvGpioAmpDisable(void);
+
+/* =========================================================
+ *  IRCUT 滤光片电机（GPIO 65/66）
+ *  对应旧版 InfraredDetect.c IRCUT_INA/INB_GPIO
+ *  用法：先调 Night/Day 给方向脉冲，100ms 后调 Stop
+ * ========================================================= */
+void DrvGpioIrcutNight(void);  /* 夜视：INB=HIGH INA=LOW  */
+void DrvGpioIrcutDay(void);    /* 白天：INA=HIGH INB=LOW  */
+void DrvGpioIrcutStop(void);   /* 停止：两相均低           */
 
 #endif /* _DRV_GPIO_H_ */
