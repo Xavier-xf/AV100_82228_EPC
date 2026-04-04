@@ -20,6 +20,10 @@ stdint.h
 stddef.h
 -
 
+../app/common/utils.h
+time.h
+-
+
 ../app/hal/drv_adc.h
 
 ../app/hal/drv_audio_in.h
@@ -161,6 +165,8 @@ app_upgrade.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.h
 event_bus.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/event_bus.h
+utils.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/utils.h
 svc_network.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_network.h
 svc_voice.h
@@ -220,6 +226,20 @@ stdio.h
 stdint.h
 -
 stddef.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c
+utils.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.h
+string.h
+-
+stdio.h
+-
+time.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.h
+time.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c

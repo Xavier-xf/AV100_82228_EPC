@@ -6,6 +6,7 @@
 #include    "svc_svp.h"
 #include "app_upgrade.h"
 #include "event_bus.h"
+#include "utils.h"
 #include "svc_network.h"
 #include "svc_voice.h"
 #include "svc_timer.h"
@@ -120,17 +121,16 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
     if (st->leave_msg_enable) {
         /* 留言提示音：跟室内机设置的语言走；旧版防抖 3000ms */
         static struct timespec last_leave_time = {0};
-        struct timespec now;
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        long diff_ms = (long)(now.tv_sec  - last_leave_time.tv_sec)  * 1000
-                     + (long)(now.tv_nsec - last_leave_time.tv_nsec) / 1000000;
+        unsigned long long diff_ms = UtilsDiffMs(&last_leave_time);
+        printf("[AppIntercom] leave_msg_enable, diff_ms=%llu\n", diff_ms);
         if (diff_ms > 3000) {
-            /* leave_msg_lang 由室内机在 arg0>>2 位传入 */
             int lang_idx = st->leave_msg_lang;
             VoiceId vid = (VoiceId)(VOICE_LeaveMsgEng + lang_idx);
             SvcVoicePlaySimple(vid, VOICE_VOL_DEFAULT);
         }
-        last_leave_time = now;
+
+        // 获取当前时间并更新
+        UtilsGetTime(&last_leave_time);
         printf("last_leave_time.tv_sec=%ld,last_leave_time.tv_nsec=%ld\n",last_leave_time.tv_sec,last_leave_time.tv_nsec);
     }
     if (cur == INTERCOM_STATE_IDLE) {

@@ -11,6 +11,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.h
 
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/common/event_bus.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/common/utils.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/hal/drv_gpio.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/hal/drv_video_in.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/service/svc_intercom_stream.h
@@ -36,6 +37,9 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.h
+
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.h
 
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.h

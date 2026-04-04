@@ -233,6 +233,33 @@ home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c.s:
 	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c.s
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c.s
 
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.o
+
+# target to build an object file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.i: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.i
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.i
+
+# target to preprocess a source file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.i:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.i
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.i
+
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.s: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.s
+
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.s
+
+# target to generate assembly for a file
+home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.s:
+	cd /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build && $(MAKE) -f cmake/CMakeFiles/ipc_camera.dir/build.make cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.s
+.PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.s
+
 home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.o: home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.o
 
 .PHONY : home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.o
@@ -713,6 +740,9 @@ help:
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.s"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.o"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.i"
+	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.s"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.o"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.i"
 	@echo "... home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.s"
