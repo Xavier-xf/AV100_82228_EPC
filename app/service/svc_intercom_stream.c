@@ -630,8 +630,8 @@ int SvcIntercomStreamStart(StreamMode mode, uint8_t peer_dev_id)
 
     printf("[SvcStream] start mode=%d peer=0x%02X\n", mode, peer_dev_id);
 
-    pcm16_alaw_tableinit();
-    alaw_pcm16_tableinit();
+    // pcm16_alaw_tableinit();
+    // alaw_pcm16_tableinit();
 
     int atx = open_audio_tx_socket();
     int arx = open_audio_rx_socket();
@@ -744,7 +744,8 @@ int SvcIntercomStreamInit(void)
         memset(&s_video_pool[i], 0, sizeof(VideoSlot));
         pthread_mutex_init(&s_video_pool[i].lock, NULL);
     }
-
+    pcm16_alaw_tableinit();
+    alaw_pcm16_tableinit();
     DrvAudioInSetCallback(on_audio_in_frame);
     DrvVideoInSetCallback(on_video_frame);
 

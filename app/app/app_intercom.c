@@ -135,6 +135,7 @@ static void on_stream_status(EventId id, const void *arg, size_t len)
     }
     if (cur == INTERCOM_STATE_IDLE) {
         enter_stream(INTERCOM_STATE_MONITORING, st->sender_dev);
+        cur = AppIntercomGetState();
     }
     if (cur == INTERCOM_STATE_TALKING || cur == INTERCOM_STATE_MONITORING) {
         SvcIntercomStreamRefresh(st);
