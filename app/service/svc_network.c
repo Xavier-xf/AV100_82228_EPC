@@ -237,13 +237,6 @@ static void raw_packet_handle(const uint8_t *buf, int len)
      */
     case CMD_ID_REPEAT: {
         static int heart_count = 0;
-        static struct timespec last_hb = {0};
-        struct timespec now;
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        long diff_ms = (long)(now.tv_sec  - last_hb.tv_sec)  * 1000
-                     + (long)(now.tv_nsec - last_hb.tv_nsec) / 1000000;
-        if (diff_ms < 1000) break;
-        last_hb = now;
 
         heart_count = (heart_count + 1) % 2;
         if (heart_count == 0) {
@@ -504,7 +497,6 @@ void SvcNetworkDoorbellNotify(int key_index, int status)
 void SvcNetworkStreamStatusSend(uint8_t svp_active, uint8_t comm_active)
 {
     uint8_t arg1 = (uint8_t)((0 << 2)| (svp_active  & 0x01)| ((comm_active & 0x01) << 1));
-    printf("[SvcNet] stream status → Arg1=0x%02X Arg2=%d\n", arg1, DOOR_CAMERA_MODEL);
     net_msg_send(DEVICE_ALL, CMD_STREAM_STATUS, arg1, DOOR_CAMERA_MODEL);
 }
 
