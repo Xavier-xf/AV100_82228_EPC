@@ -23,9 +23,6 @@
 #define CARD_PERM_LOCK     0x01  /* 控制门锁 */
 #define CARD_PERM_GATE     0x02  /* 控制门闸 */
 
-/* 默认开锁时长（无 UserConfig 时使用）*/
-#define CARD_DEFAULT_UNLOCK_MS   3000
-#define CARD_DEFAULT_UNGATE_MS   3000
 
 /* =========================================================
  *  数据结构

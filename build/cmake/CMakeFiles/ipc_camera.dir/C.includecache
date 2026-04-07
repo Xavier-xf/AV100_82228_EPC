@@ -18,6 +18,10 @@ stdint.h
 stdint.h
 -
 
+../app/app/app_user_config.h
+stdint.h
+-
+
 ../app/common/event_bus.h
 stdint.h
 -
@@ -147,6 +151,8 @@ ak_common_video.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.c
 app_card.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.h
+app_user_config.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.h
 drv_card.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_card.h
 drv_gpio.h
@@ -257,6 +263,22 @@ stdbool.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.h
+stdint.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.c
+app_user_config.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.h
+string.h
+-
+stdio.h
+-
+fcntl.h
+-
+unistd.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.h
 stdint.h
 -
 
@@ -587,6 +609,8 @@ app_doorbell.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_doorbell.h
 app_card.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_card.h
+app_user_config.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_user_config.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/mad.h
 

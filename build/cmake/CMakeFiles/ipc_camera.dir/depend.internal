@@ -10,6 +10,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
  ../app/service/svc_voice.h
  /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.c
  /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.h
+ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.o
  ../app/common/event_bus.h
  ../app/hal/drv_adc.h
@@ -45,6 +46,9 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
  ../app/service/svc_voice.h
  /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c
  /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.c.o
+ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.c
+ /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c.o
  /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c
  /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.h
@@ -112,6 +116,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
  ../app/app/app_doorbell.h
  ../app/app/app_intercom.h
  ../app/app/app_upgrade.h
+ ../app/app/app_user_config.h
  ../app/common/event_bus.h
  ../app/hal/drv_adc.h
  ../app/hal/drv_audio_in.h

@@ -6,6 +6,7 @@
  * 硬件读卡由 drv_card.c 完成，刷卡回调调用 AppCardHandle。
  */
 #include "app_card.h"
+#include "app_user_config.h"
 #include "drv_card.h"
 #include "drv_gpio.h"
 #include "svc_timer.h"
@@ -209,23 +210,44 @@ int AppCardDeckPermGet(unsigned char **deck)
 
 /* =========================================================
  *  开锁（异步，避免阻塞刷卡线程）
+ *
+ *  play_voice=1 时在开锁前播放语言提示音（对应旧版 Unlock.c 中
+ *  `!TimerEnablestatus(对侧锁) && UnlockVoiceEn` 的逻辑）。
+ *  调用方确保同一次开锁动作只有第一路锁传 play_voice=1，避免重复播音。
  * ========================================================= */
-typedef struct { GpioLockType type; int duration_ms; } UnlockArg;
+typedef struct {
+    GpioLockType type;
+    int          duration_ms;
+    int          play_voice;  /* 1=播放开锁提示音 */
+} UnlockArg;
 
 static void *unlock_thread(void *arg)
 {
     UnlockArg *ua = (UnlockArg *)arg;
+
+    /* 开锁提示音（对应旧版 VoiceRingPlay(Language + UnlockEng, 90)）*/
+    if (ua->play_voice) {
+        AppUserConfig *cfg = AppUserConfigGet();
+        if (cfg->UnlockVoiceEn) {
+            /* Language 枚举值与 VOICE_UnlockEng 偏移量一一对应 */
+            int voice_idx = (int)VOICE_UnlockEng + (int)cfg->Language;
+            if (voice_idx >= VOICE_UnlockEng && voice_idx < VOICE_TOTAL)
+                SvcVoicePlaySimple((VoiceId)voice_idx, VOICE_VOL_DEFAULT);
+        }
+    }
+
     DrvGpioLockOpen(ua->type, ua->duration_ms);
     free(ua);
     return NULL;
 }
 
-static void unlock_async(GpioLockType type, int duration_ms)
+static void unlock_async(GpioLockType type, int duration_ms, int play_voice)
 {
     UnlockArg *ua = malloc(sizeof(UnlockArg));
     if (!ua) return;
-    ua->type = type;
+    ua->type        = type;
     ua->duration_ms = duration_ms;
+    ua->play_voice  = play_voice;
     pthread_t t;
     if (pthread_create(&t, NULL, unlock_thread, ua) != 0) {
         free(ua);
@@ -386,15 +408,22 @@ void AppCardHandle(char *raw_uid4)
     if (card_idx != -1) {
         security_error_reset();
         SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
-        SvcVoicePlaySimple(VOICE_UnlockChi, VOICE_VOL_DEFAULT);
 
+        AppUserConfig *cfg = AppUserConfigGet();
         char perm = s_deck.Deck[card_idx].Perm;
-        if (perm & CARD_PERM_LOCK)
-            unlock_async(GPIO_LOCK_DOOR, CARD_DEFAULT_UNLOCK_MS);
-        if (perm & CARD_PERM_GATE)
-            unlock_async(GPIO_LOCK_GATE, CARD_DEFAULT_UNGATE_MS);
 
-        printf("[AppCard] Card verify OK, perm=%d\n", (int)(unsigned char)perm);
+        /* 第一路开锁传 play_voice=1，后续传 0，避免重复播音
+         * （对应旧版 !TimerEnablestatus(对侧锁) && UnlockVoiceEn）*/
+        int first = 1;
+        if (perm & CARD_PERM_LOCK) {
+            unlock_async(GPIO_LOCK_DOOR, cfg->UnlockTime * 1000, first);
+            first = 0;
+        }
+        if (perm & CARD_PERM_GATE)
+            unlock_async(GPIO_LOCK_GATE, cfg->UngateTime * 1000, first);
+
+        printf("[AppCard] Card verify OK, perm=%d unlock=%ds ungate=%ds\n",
+               (int)(unsigned char)perm, cfg->UnlockTime, cfg->UngateTime);
         return;
     }
 

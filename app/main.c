@@ -40,6 +40,7 @@
 #include "app_upgrade.h"
 #include "app_doorbell.h"
 #include "app_card.h"
+#include "app_user_config.h"
 /* =========================================================
  *  常量
  * ========================================================= */
@@ -163,6 +164,9 @@ int main(int argc, char *argv[])
     INIT_MODULE(AppIntercomInit());/* 对讲状态机*/
 
     INIT_MODULE(AppUpgradeInit());    /* 固件升级（清理残留临时文件）*/
+
+    /* 用户配置（开锁时长/语言/提示音等），需在 AppCardInit 之前加载 */
+    INIT_MODULE(AppUserConfigInit());
 
     /* IC 卡：先注册回调（AppCardInit），再初始化硬件（DrvCardInit）*/
     INIT_MODULE(AppCardInit());       /* 卡组数据库加载 + 注册回调 */
