@@ -4,6 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
+  "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c.o"
@@ -12,6 +13,7 @@ set(CMAKE_DEPENDS_CHECK_C
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.c.o"
+  "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_card.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_card.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c.o"
@@ -23,6 +25,7 @@ set(CMAKE_DEPENDS_CHECK_C
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/main.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/main.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o"
+  "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.c.o"
   "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.c" "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build/cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.c.o"

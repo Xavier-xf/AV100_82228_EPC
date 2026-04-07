@@ -1,0 +1,114 @@
+/**
+ * @file    app_card.h
+ * @brief   IC 卡管理（数据库 + 刷卡业务逻辑）
+ *
+ * 移植自旧版 UserCard.h / RC522Card.c 的业务部分。
+ * 数据文件：/etc/config/UserCard.cfg
+ */
+#ifndef _APP_CARD_H_
+#define _APP_CARD_H_
+
+#include <stdint.h>
+
+/* =========================================================
+ *  常量
+ * ========================================================= */
+#define CARD_CONFIG_PATH   "/etc/config/UserCard.cfg"
+#define CARD_DATA_LEN      5    /* 4 字节 UID + 1 字节异或校验 */
+#define CARD_CODE_LEN      4    /* 4 位 PIN 码 */
+#define DECK_SIZE_MAX      200  /* 最多存储卡片数量 */
+#define CARD_INITIAL_CODE  "0000"
+
+/* 卡片权限位（可组合）*/
+#define CARD_PERM_LOCK     0x01  /* 控制门锁 */
+#define CARD_PERM_GATE     0x02  /* 控制门闸 */
+
+/* 默认开锁时长（无 UserConfig 时使用）*/
+#define CARD_DEFAULT_UNLOCK_MS   3000
+#define CARD_DEFAULT_UNGATE_MS   3000
+
+/* =========================================================
+ *  数据结构
+ * ========================================================= */
+typedef struct {
+    char Perm;                /* 权限位：0=空位，CARD_PERM_LOCK/GATE */
+    char Data[CARD_DATA_LEN]; /* 卡片 UID（4字节）+ 校验（1字节）    */
+    char Code[CARD_CODE_LEN]; /* 4 位 PIN 码                         */
+} AppCard;
+
+typedef struct {
+    char    DeckSize;
+    AppCard Deck[DECK_SIZE_MAX];
+} AppCardInfo;
+
+/* =========================================================
+ *  卡组管理接口
+ * ========================================================= */
+
+/** @brief 卡组初始化（从文件读取）*/
+int AppCardDeckInit(void);
+
+/** @brief 格式化卡组（清空所有卡片并保存）*/
+int AppCardDeckFormat(void);
+
+/** @brief 保存卡组到文件 */
+int AppCardSave(void);
+
+/** @brief 获取卡组信息指针 */
+AppCardInfo *AppCardInfoGet(void);
+
+/** @brief 添加卡片（index=-1 自动查找空位）
+ *  @return 0=失败 1=成功
+ */
+int AppCardAdd(int index, char *data, char permissions);
+
+/** @brief 设置卡片权限（permissions=0 等同删除）
+ *  @return 0=失败 1=成功
+ */
+int AppCardSetPerm(int index, char permissions);
+
+/** @brief 搜索卡片
+ *  @return -1=未找到，>=0=卡片索引
+ */
+int AppCardSearch(char *data);
+
+/** @brief 卡片 PIN 码校验
+ *  @return 0=失败，非0=权限值
+ */
+int AppCardCodeVerify(int index, char *code, int code_len);
+
+/** @brief 搜索 PIN 码权限（不能为初始码 "0000"）
+ *  @return 0=失败，非0=权限值
+ */
+int AppCardCodePermission(char *code, int code_len);
+
+/** @brief 获取指定索引的卡片权限 */
+char AppCardIndexPerm(int index);
+
+/** @brief 获取卡组权限+卡号数据包（供网络管理发送）
+ *  @param deck  输出缓冲区指针（静态，无需释放）
+ *  @return 数据大小（字节）
+ */
+int AppCardDeckPermGet(unsigned char **deck);
+
+/* =========================================================
+ *  刷卡业务接口（由 drv_card.c 回调）
+ * ========================================================= */
+
+/** @brief 处理一次刷卡事件（RC522 读到的原始 4 字节 UID）
+ *
+ * 内部逻辑（对应旧版 Rc522CardModuleHandle）：
+ *   - 添加模式（TMR_ADD_CARD 激活）：录入卡片
+ *   - 删除模式（TMR_DEL_CARD 激活）：删除卡片
+ *   - 普通模式：查询卡片权限，驱动开锁
+ */
+void AppCardHandle(char *raw_uid4);
+
+/* =========================================================
+ *  初始化
+ * ========================================================= */
+
+/** @brief 初始化卡片模块（加载数据 + 注册 HAL 回调）*/
+int AppCardInit(void);
+
+#endif /* _APP_CARD_H_ */

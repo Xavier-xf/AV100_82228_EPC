@@ -6,6 +6,10 @@
 
 #IncludeRegexTransform: 
 
+../app/app/app_card.h
+stdint.h
+-
+
 ../app/app/app_doorbell.h
 
 ../app/app/app_intercom.h
@@ -31,6 +35,8 @@ time.h
 ../app/hal/drv_audio_out.h
 stdbool.h
 -
+
+../app/hal/drv_card.h
 
 ../app/hal/drv_gpio.h
 
@@ -69,6 +75,8 @@ stdint.h
 ../app/service/svc_intercom_stream.h
 stdint.h
 -
+
+../app/service/svc_net_manage.h
 
 ../app/service/svc_network.h
 stdint.h
@@ -135,6 +143,36 @@ ak_common_video.h
 ../include/anyka3918/ak_vpss.h
 
 ../include/g711/g711_table.h
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.c
+app_card.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.h
+drv_card.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_card.h
+drv_gpio.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_gpio.h
+svc_timer.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_timer.h
+svc_voice.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_voice.h
+utils.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/utils.h
+unistd.h
+-
+string.h
+-
+stdlib.h
+-
+stdio.h
+-
+fcntl.h
+-
+pthread.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.h
+stdint.h
+-
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c
 app_doorbell.h
@@ -305,6 +343,24 @@ stdio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_out.h
 stdbool.h
 -
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_card.c
+drv_card.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_card.h
+sys/ioctl.h
+-
+pthread.h
+-
+unistd.h
+-
+string.h
+-
+stdio.h
+-
+fcntl.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_card.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio.c
 drv_gpio.h
@@ -505,6 +561,8 @@ drv_audio_in.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_audio_in.h
 drv_video_in.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_video_in.h
+drv_card.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_card.h
 svc_timer.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_timer.h
 svc_audio.h
@@ -517,12 +575,16 @@ svc_svp.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_svp.h
 svc_intercom_stream.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_intercom_stream.h
+svc_net_manage.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/svc_net_manage.h
 app_intercom.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_intercom.h
 app_upgrade.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_upgrade.h
 app_doorbell.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_doorbell.h
+app_card.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_card.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/mad.h
 
@@ -619,6 +681,42 @@ errno.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.h
 stdint.h
 -
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c
+svc_net_manage.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.h
+app_card.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/app_card.h
+svc_timer.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.h
+svc_voice.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_voice.h
+drv_gpio.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/drv_gpio.h
+netinet/in.h
+-
+arpa/inet.h
+-
+sys/socket.h
+-
+sys/select.h
+-
+stdatomic.h
+-
+pthread.h
+-
+unistd.h
+-
+string.h
+-
+stdlib.h
+-
+stdio.h
+-
+fcntl.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.c
 svc_network.h

@@ -123,9 +123,6 @@ void DrvGpioLockSet(GpioLockType type, int on)
            on ? "OPEN" : "CLOSE");
 }
 
-/* =========================================================
- *  功放控制
- * ========================================================= */
 int DrvGpioLockOpen(GpioLockType type, int duration_ms)
 {
     DrvGpioLockSet(type, 1);
@@ -134,6 +131,9 @@ int DrvGpioLockOpen(GpioLockType type, int duration_ms)
     return 0;
 }
 
+/* =========================================================
+ *  功放控制
+ * ========================================================= */
 void DrvGpioAmpEnable(void)
 {
     GpioSysfsLevelSet(PIN_AMP_EN, GPIO_LEVEL_HIGH);

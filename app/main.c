@@ -26,6 +26,7 @@
 #include "drv_adc.h"
 #include "drv_audio_in.h"
 #include "drv_video_in.h"
+#include "drv_card.h"
 /* ---- service ---- */
 #include "svc_timer.h"
 #include "svc_audio.h"
@@ -33,10 +34,12 @@
 #include "svc_network.h"
 #include "svc_svp.h"
 #include "svc_intercom_stream.h"
+#include "svc_net_manage.h"
 /* ---- app ---- */
 #include "app_intercom.h"
 #include "app_upgrade.h"
 #include "app_doorbell.h"
+#include "app_card.h"
 /* =========================================================
  *  常量
  * ========================================================= */
@@ -161,11 +164,16 @@ int main(int argc, char *argv[])
 
     INIT_MODULE(AppUpgradeInit());    /* 固件升级（清理残留临时文件）*/
 
+    /* IC 卡：先注册回调（AppCardInit），再初始化硬件（DrvCardInit）*/
+    INIT_MODULE(AppCardInit());       /* 卡组数据库加载 + 注册回调 */
+    INIT_MODULE(SvcNetManageInit());  /* 网络卡片管理（TCP 4321）  */
+
     /* -------------------------------------------------- */
     /* 使能产生回调的驱动（App 层已就绪后再启动）         */
     /* -------------------------------------------------- */
 
     INIT_MODULE(DrvAdcInit());    /* ADC 按键采集*/
+    INIT_MODULE(DrvCardInit());   /* RC522 读卡器（需 AppCardInit 先注册回调）*/
 
     /* 红外夜视检测（必须在 AppIntercomInit 注册订阅后调用，
      * 因 DrvInfraredInit 会立即发布初始状态事件）        */

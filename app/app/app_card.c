@@ -1,0 +1,404 @@
+/**
+ * @file    app_card.c
+ * @brief   IC 卡管理（数据库 + 刷卡业务逻辑）
+ *
+ * 移植自旧版 UserCard.c + RC522Card.c（业务部分）。
+ * 硬件读卡由 drv_card.c 完成，刷卡回调调用 AppCardHandle。
+ */
+#include "app_card.h"
+#include "drv_card.h"
+#include "drv_gpio.h"
+#include "svc_timer.h"
+#include "svc_voice.h"
+#include "utils.h"
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <pthread.h>
+
+/* =========================================================
+ *  内部数据
+ * ========================================================= */
+static AppCardInfo s_deck = {
+    .DeckSize = 0,
+    .Deck[0 ... (DECK_SIZE_MAX - 1)].Perm = 0
+};
+
+/* =========================================================
+ *  卡组数据库
+ * ========================================================= */
+
+int AppCardSave(void)
+{
+    int fd = open(CARD_CONFIG_PATH, O_WRONLY | O_CREAT, 0644);
+    if (fd < 0) {
+        printf("[AppCard] open %s fail\n", CARD_CONFIG_PATH);
+        return 0;
+    }
+    write(fd, &s_deck, sizeof(AppCardInfo));
+    close(fd);
+    system("fsync -d " CARD_CONFIG_PATH);
+    return 1;
+}
+
+AppCardInfo *AppCardInfoGet(void)
+{
+    return &s_deck;
+}
+
+static void deck_check(void)
+{
+    s_deck.DeckSize = 0;
+    for (int i = 0; i < DECK_SIZE_MAX; i++) {
+        char *d = s_deck.Deck[i].Data;
+        if ((d[0] ^ d[1] ^ d[2] ^ d[3]) != d[4]) {
+            s_deck.Deck[i].Perm = 0;
+        } else if (s_deck.Deck[i].Perm) {
+            s_deck.DeckSize++;
+        }
+    }
+    AppCardSave();
+}
+
+int AppCardDeckInit(void)
+{
+    int fd = open(CARD_CONFIG_PATH, O_RDONLY);
+    if (fd < 0) {
+        printf("[AppCard] %s not found, creating empty deck\n", CARD_CONFIG_PATH);
+        AppCardSave();
+        return 0;
+    }
+    read(fd, &s_deck, sizeof(AppCardInfo));
+    close(fd);
+    deck_check();
+    return 1;
+}
+
+int AppCardDeckFormat(void)
+{
+    s_deck.DeckSize = 0;
+    memset(s_deck.Deck, 0, sizeof(s_deck.Deck));
+    AppCardSave();
+    return 1;
+}
+
+int AppCardAdd(int index, char *data, char permissions)
+{
+    if (index >= DECK_SIZE_MAX || s_deck.DeckSize >= DECK_SIZE_MAX)
+        return 0;
+
+    if (index == -1) {
+        for (index = 0; index < DECK_SIZE_MAX; index++) {
+            if (s_deck.Deck[index].Perm == 0) {
+                memcpy(s_deck.Deck[index].Data, data, sizeof(s_deck.Deck[index].Data));
+                memcpy(s_deck.Deck[index].Code, CARD_INITIAL_CODE, sizeof(s_deck.Deck[index].Code));
+                s_deck.DeckSize++;
+                break;
+            }
+        }
+    } else if (s_deck.Deck[index].Perm != 0) {
+        char *d = s_deck.Deck[index].Data;
+        if ((d[0] ^ d[1] ^ d[2] ^ d[3]) != d[4]) {
+            printf("[AppCard] Card %d data error, replacing\n", index);
+            deck_check();
+            memcpy(s_deck.Deck[index].Data, data, sizeof(s_deck.Deck[index].Data));
+            memcpy(s_deck.Deck[index].Code, CARD_INITIAL_CODE, sizeof(s_deck.Deck[index].Code));
+            s_deck.DeckSize++;
+        } else if (memcmp(s_deck.Deck[index].Data, data, sizeof(s_deck.Deck[index].Data)) != 0) {
+            return 0;
+        }
+    } else {
+        memcpy(s_deck.Deck[index].Data, data, sizeof(s_deck.Deck[index].Data));
+        memcpy(s_deck.Deck[index].Code, CARD_INITIAL_CODE, sizeof(s_deck.Deck[index].Code));
+        s_deck.DeckSize++;
+    }
+    s_deck.Deck[index].Perm |= permissions;
+    AppCardSave();
+    return 1;
+}
+
+int AppCardSetPerm(int index, char permissions)
+{
+    if (index >= DECK_SIZE_MAX)
+        return 0;
+    if (permissions < 0 || permissions > 3)
+        return 0;
+    if (s_deck.Deck[index].Perm == 0)
+        return 0;
+
+    if (!(s_deck.Deck[index].Perm = permissions)) {
+        memset(s_deck.Deck[index].Data, 0, sizeof(s_deck.Deck[index].Data));
+        if (s_deck.DeckSize) s_deck.DeckSize--;
+    }
+    AppCardSave();
+    return 1;
+}
+
+int AppCardSearch(char *data)
+{
+    if (!s_deck.DeckSize)
+        return -1;
+
+    int remaining = s_deck.DeckSize;
+    for (int i = 0; i < DECK_SIZE_MAX; i++) {
+        if (s_deck.Deck[i].Perm) {
+            if (memcmp(s_deck.Deck[i].Data, data, sizeof(s_deck.Deck[i].Data)) == 0)
+                return i;
+            if (!(--remaining))
+                break;
+        }
+    }
+    return -1;
+}
+
+int AppCardCodeVerify(int index, char *code, int code_len)
+{
+    if (code_len != sizeof(s_deck.Deck[0].Code))
+        return 0;
+    if (memcmp(s_deck.Deck[index].Code, code, code_len) == 0)
+        return s_deck.Deck[index].Perm;
+    return 0;
+}
+
+int AppCardCodePermission(char *code, int code_len)
+{
+    if (code_len != sizeof(s_deck.Deck[0].Code))
+        return 0;
+    if (memcmp(code, CARD_INITIAL_CODE, strlen(CARD_INITIAL_CODE)) == 0)
+        return 0;
+
+    int remaining = s_deck.DeckSize;
+    for (int i = 0; i < DECK_SIZE_MAX; i++) {
+        if (s_deck.Deck[i].Perm) {
+            if (memcmp(s_deck.Deck[i].Code, code, sizeof(s_deck.Deck[i].Code)) == 0)
+                return s_deck.Deck[i].Perm;
+            if (!(--remaining))
+                break;
+        }
+    }
+    return 0;
+}
+
+char AppCardIndexPerm(int index)
+{
+    if (index >= DECK_SIZE_MAX) return 0;
+    return s_deck.Deck[index].Perm;
+}
+
+int AppCardDeckPermGet(unsigned char **deck)
+{
+    /* 与旧版 UserDeckPermGet 保持一致：固定 1280 字节
+     * [0]       = DeckSize
+     * [1..1200] = 200 * 6 字节（Perm(1) + Data(5)）
+     * [1201..1279] = 零填充
+     */
+    static unsigned char buf[1280];
+    memset(buf, 0, sizeof(buf));
+    buf[0] = (unsigned char)s_deck.DeckSize;
+    for (int i = 0; i < DECK_SIZE_MAX; i++) {
+        int off = 1 + i * 6;
+        buf[off] = (unsigned char)s_deck.Deck[i].Perm;
+        memcpy(&buf[off + 1], s_deck.Deck[i].Data, CARD_DATA_LEN);
+    }
+    *deck = buf;
+    return (int)sizeof(buf);  /* 1280 */
+}
+
+/* =========================================================
+ *  开锁（异步，避免阻塞刷卡线程）
+ * ========================================================= */
+typedef struct { GpioLockType type; int duration_ms; } UnlockArg;
+
+static void *unlock_thread(void *arg)
+{
+    UnlockArg *ua = (UnlockArg *)arg;
+    DrvGpioLockOpen(ua->type, ua->duration_ms);
+    free(ua);
+    return NULL;
+}
+
+static void unlock_async(GpioLockType type, int duration_ms)
+{
+    UnlockArg *ua = malloc(sizeof(UnlockArg));
+    if (!ua) return;
+    ua->type = type;
+    ua->duration_ms = duration_ms;
+    pthread_t t;
+    if (pthread_create(&t, NULL, unlock_thread, ua) != 0) {
+        free(ua);
+        return;
+    }
+    pthread_detach(t);
+}
+
+/* =========================================================
+ *  安防错误计数（对应旧版 SecurityMode.c）
+ * ========================================================= */
+#define SECURITY_ERROR_MAX  5   /* 连续错误 5 次触发安防 */
+
+static int s_error_count = 0;
+
+static void security_error_reset_cb(void *arg)
+{
+    (void)arg;
+    s_error_count = 0;
+}
+
+static void security_error_reset(void)
+{
+    s_error_count = 0;
+    SvcTimerStop(TMR_SECURITY_ERROR);
+}
+
+static void security_error_update(void)
+{
+    /* 每次错误重置 30s 统计窗口 */
+    SvcTimerSet(TMR_SECURITY_ERROR, 30000, security_error_reset_cb, NULL);
+    if (++s_error_count >= SECURITY_ERROR_MAX) {
+        s_error_count = 0;
+        SvcTimerStop(TMR_SECURITY_ERROR);
+        /* 触发安防：启动保护定时器，60s 内不响应 */
+        SvcTimerSet(TMR_SECURITY_TRIGGER, 60000, NULL, NULL);
+        printf("[AppCard] Security triggered! Too many wrong cards.\n");
+    }
+}
+
+/* =========================================================
+ *  刷卡指示灯闪烁
+ * ========================================================= */
+static void card_light_off_cb(void *arg)
+{
+    (void)arg;
+    DrvGpioCardLightSet(0);
+}
+
+static void card_light_flash(void)
+{
+    DrvGpioCardLightSet(1);
+    SvcTimerSet(TMR_CARD_LIGHT, 200, card_light_off_cb, NULL);
+}
+
+/* =========================================================
+ *  去重过滤（同一张卡 1s 内只处理一次）
+ * ========================================================= */
+static int filter_duplicate(const char *uid4)
+{
+    static char last_uid[4] = {0};
+    static struct timespec last_time = {0};
+
+    unsigned long long diff = UtilsDiffMs(&last_time);
+    if (diff < 1000)
+        return -1;  /* 频率过快，丢弃 */
+
+    UtilsGetTime(&last_time);
+
+    if (memcmp(last_uid, uid4, 4) == 0)
+        return 0;   /* 同一张卡，但间隔超过 1s，允许通过 */
+
+    memcpy(last_uid, uid4, 4);
+    return 0;
+}
+
+/* =========================================================
+ *  刷卡业务处理（对应旧版 Rc522CardModuleHandle）
+ * ========================================================= */
+void AppCardHandle(char *raw_uid4)
+{
+    /* 去重 */
+    if (filter_duplicate(raw_uid4) == -1)
+        return;
+
+    /* 安防触发保护期内不响应 */
+    if (SvcTimerActive(TMR_SECURITY_TRIGGER))
+        return;
+
+    card_light_flash();
+
+    /* 补充第 5 字节校验（RC522 只读 4 字节，第 5 字节 = 前 4 字节异或）*/
+    char data[CARD_DATA_LEN];
+    memcpy(data, raw_uid4, 4);
+    data[4] = (char)(data[0] ^ data[1] ^ data[2] ^ data[3]);
+
+    printf("[AppCard] CARD: [%02x %02x %02x %02x %02x]\n",
+           (unsigned char)data[0], (unsigned char)data[1],
+           (unsigned char)data[2], (unsigned char)data[3],
+           (unsigned char)data[4]);
+
+    int card_idx = AppCardSearch(data);
+    if (card_idx != -1)
+        printf("[AppCard] Card %d found, code=%.4s\n",
+               card_idx, s_deck.Deck[card_idx].Code);
+
+    /* ---- 添加模式 ---- */
+    if (SvcTimerActive(TMR_ADD_CARD)) {
+        /* TMR_ADD_CARD 的 arg：NULL=由网管触发（自动分配）, 非NULL=索引指针 */
+        /* 为简化，始终使用 index=-1（自动查找空位）*/
+        int ret = 0;
+        if (card_idx == -1) {
+            ret = AppCardAdd(-1, data, CARD_PERM_LOCK);
+            if (ret) {
+                printf("[AppCard] Add card succeed\n");
+                SvcTimerRefresh(TMR_ADD_CARD, 30000);
+            }
+        }
+        printf("[AppCard] Add card %s\n", ret ? "succeed" : "fail");
+        SvcVoicePlaySimple(ret ? VOICE_Bi2 : VOICE_Bi4, VOICE_VOL_DEFAULT);
+        return;
+    }
+
+    /* ---- 删除模式 ---- */
+    if (SvcTimerActive(TMR_DEL_CARD)) {
+        if (card_idx != -1) {
+            if (AppCardSetPerm(card_idx, 0)) {
+                printf("[AppCard] Del card %d succeed\n", card_idx);
+                SvcVoicePlaySimple(VOICE_Bi3, VOICE_VOL_DEFAULT);
+                return;
+            }
+        }
+        SvcVoicePlaySimple(VOICE_Bi4, VOICE_VOL_DEFAULT);
+        printf("[AppCard] Del card fail\n");
+        return;
+    }
+
+    /* ---- 修改密码模式 ---- */
+    if (SvcTimerActive(TMR_MODIFY_CODE_CARD)) {
+        if (card_idx != -1) {
+            SvcTimerRefresh(TMR_MODIFY_CODE_CARD, 30000);
+            SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
+        }
+        return;
+    }
+
+    /* ---- 正常开锁 ---- */
+    if (card_idx != -1) {
+        security_error_reset();
+        SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
+
+        char perm = s_deck.Deck[card_idx].Perm;
+        if (perm & CARD_PERM_LOCK)
+            unlock_async(GPIO_LOCK_DOOR, CARD_DEFAULT_UNLOCK_MS);
+        if (perm & CARD_PERM_GATE)
+            unlock_async(GPIO_LOCK_GATE, CARD_DEFAULT_UNGATE_MS);
+
+        printf("[AppCard] Card verify OK, perm=%d\n", (int)(unsigned char)perm);
+        return;
+    }
+
+    /* ---- 未知卡 ---- */
+    SvcVoicePlaySimple(VOICE_Bi4, VOICE_VOL_DEFAULT);
+    security_error_update();
+    printf("[AppCard] Card verify FAIL\n");
+}
+
+/* =========================================================
+ *  初始化
+ * ========================================================= */
+int AppCardInit(void)
+{
+    AppCardDeckInit();
+    DrvCardSetCallback(AppCardHandle);
+    printf("[AppCard] init ok, DeckSize=%d\n", (int)(unsigned char)s_deck.DeckSize);
+    return 0;
+}
