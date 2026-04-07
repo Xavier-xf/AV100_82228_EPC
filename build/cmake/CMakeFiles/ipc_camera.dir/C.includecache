@@ -155,6 +155,8 @@ svc_timer.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_timer.h
 svc_voice.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_voice.h
+svc_net_manage.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_net_manage.h
 utils.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/utils.h
 unistd.h

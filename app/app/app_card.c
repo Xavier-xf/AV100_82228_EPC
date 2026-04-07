@@ -10,6 +10,7 @@
 #include "drv_gpio.h"
 #include "svc_timer.h"
 #include "svc_voice.h"
+#include "svc_net_manage.h"
 #include "utils.h"
 #include <unistd.h>
 #include <string.h>
@@ -236,7 +237,10 @@ static void unlock_async(GpioLockType type, int duration_ms)
 /* =========================================================
  *  安防错误计数（对应旧版 SecurityMode.c）
  * ========================================================= */
-#define SECURITY_ERROR_MAX  5   /* 连续错误 5 次触发安防 */
+/* 对应旧版 SecurityMode.c：SecurityErrorMax=10，窗口 60s，触发保护 60s */
+#define SECURITY_ERROR_MAX      10
+#define SECURITY_ERROR_WINDOW   (60 * 1000)   /* 统计窗口：60s 内累计错误 */
+#define SECURITY_TRIGGER_TIME   (60 * 1000)   /* 触发后保护期：60s 不响应 */
 
 static int s_error_count = 0;
 
@@ -254,13 +258,16 @@ static void security_error_reset(void)
 
 static void security_error_update(void)
 {
-    /* 每次错误重置 30s 统计窗口 */
-    SvcTimerSet(TMR_SECURITY_ERROR, 30000, security_error_reset_cb, NULL);
+    /* 第一次错误时启动统计窗口计时器（到期自动清零，对应旧版 SecirityErrorHandle）*/
+    if (s_error_count == 0)
+        SvcTimerSet(TMR_SECURITY_ERROR, SECURITY_ERROR_WINDOW, security_error_reset_cb, NULL);
+
+    printf("[AppCard] SecurityErrorCount=%d\n", s_error_count + 1);
     if (++s_error_count >= SECURITY_ERROR_MAX) {
         s_error_count = 0;
         SvcTimerStop(TMR_SECURITY_ERROR);
-        /* 触发安防：启动保护定时器，60s 内不响应 */
-        SvcTimerSet(TMR_SECURITY_TRIGGER, 60000, NULL, NULL);
+        /* 触发安防保护（对应旧版 SecurityModeTrigger），保护期内不响应刷卡 */
+        SvcTimerSet(TMR_SECURITY_TRIGGER, SECURITY_TRIGGER_TIME, NULL, NULL);
         printf("[AppCard] Security triggered! Too many wrong cards.\n");
     }
 }
@@ -333,18 +340,22 @@ void AppCardHandle(char *raw_uid4)
 
     /* ---- 添加模式 ---- */
     if (SvcTimerActive(TMR_ADD_CARD)) {
-        /* TMR_ADD_CARD 的 arg：NULL=由网管触发（自动分配）, 非NULL=索引指针 */
-        /* 为简化，始终使用 index=-1（自动查找空位）*/
         int ret = 0;
         if (card_idx == -1) {
+            /* 卡不存在，尝试添加 */
             ret = AppCardAdd(-1, data, CARD_PERM_LOCK);
             if (ret) {
                 printf("[AppCard] Add card succeed\n");
                 SvcTimerRefresh(TMR_ADD_CARD, 30000);
             }
         }
+        /* card_idx != -1：卡已存在，ret=0，视为失败 */
         printf("[AppCard] Add card %s\n", ret ? "succeed" : "fail");
         SvcVoicePlaySimple(ret ? VOICE_Bi2 : VOICE_Bi4, VOICE_VOL_DEFAULT);
+
+        /* 回传结果到室内机（对应旧版 NetManageShortPack(1, ManageAddCard, ret?1:9, 0)）
+         * arg1=1 表示成功，arg1=9 表示失败，室内机据此刷新显示 */
+        SvcNetManageSendShort(NET_MGR_ADD_CARD, (unsigned char)(ret ? 1 : 9), 0);
         return;
     }
 
@@ -375,6 +386,7 @@ void AppCardHandle(char *raw_uid4)
     if (card_idx != -1) {
         security_error_reset();
         SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
+        SvcVoicePlaySimple(VOICE_UnlockChi, VOICE_VOL_DEFAULT);
 
         char perm = s_deck.Deck[card_idx].Perm;
         if (perm & CARD_PERM_LOCK)
