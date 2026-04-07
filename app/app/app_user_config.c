@@ -9,6 +9,7 @@
 #include "app_user_config.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -55,6 +56,19 @@ int AppUserConfigSave(void)
     write(fd, &s_conf, sizeof(AppUserConfig));
     close(fd);
     system("fsync -d " USER_CONFIG_PATH);
+    return 1;
+}
+
+int AppUserDefaultConfigSave(void)
+{
+    int fd = open(USER_DEFAULT_CONFIG_PATH, O_WRONLY | O_CREAT, 0644);
+    if (fd < 0) {
+        printf("[UserConfig] open %s fail\n", USER_DEFAULT_CONFIG_PATH);
+        return 0;
+    }
+    write(fd, &s_conf_default, sizeof(AppUserConfig));
+    close(fd);
+    system("fsync -d " USER_DEFAULT_CONFIG_PATH);
     return 1;
 }
 

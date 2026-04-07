@@ -40,7 +40,9 @@
 #include "app_upgrade.h"
 #include "app_doorbell.h"
 #include "app_card.h"
+#include "app_keypad.h"
 #include "app_user_config.h"
+#include "drv_keypad.h"
 /* =========================================================
  *  常量
  * ========================================================= */
@@ -172,12 +174,16 @@ int main(int argc, char *argv[])
     INIT_MODULE(AppCardInit());       /* 卡组数据库加载 + 注册回调 */
     INIT_MODULE(SvcNetManageInit());  /* 网络卡片管理（TCP 4321）  */
 
+    /* 键盘：先注册回调（AppKeypadInit），再初始化硬件（DrvKeypadInit）*/
+    INIT_MODULE(AppKeypadInit());     /* 按键状态机 + 注册回调      */
+
     /* -------------------------------------------------- */
     /* 使能产生回调的驱动（App 层已就绪后再启动）         */
     /* -------------------------------------------------- */
 
     INIT_MODULE(DrvAdcInit());    /* ADC 按键采集*/
     INIT_MODULE(DrvCardInit());   /* RC522 读卡器（需 AppCardInit 先注册回调）*/
+    INIT_MODULE(DrvKeypadInit()); /* XW12A 键盘（需 AppKeypadInit 先注册回调）*/
 
     /* 红外夜视检测（必须在 AppIntercomInit 注册订阅后调用，
      * 因 DrvInfraredInit 会立即发布初始状态事件）        */

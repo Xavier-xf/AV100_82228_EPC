@@ -14,6 +14,8 @@ stdint.h
 
 ../app/app/app_intercom.h
 
+../app/app/app_keypad.h
+
 ../app/app/app_upgrade.h
 stdint.h
 -
@@ -45,6 +47,8 @@ stdbool.h
 ../app/hal/drv_gpio.h
 
 ../app/hal/drv_infrared.h
+
+../app/hal/drv_keypad.h
 
 ../app/hal/drv_motion_detect.h
 ak_md.h
@@ -151,8 +155,12 @@ ak_common_video.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.c
 app_card.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.h
+app_keypad.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.h
 app_user_config.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.h
+event_bus.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/event_bus.h
 drv_card.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_card.h
 drv_gpio.h
@@ -207,6 +215,8 @@ stdio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c
 app_intercom.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.h
+app_user_config.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.h
 svc_svp.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_svp.h
 app_upgrade.h
@@ -235,8 +245,44 @@ stdio.h
 -
 time.h
 -
+unistd.h
+-
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.h
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.c
+app_keypad.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.h
+app_card.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_card.h
+app_user_config.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.h
+drv_keypad.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_keypad.h
+drv_gpio.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_gpio.h
+drv_infrared.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_infrared.h
+svc_timer.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_timer.h
+svc_voice.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_voice.h
+svc_net_manage.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_net_manage.h
+time.h
+-
+string.h
+-
+stdlib.h
+-
+stdio.h
+-
+assert.h
+-
+stdbool.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c
 app_upgrade.h
@@ -272,6 +318,8 @@ app_user_config.h
 string.h
 -
 stdio.h
+-
+stdlib.h
 -
 fcntl.h
 -
@@ -431,6 +479,22 @@ unistd.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.h
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_keypad.c
+drv_keypad.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_keypad.h
+pthread.h
+-
+unistd.h
+-
+string.h
+-
+stdio.h
+-
+fcntl.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_keypad.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_motion_detect.c
 ak_common.h
@@ -609,8 +673,12 @@ app_doorbell.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_doorbell.h
 app_card.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_card.h
+app_keypad.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_keypad.h
 app_user_config.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app_user_config.h
+drv_keypad.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/drv_keypad.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/mad.h
 
@@ -726,8 +794,6 @@ arpa/inet.h
 sys/socket.h
 -
 sys/select.h
--
-stdatomic.h
 -
 pthread.h
 -

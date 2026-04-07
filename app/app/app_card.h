@@ -89,6 +89,35 @@ char AppCardIndexPerm(int index);
 int AppCardDeckPermGet(unsigned char **deck);
 
 /* =========================================================
+ *  安防错误计数（供 app_keypad.c 密码开锁调用）
+ * ========================================================= */
+
+/** @brief 重置安防错误计数 */
+void AppCardSecurityErrorReset(void);
+
+/** @brief 递增安防错误计数（达到上限触发保护）*/
+void AppCardSecurityErrorUpdate(void);
+
+/* =========================================================
+ *  卡+码组合开锁（CardAndCodeWay）
+ *   app_card.c 刷卡后存储卡索引，app_keypad.c 输入密码时读取
+ * ========================================================= */
+
+/** @brief 获取当前等待密码验证的卡片索引（-1=无效）*/
+int AppCardCodeCardIdxGet(void);
+
+/* =========================================================
+ *  开锁异步接口（供 app_keypad.c 调用，与 app_card.c 共用线程）
+ * ========================================================= */
+
+/** @brief 异步开锁（与 AppCardHandle 内部 unlock_async 一致）
+ *  @param type        GPIO_LOCK_DOOR / GPIO_LOCK_GATE
+ *  @param duration_ms 开锁持续时长（毫秒）
+ *  @param play_voice  1=播放开锁提示音，0=不播
+ */
+void AppCardUnlockAsync(int type, int duration_ms, int play_voice);
+
+/* =========================================================
  *  刷卡业务接口（由 drv_card.c 回调）
  * ========================================================= */
 

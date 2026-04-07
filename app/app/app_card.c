@@ -6,7 +6,9 @@
  * 硬件读卡由 drv_card.c 完成，刷卡回调调用 AppCardHandle。
  */
 #include "app_card.h"
+#include "app_keypad.h"
 #include "app_user_config.h"
+#include "event_bus.h"
 #include "drv_card.h"
 #include "drv_gpio.h"
 #include "svc_timer.h"
@@ -27,6 +29,15 @@ static AppCardInfo s_deck = {
     .DeckSize = 0,
     .Deck[0 ... (DECK_SIZE_MAX - 1)].Perm = 0
 };
+
+/* 卡+码组合模式：刷卡后存储待验证的卡索引，供 app_keypad.c 读取 */
+static int s_code_card_idx = -1;
+
+int AppCardCodeCardIdxGet(void) { return s_code_card_idx; }
+
+/* 前向声明（定义在后面，公开包装在前面引用）*/
+static void unlock_async(GpioLockType type, int duration_ms, int play_voice);
+static void security_error_update(void);
 
 /* =========================================================
  *  卡组数据库
@@ -241,6 +252,12 @@ static void *unlock_thread(void *arg)
     return NULL;
 }
 
+/* 公开给 app_keypad.c 调用 */
+void AppCardUnlockAsync(int type, int duration_ms, int play_voice)
+{
+    unlock_async((GpioLockType)type, duration_ms, play_voice);
+}
+
 static void unlock_async(GpioLockType type, int duration_ms, int play_voice)
 {
     UnlockArg *ua = malloc(sizeof(UnlockArg));
@@ -277,6 +294,10 @@ static void security_error_reset(void)
     s_error_count = 0;
     SvcTimerStop(TMR_SECURITY_ERROR);
 }
+
+/* 公开给 app_keypad.c 的包装 */
+void AppCardSecurityErrorReset(void)  { security_error_reset(); }
+void AppCardSecurityErrorUpdate(void) { security_error_update(); }
 
 static void security_error_update(void)
 {
@@ -398,6 +419,7 @@ void AppCardHandle(char *raw_uid4)
     /* ---- 修改密码模式 ---- */
     if (SvcTimerActive(TMR_MODIFY_CODE_CARD)) {
         if (card_idx != -1) {
+            AppKeypadSetModifyCardIdx(card_idx);   /* 告知键盘当前卡索引 */
             SvcTimerRefresh(TMR_MODIFY_CODE_CARD, 30000);
             SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
         }
@@ -406,10 +428,23 @@ void AppCardHandle(char *raw_uid4)
 
     /* ---- 正常开锁 ---- */
     if (card_idx != -1) {
+        AppUserConfig *cfg = AppUserConfigGet();
+
+        /* 卡+码模式：先刷卡，等待键盘输入密码 */
+        if (cfg->LockWay == UNLOCK_WAY_CARD_AND_CODE) {
+            if (!SvcTimerActive(TMR_CODE_CARD_UNLOCK)) {
+                s_code_card_idx = card_idx;
+                SvcTimerSet(TMR_CODE_CARD_UNLOCK, 30000, NULL, NULL);
+                SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
+                printf("[AppCard] CardAndCode: waiting for keypad code, card=%d\n",
+                       card_idx);
+            }
+            return;
+        }
+
         security_error_reset();
         SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
 
-        AppUserConfig *cfg = AppUserConfigGet();
         char perm = s_deck.Deck[card_idx].Perm;
 
         /* 第一路开锁传 play_voice=1，后续传 0，避免重复播音
@@ -434,12 +469,51 @@ void AppCardHandle(char *raw_uid4)
 }
 
 /* =========================================================
+ *  远程开锁（EVT_NET_UNLOCK_CMD，对应旧版 UnlockEventFunc）
+ * ========================================================= */
+static void on_net_unlock(EventId id, const void *data, size_t len)
+{
+    (void)id;
+    if (len < sizeof(NetUnlockArg)) return;
+    const NetUnlockArg *ua = (const NetUnlockArg *)data;
+
+    AppUserConfig *cfg = AppUserConfigGet();
+
+    /* unlock_time=0 时使用配置时长 */
+    int unlock_ms = (ua->unlock_time > 0)
+                    ? (ua->unlock_time * 1000) : (cfg->UnlockTime * 1000);
+    int ungate_ms = cfg->UngateTime * 1000;
+
+    /* 播放提示音（与旧版 Unlock() 内逻辑等效）
+     * 旧版临时修改 Language 再调用 Unlock()，新版直接用 language_idx */
+    SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
+    if (cfg->UnlockVoiceEn) {
+        int lang = (ua->language_idx < APP_LANG_TOTAL)
+                   ? (int)ua->language_idx : (int)cfg->Language;
+        int vi = (int)VOICE_UnlockEng + lang;
+        if (vi < VOICE_TOTAL)
+            SvcVoicePlaySimple((VoiceId)vi, VOICE_VOL_DEFAULT);
+    }
+
+    /* lock_type: bit0=门锁，bit1=门闸；0=门锁（默认）*/
+    int do_door = (ua->lock_type == 0) || (ua->lock_type & 0x01);
+    int do_gate = (ua->lock_type & 0x02);
+
+    if (do_door) unlock_async(GPIO_LOCK_DOOR, unlock_ms, 0);
+    if (do_gate) unlock_async(GPIO_LOCK_GATE, ungate_ms, 0);
+
+    printf("[AppCard] NET_UNLOCK type=%d time=%dms lang=%d\n",
+           ua->lock_type, unlock_ms, ua->language_idx);
+}
+
+/* =========================================================
  *  初始化
  * ========================================================= */
 int AppCardInit(void)
 {
     AppCardDeckInit();
     DrvCardSetCallback(AppCardHandle);
+    EventBusSubscribe(EVT_NET_UNLOCK_CMD, on_net_unlock);
     printf("[AppCard] init ok, DeckSize=%d\n", (int)(unsigned char)s_deck.DeckSize);
     return 0;
 }

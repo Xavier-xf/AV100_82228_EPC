@@ -84,6 +84,12 @@ AppUserConfig *AppUserDefaultConfigGet(void);
 int AppUserConfigSave(void);
 
 /**
+ * @brief 保存出厂默认配置到 /etc/config/UserDefaultConfig.cfg
+ * @return 1=成功，0=失败
+ */
+int AppUserDefaultConfigSave(void);
+
+/**
  * @brief 恢复出厂默认配置（保留语言设置）
  * @return 1=成功
  */

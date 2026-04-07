@@ -14,7 +14,6 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/select.h>
-#include <stdatomic.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
@@ -35,10 +34,11 @@
 /* =========================================================
  *  内部状态
  * ========================================================= */
-static int           s_server_fd  = -1;
-static int           s_client_fd  = -1;
-static atomic_int    s_connected  = ATOMIC_VAR_INIT(0);
-static pthread_mutex_t s_send_lock = PTHREAD_MUTEX_INITIALIZER;
+static int             s_server_fd   = -1;
+static int             s_client_fd   = -1;
+static int             s_connected   = 0;
+static pthread_mutex_t s_send_lock   = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t s_state_lock  = PTHREAD_MUTEX_INITIALIZER;
 
 /* =========================================================
  *  TCP 工具
@@ -284,7 +284,9 @@ static void *net_manage_thread(void *arg)
         if (cfd <= 0) continue;
 
         s_client_fd = cfd;
-        atomic_store(&s_connected, 1);
+        pthread_mutex_lock(&s_state_lock);
+        s_connected = 1;
+        pthread_mutex_unlock(&s_state_lock);
         printf("[NetMgr] session start, fd=%d\n", cfd);
 
         while (1) {
@@ -303,7 +305,9 @@ static void *net_manage_thread(void *arg)
 
         close(cfd);
         s_client_fd = -1;
-        atomic_store(&s_connected, 0);
+        pthread_mutex_lock(&s_state_lock);
+        s_connected = 0;
+        pthread_mutex_unlock(&s_state_lock);
         /* 退出添加卡模式 */
         SvcTimerStop(TMR_ADD_CARD);
         DrvGpioCardLightSet(0);
@@ -317,7 +321,10 @@ static void *net_manage_thread(void *arg)
  * ========================================================= */
 int SvcNetManageConnected(void)
 {
-    return atomic_load(&s_connected);
+    pthread_mutex_lock(&s_state_lock);
+    int v = s_connected;
+    pthread_mutex_unlock(&s_state_lock);
+    return v;
 }
 
 int SvcNetManageInit(void)

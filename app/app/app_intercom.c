@@ -3,6 +3,7 @@
  * @brief   对讲业务状态机
  */
 #include "app_intercom.h"
+#include "app_user_config.h"
 #include "svc_svp.h"
 #include "app_upgrade.h"
 #include "event_bus.h"
@@ -17,6 +18,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 /* ---- 对讲状态（互斥锁保护）---- */
 typedef struct {
@@ -247,9 +249,20 @@ static void on_infrared_day(EventId id, const void *arg, size_t len)
     DrvGpioInfraredLightSet(0);
 }
 
+/* 出厂复位（对应旧版 OutdoorResetEventFunc）*/
+static void on_net_reset(EventId id, const void *data, size_t len)
+{
+    (void)id; (void)data; (void)len;
+    printf("[AppIntercom] Factory reset triggered by indoor unit\n");
+    AppUserConfigReset();
+    sync();
+    system("reboot -f");
+}
+
 int AppIntercomInit(void)
 {
-    EventBusSubscribe(EVT_CALL_KEY_PRESSED,         on_call_key_for_network);
+    EventBusSubscribe(EVT_NET_RESET_CMD,             on_net_reset);
+    EventBusSubscribe(EVT_CALL_KEY_PRESSED,          on_call_key_for_network);
     EventBusSubscribe(EVT_NET_HEARTBEAT_SEND,        on_heartbeat_send);
     EventBusSubscribe(EVT_NET_CALL_START,            on_call_start);
     EventBusSubscribe(EVT_NET_CALL_END,              on_call_end);
