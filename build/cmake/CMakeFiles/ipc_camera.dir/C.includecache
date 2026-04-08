@@ -729,6 +729,8 @@ stdint.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/log.h
 svc_intercom_stream.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.h
 svc_timer.h

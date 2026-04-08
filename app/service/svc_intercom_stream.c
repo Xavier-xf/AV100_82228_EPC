@@ -2,6 +2,9 @@
  * @file    svc_intercom_stream.c
  * @brief   对讲媒体流服务
  */
+#define LOG_TAG "SvcStream"
+#include "log.h"
+
 #include "svc_intercom_stream.h"
 #include "svc_timer.h"
 #include "event_bus.h"
@@ -44,7 +47,6 @@
 #define MQ_KEY_VIDEO_TX        ((key_t)0xDA03)  
 #define AUDIO_MSG_PCM_MAX      4096
 #define VIDEO_POOL_SLOTS       4
-#define VIDEO_FRAME_MAX        (128 * 1024)
 #define AUDIO_PKG_MAX          1510
 #define VIDEO_PKG_MAX          (32 * 1024)
 #define STREAM_WATCHDOG_MS     5000
@@ -66,7 +68,7 @@ typedef struct { long mtype; int slot_idx; } VideoTxMsg;
 typedef struct {
     pthread_mutex_t lock;
     int             in_use;    /* 0=空闲 1=写入中 2=待发送 */
-    uint8_t         data[VIDEO_FRAME_MAX];
+    uint8_t        *data;      /* 按帧实际大小动态分配，发送后释放 */
     uint32_t        len;
     uint64_t        pts_ms;
     uint32_t        frame_idx;
@@ -129,7 +131,7 @@ static int get_ifindex(int fd, const char *iface)
 {
     struct ifreq ifr; memset(&ifr, 0, sizeof(ifr));
     strncpy(ifr.ifr_name, iface, IFNAMSIZ - 1);
-    if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0) { perror("[SvcStream] SIOCGIFINDEX"); return -1; }
+    if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0) { LOG_E("SIOCGIFINDEX fail"); return -1; }
     return ifr.ifr_ifindex;
 }
 
@@ -138,7 +140,7 @@ static int mq_create(key_t key)
     int old = msgget(key, 0600);
     if (old >= 0) { msgctl(old, IPC_RMID, NULL); }
     int id = msgget(key, IPC_CREAT | IPC_EXCL | 0600);
-    if (id < 0) { perror("[SvcStream] msgget"); return -1; }
+    if (id < 0) { LOG_E("msgget fail"); return -1; }
     struct msqid_ds qa;
     if (msgctl(id, IPC_STAT, &qa) == 0) {
         qa.msg_qbytes = (unsigned long)(AUDIO_MSG_PCM_MAX * 8);
@@ -172,10 +174,10 @@ static int open_audio_tx_socket(void)
 {
     uint8_t local_id = SvcNetworkLocalDeviceGet();
     int proto = audio_net_proto(local_id);
-    printf("[SvcStream] audio_tx proto=0x%04X (local_dev=0x%02X)\n", proto, local_id);
+    LOG_I("audio_tx proto=0x%04X (local_dev=0x%02X)", proto, local_id);
 
     int fd = socket(PF_PACKET, SOCK_RAW, htons((uint16_t)proto));
-    if (fd < 0) { perror("[SvcStream] audio_tx socket"); return -1; }
+    if (fd < 0) { LOG_E("audio_tx socket fail"); return -1; }
     int ifidx = get_ifindex(fd, NET_IFACE);
     if (ifidx < 0) { close(fd); return -1; }
 
@@ -192,10 +194,10 @@ static int open_audio_rx_socket(void)
 {
     uint8_t local_id = SvcNetworkLocalDeviceGet();
     int proto = audio_net_proto(local_id);
-    printf("[SvcStream] audio_rx proto=0x%04X (local_dev=0x%02X)\n", proto, local_id);
+    LOG_I("audio_rx proto=0x%04X (local_dev=0x%02X)", proto, local_id);
 
     int fd = socket(PF_PACKET, SOCK_RAW, htons((uint16_t)proto));
-    if (fd < 0) { perror("[SvcStream] audio_rx socket"); return -1; }
+    if (fd < 0) { LOG_E("audio_rx socket fail"); return -1; }
     int ifidx = get_ifindex(fd, NET_IFACE);
     if (ifidx < 0) { close(fd); return -1; }
     struct sockaddr_ll sll = {
@@ -204,7 +206,7 @@ static int open_audio_rx_socket(void)
         .sll_ifindex  = ifidx
     };
     if (bind(fd, (struct sockaddr *)&sll, sizeof(sll)) < 0) {
-        perror("[SvcStream] audio_rx bind"); close(fd); return -1;
+        LOG_E("audio_rx bind fail"); close(fd); return -1;
     }
     int rcvbuf = 10 * 1024;
     setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf));
@@ -216,7 +218,7 @@ static int open_audio_rx_socket(void)
 static int open_video_tx_socket(void)
 {
     int fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (fd < 0) { perror("[SvcStream] video_tx socket"); return -1; }
+    if (fd < 0) { LOG_E("video_tx socket fail"); return -1; }
     struct ifreq ifr; memset(&ifr, 0, sizeof(ifr));
     strncpy(ifr.ifr_name, NET_IFACE, IFNAMSIZ - 1);
     setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr));
@@ -226,7 +228,7 @@ static int open_video_tx_socket(void)
 
     uint8_t local_id = SvcNetworkLocalDeviceGet();
     int port = video_net_port(local_id);
-    printf("[SvcStream] video port=0x%04X (local_dev=0x%02X)\n", port, local_id);
+    LOG_I("video port=0x%04X (local_dev=0x%02X)", port, local_id);
 
     pthread_mutex_lock(&s_stm.sock_lock);
     memset(&s_stm.video_tx_addr, 0, sizeof(s_stm.video_tx_addr));
@@ -376,7 +378,7 @@ static void *audio_tx_thread(void *arg)
         net_audio_send(fd, alaw, alaw_len);
         free(alaw);
     }
-    printf("[SvcStream] audio_tx_thread exit\n");
+    LOG_I("audio_tx_thread exit");
     return NULL;
 }
 
@@ -462,7 +464,7 @@ static void *audio_rx_thread(void *arg)
             } else break;
         }
     }
-    printf("[SvcStream] audio_rx_thread exit\n");
+    LOG_I("audio_rx_thread exit");
     return NULL;
 }
 
@@ -481,7 +483,7 @@ static void *audio_spk_thread(void *arg)
         /* 走 svc_audio 统一输出，不再直接写 AO */
         SvcAudioFeed(AUDIO_SRC_INTERCOM, msg.pcm, msg.len);
     }
-    printf("[SvcStream] audio_spk_thread exit\n");
+    LOG_I("audio_spk_thread exit");
     return NULL;
 }
 
@@ -511,15 +513,18 @@ static void *video_tx_thread(void *arg)
             uint32_t len  = slot->len;
             uint64_t pts  = slot->pts_ms;
             uint32_t fidx = slot->frame_idx;
+            uint8_t *data = slot->data;
             pthread_mutex_unlock(&slot->lock);
-            net_video_send(fd, slot->data, len, pts, fidx);
+            net_video_send(fd, data, len, pts, fidx);
         }
 
         pthread_mutex_lock(&slot->lock);
+        free(slot->data);
+        slot->data   = NULL;
         slot->in_use = 0;
         pthread_mutex_unlock(&slot->lock);
     }
-    printf("[SvcStream] video_tx_thread exit\n");
+    LOG_I("video_tx_thread exit");
     return NULL;
 }
 
@@ -556,7 +561,6 @@ static void on_video_frame(const VideoFrame *frame)
     pthread_mutex_unlock(&s_stm.lock);
 
     if (!active || mqid < 0) return;
-    if (frame->len > VIDEO_FRAME_MAX) { printf("[SvcStream] video frame too large\n"); return; }
 
     for (int i = 0; i < VIDEO_POOL_SLOTS; i++) {
         pthread_mutex_lock(&s_video_pool[i].lock);
@@ -564,8 +568,18 @@ static void on_video_frame(const VideoFrame *frame)
             s_video_pool[i].in_use = 1;
             pthread_mutex_unlock(&s_video_pool[i].lock);
 
-            memcpy(s_video_pool[i].data, frame->data, frame->len);
+            uint8_t *buf = malloc(frame->len);
+            if (!buf) {
+                pthread_mutex_lock(&s_video_pool[i].lock);
+                s_video_pool[i].in_use = 0;
+                pthread_mutex_unlock(&s_video_pool[i].lock);
+                LOG_W("malloc %u bytes fail, drop frame", frame->len);
+                return;
+            }
+            memcpy(buf, frame->data, frame->len);
+
             pthread_mutex_lock(&s_video_pool[i].lock);
+            s_video_pool[i].data      = buf;
             s_video_pool[i].len       = frame->len;
             s_video_pool[i].pts_ms    = frame->pts_ms;
             s_video_pool[i].frame_idx = frame->frame_idx;
@@ -575,6 +589,8 @@ static void on_video_frame(const VideoFrame *frame)
             VideoTxMsg msg = {.mtype = 1, .slot_idx = i};
             if (msgsnd(mqid, &msg, VIDEO_MSG_BODY, IPC_NOWAIT) < 0) {
                 pthread_mutex_lock(&s_video_pool[i].lock);
+                free(s_video_pool[i].data);
+                s_video_pool[i].data   = NULL;
                 s_video_pool[i].in_use = 0;
                 pthread_mutex_unlock(&s_video_pool[i].lock);
             }
@@ -582,7 +598,7 @@ static void on_video_frame(const VideoFrame *frame)
         }
         pthread_mutex_unlock(&s_video_pool[i].lock);
     }
-    printf("[SvcStream] video pool full, drop frame\n");
+    LOG_W("video pool full, drop frame");
 }
 
 /* =========================================================
@@ -591,7 +607,7 @@ static void on_video_frame(const VideoFrame *frame)
 static void on_stream_watchdog(void *arg)
 {
     (void)arg;
-    printf("[SvcStream] watchdog timeout!\n");
+    LOG_W("watchdog timeout!");
     EventBusPublish(EVT_INTERCOM_STREAM_WATCHDOG, NULL, 0);
 }
 
@@ -610,7 +626,7 @@ static int start_threads(void)
     for (int i = 0; i < (int)(sizeof(tbl)/sizeof(tbl[0])); i++) {
         pthread_t tid;
         if (pthread_create(&tid, NULL, tbl[i].fn, NULL) != 0) {
-            printf("[SvcStream] create thread %d fail\n", i); return -1;
+            LOG_E("create thread %d fail", i); return -1;
         }
         pthread_detach(tid);
     }
@@ -628,7 +644,7 @@ int SvcIntercomStreamStart(StreamMode mode, uint8_t peer_dev_id)
     s_stm.peer_dev_id = peer_dev_id;
     pthread_mutex_unlock(&s_stm.lock);
 
-    printf("[SvcStream] start mode=%d peer=0x%02X\n", mode, peer_dev_id);
+    LOG_I("start mode=%d peer=0x%02X", mode, peer_dev_id);
 
     // pcm16_alaw_tableinit();
     // alaw_pcm16_tableinit();
@@ -643,9 +659,11 @@ int SvcIntercomStreamStart(StreamMode mode, uint8_t peer_dev_id)
     int mq_vtx = mq_create(MQ_KEY_VIDEO_TX);
     if (mq_atx < 0 || mq_arx < 0 || mq_vtx < 0) { goto fail_mq; }
 
-    /* 清空视频池 */
+    /* 清空视频池（释放上次可能残留的动态缓冲）*/
     for (int i = 0; i < VIDEO_POOL_SLOTS; i++) {
         pthread_mutex_lock(&s_video_pool[i].lock);
+        free(s_video_pool[i].data);
+        s_video_pool[i].data   = NULL;
         s_video_pool[i].in_use = 0;
         pthread_mutex_unlock(&s_video_pool[i].lock);
     }
@@ -660,7 +678,7 @@ int SvcIntercomStreamStart(StreamMode mode, uint8_t peer_dev_id)
     DrvAudioInStart();
     SvcTimerSet(TMR_INTERCOM_WATCHDOG, STREAM_WATCHDOG_MS, on_stream_watchdog, NULL);
 
-    printf("[SvcStream] started ok\n");
+    LOG_I("started ok");
     return 0;
 
 fail_mq:
@@ -677,7 +695,7 @@ fail_sock:
 int SvcIntercomStreamStop(void)
 {
     if (!get_active()) return 0;
-    printf("[SvcStream] stopping...\n");
+    LOG_I("stopping...");
 
     DrvAudioInStop();
     DrvVideoInStop();
@@ -704,7 +722,7 @@ int SvcIntercomStreamStop(void)
     /* 清空残留的对讲音频，避免下次启动时播出旧数据 */
     SvcAudioFlush(AUDIO_SRC_INTERCOM);
     DrvGpioAmpDisable();
-    printf("[SvcStream] stopped\n");
+    LOG_I("stopped");
     return 0;
 }
 
@@ -716,7 +734,7 @@ void SvcIntercomStreamUpgradeToTalk(void)
     pthread_mutex_unlock(&s_stm.lock);
     
     DrvGpioAmpEnable();
-    printf("[SvcStream] upgraded to TALK mode\n");
+    LOG_I("upgraded to TALK mode");
 }
 void SvcIntercomStreamRefresh(const void *status)
 {
@@ -750,6 +768,6 @@ int SvcIntercomStreamInit(void)
     DrvVideoInSetCallback(on_video_frame);
 
     if (start_threads() != 0) return -1;
-    printf("[SvcStream] init ok\n");
+    LOG_I("init ok");
     return 0;
 }

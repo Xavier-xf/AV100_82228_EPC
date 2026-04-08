@@ -178,6 +178,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.h
 
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o: ../app/common/event_bus.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o: ../app/common/log.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o: ../app/hal/drv_audio_in.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o: ../app/hal/drv_audio_out.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o: ../app/hal/drv_gpio.h

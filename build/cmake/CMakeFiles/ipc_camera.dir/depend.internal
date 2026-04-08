@@ -179,6 +179,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
  /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o
  ../app/common/event_bus.h
+ ../app/common/log.h
  ../app/hal/drv_audio_in.h
  ../app/hal/drv_audio_out.h
  ../app/hal/drv_gpio.h
