@@ -1,11 +1,10 @@
 /**
  * @file    utils.c
- * @brief   通用工具函数（原 GeneralInterface.c，函数名加 Utils 前缀）
+ * @brief   通用工具函数实现
  */
 #include "utils.h"
 #include <string.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <time.h>
 
 unsigned long long UtilsDiffMs(struct timespec *last_time)
@@ -13,17 +12,12 @@ unsigned long long UtilsDiffMs(struct timespec *last_time)
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
 
-    // 先算秒差
     long sec_diff  = now.tv_sec  - last_time->tv_sec;
     long nsec_diff = now.tv_nsec - last_time->tv_nsec;
-
-    // 处理纳秒不够减的情况（借位）
     if (nsec_diff < 0) {
-        sec_diff--;               // 秒减1
-        nsec_diff += 1000000000L; // 纳秒补1秒
+        sec_diff--;
+        nsec_diff += 1000000000L;
     }
-
-    // 最终计算毫秒，安全无溢出
     return (unsigned long long)sec_diff * 1000ULL
          + (unsigned long long)nsec_diff / 1000000ULL;
 }

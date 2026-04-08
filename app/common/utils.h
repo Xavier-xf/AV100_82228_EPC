@@ -1,25 +1,28 @@
 /**
  * @file    utils.h
- * @brief   通用工具函数（原 GeneralInterface.c）
+ * @brief   通用工具函数
  *
- * 提供时钟工具、居中打印等与硬件无关的辅助函数。
- * 所有模块均可 include 此头文件。
+ * 与硬件无关的辅助工具，所有层均可使用。
  */
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
 #include <time.h>
+#include <stdint.h>
 
-/** @brief 获取两次调用之间的毫秒差（原 DiffClockTimeMs）*/
+/** @brief 获取 last_time 到当前的毫秒差，不修改 last_time */
 unsigned long long UtilsDiffMs(struct timespec *last_time);
 
-/** @brief 更新时间戳（原 GetClockTimeMs）*/
+/** @brief 将 ts 更新为当前单调时间 */
 void UtilsGetTime(struct timespec *ts);
 
-/** @brief 获取编译时间（原 FetchCompileTime）*/
+/** @brief 返回当前单调时间的毫秒戳 */
+uint64_t UtilsMonoMs(void);
+
+/** @brief 返回编译时间（首次调用时解析 __DATE__ / __TIME__）*/
 struct tm UtilsCompileTime(void);
 
-/** @brief 居中打印（用于键盘菜单调试，原 PrintCentered）*/
+/** @brief 居中打印字符串，左右以 [ ] 对齐到 width 列（键盘菜单调试用）*/
 void UtilsPrintCentered(const char *str, int width);
 
 #endif /* _UTILS_H_ */

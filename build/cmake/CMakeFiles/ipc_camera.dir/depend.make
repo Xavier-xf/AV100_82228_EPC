@@ -23,6 +23,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.h
 
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/common/event_bus.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/common/log.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/common/utils.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/hal/drv_gpio.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../app/hal/drv_infrared.h
@@ -184,6 +185,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_intercom_stream.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.h
 
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c.o: ../app/app/app_card.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c.o: ../app/common/log.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c.o: ../app/hal/drv_gpio.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.h

@@ -30,8 +30,14 @@ stdint.h
 stddef.h
 -
 
+../app/common/log.h
+stdio.h
+-
+
 ../app/common/utils.h
 time.h
+-
+stdint.h
 -
 
 ../app/hal/drv_adc.h
@@ -213,6 +219,8 @@ stdio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_doorbell.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/log.h
 app_intercom.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.h
 app_user_config.h
@@ -358,6 +366,8 @@ time.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.h
 time.h
+-
+stdint.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c
@@ -779,6 +789,8 @@ stdint.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/log.h
 svc_net_manage.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.h
 app_card.h

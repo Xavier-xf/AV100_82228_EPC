@@ -2,9 +2,15 @@
  * @file    svc_net_manage.c
  * @brief   网络卡片管理服务（TCP 4321 端口）
  *
- * 移植自旧版 UserNetManage.c + NetManageCom.c。
- * 在独立线程中监听来自室内机 APP 的管理命令，对 IC 卡数据库进行操作。
+ * 在独立线程中监听来自室内机 APP 的管理命令，对 IC 卡数据库进行增删查改。
+ *
+ * 协议格式：
+ *   短包（8 字节）：[0xAA][dest][src][cmd][arg1][arg2][sum][0xCC]
+ *   长包（1288 字节）：[0xBB][dest][src][cmd][arg][0x00][data 1280B][0xCC]
  */
+#define LOG_TAG "NetMgr"
+#include "log.h"
+
 #include "svc_net_manage.h"
 #include "app_card.h"
 #include "svc_timer.h"
@@ -25,18 +31,18 @@
  *  协议常量
  * ========================================================= */
 #define NET_MANAGE_PORT    4321
-#define SHORT_PACK_LEN     8
-#define LONG_PACK_LEN      1288
-#define SHORT_PACK_START   0xAA
-#define LONG_PACK_START    0xBB
-#define PACK_END           0xCC
+#define SHORT_PACK_LEN     8      /* 短包固定长度（字节）           */
+#define LONG_PACK_LEN      1288   /* 长包固定长度（字节）           */
+#define SHORT_PACK_START   0xAA   /* 短包起始字节                   */
+#define LONG_PACK_START    0xBB   /* 长包起始字节                   */
+#define PACK_END           0xCC   /* 包结束字节                     */
 
 /* =========================================================
  *  内部状态
  * ========================================================= */
-static int             s_server_fd   = -1;
-static int             s_client_fd   = -1;
-static int             s_connected   = 0;
+static int             s_server_fd   = -1;  /* 监听 socket           */
+static int             s_client_fd   = -1;  /* 当前连接的客户端 fd   */
+static int             s_connected   = 0;   /* 是否有客户端在线       */
 static pthread_mutex_t s_send_lock   = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t s_state_lock  = PTHREAD_MUTEX_INITIALIZER;
 
@@ -69,29 +75,31 @@ static int tcp_server_init(int port)
     return fd;
 }
 
+/* 非阻塞 accept，超时 50ms，成功返回客户端 fd，无连接返回 0 */
 static int tcp_accept(int server_fd)
 {
     fd_set rd;
     FD_ZERO(&rd);
     FD_SET(server_fd, &rd);
-    struct timeval tv = {0, 50000};  /* 50ms */
+    struct timeval tv = {0, 50000};
     int ret = select(server_fd + 1, &rd, NULL, NULL, &tv);
     if (ret > 0) {
         struct sockaddr_in cli;
         socklen_t len = sizeof(cli);
         int cfd = accept(server_fd, (struct sockaddr *)&cli, &len);
         if (cfd >= 0)
-            printf("[NetMgr] client connected: %s\n", inet_ntoa(cli.sin_addr));
+            LOG_I("client connected: %s", inet_ntoa(cli.sin_addr));
         return cfd;
     }
     return 0;
 }
 
-/* 返回值：
- *  > 0  : 接收到的字节数
- *   0   : 连接已断开（recv 返回 0）
- *  -1   : 超时（select 无数据），调用方继续等待
- *  -2   : recv 出错（连接异常）
+/**
+ * 带超时的 recv。
+ * @return >0  收到字节数
+ *          0  连接正常关闭
+ *         -1  超时（无数据，非致命）
+ *         -2  recv 出错（连接异常）
  */
 static int tcp_recv(int fd, void *buf, int size, int timeout_ms)
 {
@@ -102,11 +110,11 @@ static int tcp_recv(int fd, void *buf, int size, int timeout_ms)
     int ret = select(fd + 1, &rd, NULL, NULL, &tv);
     if (ret > 0) {
         int n = (int)recv(fd, buf, (size_t)size, MSG_DONTWAIT);
-        if (n == 0)  return 0;   /* 连接正常关闭 */
-        if (n < 0)   return -2;  /* recv 出错     */
+        if (n == 0)  return 0;
+        if (n < 0)   return -2;
         return n;
     }
-    return -1;  /* 超时，非致命 */
+    return -1;
 }
 
 static int tcp_send(int fd, const unsigned char *buf, int len)
@@ -121,7 +129,19 @@ static int tcp_send(int fd, const unsigned char *buf, int len)
  *  发包接口
  * ========================================================= */
 
-/** 发送短包（8 字节）*/
+/**
+ * @brief 发送短包（8 字节）
+ *
+ * 短包布局：
+ *   [0] 0xAA  起始
+ *   [1] 0x01  目标设备（室内机）
+ *   [2] 0x01  源设备（本机）
+ *   [3] cmd   命令字
+ *   [4] arg1  参数1
+ *   [5] arg2  参数2
+ *   [6] sum   校验（[1]+[2]+[3]+[4]+[5]）& 0xFF
+ *   [7] 0xCC  结束
+ */
 void SvcNetManageSendShort(unsigned char cmd,
                            unsigned char arg1,
                            unsigned char arg2)
@@ -131,21 +151,32 @@ void SvcNetManageSendShort(unsigned char cmd,
 
     unsigned char pkt[SHORT_PACK_LEN];
     pkt[0] = SHORT_PACK_START;
-    pkt[1] = 1;          /* 目标设备（室内机 = 1）*/
-    pkt[2] = 1;          /* 源设备（本地，简化）  */
+    pkt[1] = 1;
+    pkt[2] = 1;
     pkt[3] = cmd;
     pkt[4] = arg1;
     pkt[5] = arg2;
     pkt[6] = (unsigned char)((pkt[1] + pkt[2] + pkt[3] + pkt[4] + pkt[5]) & 0xFF);
     pkt[7] = PACK_END;
+
     if (tcp_send(cfd, pkt, SHORT_PACK_LEN) <= 0)
-        printf("[NetMgr] send short cmd=0x%02X fail\n", cmd);
+        LOG_E("send short cmd=0x%02X fail", cmd);
     else
-        printf("[NetMgr] send short cmd=0x%02X ok\n", cmd);
+        LOG_D("send short cmd=0x%02X ok", cmd);
 }
 
-/** 发送长包（1288 字节，与旧版 NetManageLongPack 格式相同）
- *  布局：[0xBB][dest][src][cmd][arg][0x00][data 1280B][0xCC]
+/**
+ * @brief 发送长包（1288 字节）
+ *
+ * 长包布局：
+ *   [0]      0xBB       起始
+ *   [1]      0x01       目标设备（室内机）
+ *   [2]      0x01       源设备（本机）
+ *   [3]      cmd        命令字
+ *   [4]      arg        参数
+ *   [5]      0x00       保留
+ *   [6..1286] data      有效数据（最多 1281 字节）
+ *   [1287]   0xCC       结束
  */
 static void send_long(unsigned char cmd, unsigned char arg,
                       unsigned char *data, int data_len)
@@ -155,19 +186,20 @@ static void send_long(unsigned char cmd, unsigned char arg,
 
     unsigned char pkt[LONG_PACK_LEN];
     memset(pkt, 0, sizeof(pkt));
-    pkt[0] = LONG_PACK_START;   /* 0xBB */
-    pkt[1] = 1;                 /* dest=室内机 */
-    pkt[2] = 1;                 /* src=本机    */
+    pkt[0] = LONG_PACK_START;
+    pkt[1] = 1;
+    pkt[2] = 1;
     pkt[3] = cmd;
     pkt[4] = arg;
-    /* pkt[5] 留空（与旧版 Code[5]=0 一致）*/
+    /* pkt[5] 保留，保持 0x00 */
     int copy_len = data_len < (LONG_PACK_LEN - 7) ? data_len : (LONG_PACK_LEN - 7);
-    memcpy(&pkt[6], data, (size_t)copy_len);   /* 数据从 byte 6 开始 */
-    pkt[LONG_PACK_LEN - 1] = PACK_END;         /* 0xCC */
+    memcpy(&pkt[6], data, (size_t)copy_len);
+    pkt[LONG_PACK_LEN - 1] = PACK_END;
+
     if (tcp_send(cfd, pkt, LONG_PACK_LEN) <= 0)
-        printf("[NetMgr] send long cmd=0x%02X fail\n", cmd);
+        LOG_E("send long cmd=0x%02X fail", cmd);
     else
-        printf("[NetMgr] send long cmd=0x%02X ok\n", cmd);
+        LOG_D("send long cmd=0x%02X ok", cmd);
 }
 
 /* =========================================================
@@ -178,16 +210,15 @@ typedef enum { PACK_INVALID = 0, PACK_SHORT, PACK_LONG } PackType;
 static PackType check_packet(const unsigned char *buf, int len)
 {
     if (len <= 0) return PACK_INVALID;
-    /* 源设备必须是 1 或广播 0xFF */
-    if (buf[2] != 1 && buf[2] != 0xFF) return PACK_INVALID;
-    if (buf[len - 1] != PACK_END)     return PACK_INVALID;
+    if (buf[2] != 1 && buf[2] != 0xFF) return PACK_INVALID;  /* 源设备必须是室内机 1 或广播 */
+    if (buf[len - 1] != PACK_END)      return PACK_INVALID;
     if (buf[0] == SHORT_PACK_START && len == SHORT_PACK_LEN) return PACK_SHORT;
     if (buf[0] == LONG_PACK_START  && len == LONG_PACK_LEN)  return PACK_LONG;
     return PACK_INVALID;
 }
 
 /* =========================================================
- *  管理灯闪烁（添加卡模式指示）
+ *  添加卡模式指示灯闪烁
  * ========================================================= */
 static void manage_light_cb(void *arg)
 {
@@ -211,58 +242,65 @@ static void handle_packet(PackType type, const unsigned char *buf, int len)
     unsigned char arg1 = buf[4];
     unsigned char arg2 = buf[5];
 
-    printf("[NetMgr] cmd=0x%02X arg1=%d arg2=%d\n", cmd, arg1, arg2);
+    LOG_D("cmd=0x%02X arg1=%d arg2=%d", cmd, arg1, arg2);
 
     switch (cmd) {
-    /* ---- 进入添加卡模式 ---- */
+
+    /* 进入添加卡模式：30s 超时，指示灯开始闪烁 */
     case NET_MGR_ADD_CARD:
         SvcTimerSet(TMR_ADD_CARD, 30000, NULL, NULL);
         SvcTimerSet(TMR_MANAGE_LIGHT, 200, manage_light_cb, NULL);
+        LOG_I("enter add-card mode");
         break;
 
-    /* ---- 删除卡片 ---- */
+    /* 删除卡片：arg1 == DECK_SIZE_MAX 表示格式化全部；否则删除指定索引 */
     case NET_MGR_DEL_CARD:
         if (arg1 == DECK_SIZE_MAX) {
             AppCardDeckFormat();
+            LOG_I("deck format all");
         } else if (arg1 < DECK_SIZE_MAX) {
             AppCardSetPerm(arg1, 0);
+            LOG_I("del card[%d]", arg1);
         }
         SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
         break;
 
-    /* ---- 校验卡片（预留，无操作）---- */
+    /* 校验卡片（预留接口，暂无操作）*/
     case NET_MGR_VERIFY_CARD:
         break;
 
-    /* ---- 获取卡组列表 ---- */
+    /* 获取卡组权限列表，以长包形式回传 */
     case NET_MGR_GET_CARD: {
         unsigned char *deck_buf;
         int deck_len = AppCardDeckPermGet(&deck_buf);
-        printf("[NetMgr] send deck, len=%d\n", deck_len);
+        LOG_I("send deck len=%d", deck_len);
         send_long(NET_MGR_GET_CARD, 0, deck_buf, deck_len);
         break;
     }
 
-    /* ---- 设置卡片权限 ---- */
+    /* 设置指定卡索引的权限位 */
     case NET_MGR_SET_CARD_PERM:
         AppCardSetPerm(arg1, arg2);
+        LOG_I("set perm card[%d]=%d", arg1, arg2);
         break;
 
-    /* ---- 退出添加卡模式 ---- */
+    /* 退出添加卡模式，关闭指示灯并通知室内机 */
     case NET_MGR_EXIT_CARD:
         SvcTimerStop(TMR_ADD_CARD);
         DrvGpioCardLightSet(0);
         SvcNetManageSendShort(NET_MGR_EXIT_CARD, 0, 0);
         SvcVoicePlaySimple(VOICE_Bi4, VOICE_VOL_DEFAULT);
+        LOG_I("exit add-card mode");
         break;
 
-    /* ---- 拒绝访问 ---- */
+    /* 拒绝访问：回复 arg2=1 通知室内机 */
     case NET_MGR_ACCESS_DENIED:
         SvcNetManageSendShort(NET_MGR_ACCESS_DENIED, arg1, 1);
+        LOG_W("access denied, notify indoor");
         break;
 
     default:
-        printf("[NetMgr] unknown cmd=0x%02X\n", cmd);
+        LOG_W("unknown cmd=0x%02X", cmd);
         break;
     }
 
@@ -279,7 +317,6 @@ static void *net_manage_thread(void *arg)
     unsigned char buf[LONG_PACK_LEN];
 
     while (1) {
-        /* 等待客户端连接 */
         int cfd = tcp_accept(s_server_fd);
         if (cfd <= 0) continue;
 
@@ -287,16 +324,14 @@ static void *net_manage_thread(void *arg)
         pthread_mutex_lock(&s_state_lock);
         s_connected = 1;
         pthread_mutex_unlock(&s_state_lock);
-        printf("[NetMgr] session start, fd=%d\n", cfd);
+        LOG_I("session start fd=%d", cfd);
 
         while (1) {
             memset(buf, 0, sizeof(buf));
-            int n = tcp_recv(cfd, buf, sizeof(buf), 5);  /* 5ms 轮询 */
-            if (n == 0 || n == -2) break;  /* 连接断开或出错 */
-            if (n < 0) {
-                usleep(1000);  /* 超时，继续等待 */
-                continue;
-            }
+            int n = tcp_recv(cfd, buf, sizeof(buf), 5);
+            if (n == 0 || n == -2) break;
+            if (n < 0) { usleep(1000); continue; }
+
             PackType pt = check_packet(buf, n);
             if (pt != PACK_INVALID)
                 handle_packet(pt, buf, n);
@@ -308,10 +343,9 @@ static void *net_manage_thread(void *arg)
         pthread_mutex_lock(&s_state_lock);
         s_connected = 0;
         pthread_mutex_unlock(&s_state_lock);
-        /* 退出添加卡模式 */
         SvcTimerStop(TMR_ADD_CARD);
         DrvGpioCardLightSet(0);
-        printf("[NetMgr] session end, fd=%d\n", cfd);
+        LOG_I("session end fd=%d", cfd);
     }
     return NULL;
 }
@@ -331,18 +365,18 @@ int SvcNetManageInit(void)
 {
     s_server_fd = tcp_server_init(NET_MANAGE_PORT);
     if (s_server_fd < 0) {
-        printf("[NetMgr] server init fail on port %d\n", NET_MANAGE_PORT);
+        LOG_E("server init fail on port %d", NET_MANAGE_PORT);
         return -1;
     }
-    printf("[NetMgr] server ready on port %d\n", NET_MANAGE_PORT);
 
     pthread_t tid;
     if (pthread_create(&tid, NULL, net_manage_thread, NULL) != 0) {
-        printf("[NetMgr] create thread fail\n");
+        LOG_E("create thread fail");
         close(s_server_fd);
         s_server_fd = -1;
         return -1;
     }
     pthread_detach(tid);
+    LOG_I("server ready on port %d", NET_MANAGE_PORT);
     return 0;
 }
