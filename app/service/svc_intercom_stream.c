@@ -539,7 +539,7 @@ static void on_audio_in_frame(const AudioInFrame *frame)
     int mqid = s_stm.mq_audio_tx;
     pthread_mutex_unlock(&s_stm.lock);
 
-    /* 旧版 network_audio_send_package_start() 无条件启动，监控和通话模式均发送
+    /* 无条件启动，监控和通话模式均发送
      * 室外麦克风音频给室内机，室内机才能在监控/留言模式下录到访客声音。*/
     if (!active || mqid < 0) return;
     (void)mode;

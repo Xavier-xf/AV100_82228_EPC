@@ -274,11 +274,12 @@ static void unlock_async(GpioLockType type, int duration_ms, int play_voice)
 
 /* =========================================================
  *  安防错误计数
- *  错误次数超限（10次/60s窗口）后触发保护期（60s 不响应）
+ *  规格：5分钟内连续10次错误 → 触发，保护期2分钟
+ *  SafeMode=OFF 时直接忽略，不累计也不触发
  * ========================================================= */
 #define SECURITY_ERROR_MAX      10
-#define SECURITY_ERROR_WINDOW   (60 * 1000)   /* 统计窗口：60s 内累计错误 */
-#define SECURITY_TRIGGER_TIME   (60 * 1000)   /* 触发后保护期：60s 不响应 */
+#define SECURITY_ERROR_WINDOW   (5 * 60 * 1000)  /* 统计窗口：5分钟 */
+#define SECURITY_TRIGGER_TIME   (2 * 60 * 1000)  /* 触发后保护期：2分钟 */
 
 static int s_error_count = 0;
 
@@ -300,6 +301,10 @@ void AppCardSecurityErrorUpdate(void) { security_error_update(); }
 
 static void security_error_update(void)
 {
+    /* 安防关闭时不累计错误 */
+    if (AppUserConfigGet()->SafeMode == APP_SAFE_MODE_OFF)
+        return;
+
     /* 第一次错误时启动统计窗口计时器（到期自动清零）*/
     if (s_error_count == 0)
         SvcTimerSet(TMR_SECURITY_ERROR, SECURITY_ERROR_WINDOW, security_error_reset_cb, NULL);
@@ -309,7 +314,14 @@ static void security_error_update(void)
         s_error_count = 0;
         SvcTimerStop(TMR_SECURITY_ERROR);
         SvcTimerSet(TMR_SECURITY_TRIGGER, SECURITY_TRIGGER_TIME, NULL, NULL);
-        LOG_W("Security triggered! Too many wrong cards.");
+
+        /* 报警模式：触发蜂鸣器长鸣 */
+        if (AppUserConfigGet()->SafeMode == APP_SAFE_MODE_ALARM)
+            SvcVoicePlaySimple(VOICE_LongBi, VOICE_VOL_DEFAULT);
+
+        /* 通知其他模块（app_intercom.c 订阅后自动呼叫室内机）*/
+        EventBusPublish(EVT_SYSTEM_SECURITY_TRIGGERED, NULL, 0);
+        LOG_W("Security triggered! mode=%d", (int)AppUserConfigGet()->SafeMode);
     }
 }
 

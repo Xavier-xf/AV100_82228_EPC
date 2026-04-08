@@ -271,6 +271,15 @@ static void on_infrared_day(EventId id, const void *arg, size_t len)
 #endif
 }
 
+/* 安防触发：自动呼叫室内机（带 security=0 标志，室内机据此区分普通门铃与安防呼叫）*/
+static void on_security_triggered(EventId id, const void *arg, size_t len)
+{
+    (void)id; (void)arg; (void)len;
+    LOG_W("security triggered → auto-call indoor unit");
+    /* security 字段传 0 表示安防触发，streaming 字段传 0（呼叫时尚未开流）*/
+    SvcNetworkDoorbellNotify(0, 0);
+}
+
 /* 出厂复位（远程触发，保留语言设置后重启）*/
 static void on_net_reset(EventId id, const void *data, size_t len)
 {
@@ -286,6 +295,7 @@ static void on_net_reset(EventId id, const void *data, size_t len)
  * ========================================================= */
 int AppIntercomInit(void)
 {
+    EventBusSubscribe(EVT_SYSTEM_SECURITY_TRIGGERED,  on_security_triggered);
     EventBusSubscribe(EVT_NET_RESET_CMD,             on_net_reset);
     EventBusSubscribe(EVT_CALL_KEY_PRESSED,          on_call_key_for_network);
     EventBusSubscribe(EVT_NET_HEARTBEAT_SEND,        on_heartbeat_send);
