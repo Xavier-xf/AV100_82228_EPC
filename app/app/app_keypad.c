@@ -34,7 +34,7 @@
 #include "svc_voice.h"
 #include "svc_net_manage.h"
 
-#include <time.h>
+#include "utils.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -130,22 +130,6 @@ void AppKeypadSetModifyCardIdx(int idx)
 }
 
 /* =========================================================
- *  时间工具
- * ========================================================= */
-static void kb_time_get(struct timespec *t)
-{
-    clock_gettime(CLOCK_MONOTONIC, t);
-}
-
-static long kb_time_diff_ms(const struct timespec *t)
-{
-    struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
-    return (long)((now.tv_sec - t->tv_sec) * 1000 +
-                  (now.tv_nsec - t->tv_nsec) / 1000000);
-}
-
-/* =========================================================
  *  键盘背光
  * ========================================================= */
 static void keypad_light_off_cb(void *arg)
@@ -154,7 +138,7 @@ static void keypad_light_off_cb(void *arg)
     DrvGpioKeypadLightSet(0);
 }
 
-static void keypad_light_enable(void)
+void AppKeypadLightEnable(void)
 {
     /* 夜间（红外亮起）：使用配置时长或全天（86400s）；白天：固定 10s */
     int sec = DrvInfraredIsNight()
@@ -164,6 +148,11 @@ static void keypad_light_enable(void)
     SvcTimerSet(TMR_KEYPAD_BACKLIGHT, (unsigned int)(sec * 1000),
                 keypad_light_off_cb, NULL);
     DrvGpioKeypadLightSet(1);
+}
+
+static void keypad_light_enable(void)
+{
+    AppKeypadLightEnable();
 }
 
 /* =========================================================
@@ -1035,10 +1024,10 @@ static Keyboard s_kb;
 static int kb_process_key(int key)
 {
     /* 30s 无操作自动清空缓冲 */
-    if (s_kb.Cursor && kb_time_diff_ms(&s_kb.Time) > 30000)
+    if (s_kb.Cursor && UtilsDiffMs(&s_kb.Time) > 30000)
         s_kb.Cursor = 0;
 
-    kb_time_get(&s_kb.Time);
+    UtilsGetTime(&s_kb.Time);
 
     if (s_kb.Cursor >= KEYPAD_BUFFER_SIZE) {
         s_kb.Cursor = 0;

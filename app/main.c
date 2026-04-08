@@ -26,7 +26,9 @@
 #include "drv_adc.h"
 #include "drv_audio_in.h"
 #include "drv_video_in.h"
+#ifdef CARD_ENABLE
 #include "drv_card.h"
+#endif
 /* ---- service ---- */
 #include "svc_timer.h"
 #include "svc_audio.h"
@@ -34,15 +36,21 @@
 #include "svc_network.h"
 #include "svc_svp.h"
 #include "svc_intercom_stream.h"
+#ifdef CARD_ENABLE
 #include "svc_net_manage.h"
+#endif
 /* ---- app ---- */
 #include "app_intercom.h"
 #include "app_upgrade.h"
 #include "app_doorbell.h"
+#ifdef CARD_ENABLE
 #include "app_card.h"
+#endif
+#ifdef KEYPAD_ENABLE
 #include "app_keypad.h"
-#include "app_user_config.h"
 #include "drv_keypad.h"
+#endif
+#include "app_user_config.h"
 /* =========================================================
  *  常量
  * ========================================================= */
@@ -171,19 +179,27 @@ int main(int argc, char *argv[])
     INIT_MODULE(AppUserConfigInit());
 
     /* IC 卡：先注册回调（AppCardInit），再初始化硬件（DrvCardInit）*/
+#ifdef CARD_ENABLE
     INIT_MODULE(AppCardInit());       /* 卡组数据库加载 + 注册回调 */
     INIT_MODULE(SvcNetManageInit());  /* 网络卡片管理（TCP 4321）  */
+#endif
 
     /* 键盘：先注册回调（AppKeypadInit），再初始化硬件（DrvKeypadInit）*/
+#ifdef KEYPAD_ENABLE
     INIT_MODULE(AppKeypadInit());     /* 按键状态机 + 注册回调      */
+#endif
 
     /* -------------------------------------------------- */
     /* 使能产生回调的驱动（App 层已就绪后再启动）         */
     /* -------------------------------------------------- */
 
     INIT_MODULE(DrvAdcInit());    /* ADC 按键采集*/
+#ifdef CARD_ENABLE
     INIT_MODULE(DrvCardInit());   /* RC522 读卡器（需 AppCardInit 先注册回调）*/
+#endif
+#ifdef KEYPAD_ENABLE
     INIT_MODULE(DrvKeypadInit()); /* XW12A 键盘（需 AppKeypadInit 先注册回调）*/
+#endif
 
     /* 红外夜视检测（必须在 AppIntercomInit 注册订阅后调用，
      * 因 DrvInfraredInit 会立即发布初始状态事件）        */

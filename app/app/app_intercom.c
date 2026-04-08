@@ -15,6 +15,9 @@
 #include "drv_gpio.h"
 #include "drv_infrared.h"
 #include "drv_video_in.h"
+#ifdef KEYPAD_ENABLE
+#include "app_keypad.h"
+#endif
 #include <pthread.h>
 #include <stdio.h>
 #include <time.h>
@@ -231,6 +234,9 @@ static void on_infrared_night(EventId id, const void *arg, size_t len)
     SvcTimerSet(TMR_IRCUT_CLOSE, 100, ircut_close_cb, NULL);
     if (AppIntercomGetState() != INTERCOM_STATE_IDLE)
         DrvGpioInfraredLightSet(1);
+#ifdef KEYPAD_ENABLE
+    AppKeypadLightEnable();
+#endif
 }
 
 /**
@@ -247,6 +253,9 @@ static void on_infrared_day(EventId id, const void *arg, size_t len)
     DrvGpioIrcutDay();
     SvcTimerSet(TMR_IRCUT_CLOSE, 100, ircut_close_cb, NULL);
     DrvGpioInfraredLightSet(0);
+#ifdef KEYPAD_ENABLE
+    AppKeypadLightEnable();  /* 白天切换：缩短背光至 10s（对应旧版 RefreshTimer(10s, KeypadTimer)）*/
+#endif
 }
 
 /* 出厂复位（对应旧版 OutdoorResetEventFunc）*/

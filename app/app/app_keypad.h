@@ -22,4 +22,10 @@ int AppKeypadInit(void);
  */
 void AppKeypadSetModifyCardIdx(int idx);
 
+/**
+ * @brief 开启键盘背光（夜间使用配置时长/86400s，白天固定 10s）
+ *        对应旧版 KeypadLightEnable()，由红外夜视切换时调用。
+ */
+void AppKeypadLightEnable(void);
+
 #endif /* _APP_KEYPAD_H_ */

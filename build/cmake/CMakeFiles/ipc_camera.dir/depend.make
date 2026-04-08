@@ -39,9 +39,11 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: ../include/anyka3918/ak_vi.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_intercom.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_user_config.h
 
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.c.o: ../app/common/utils.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.c.o: ../app/hal/drv_gpio.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.c.o: ../app/hal/drv_infrared.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.c.o: ../app/hal/drv_keypad.h
