@@ -1,7 +1,13 @@
 /**
  * @file    svc_audio.c
  * @brief   音频输出服务
+ *
+ * VOICE 帧（mtype=1）优先于 INTERCOM 帧（mtype=2）消费。
+ * 语音播放中丢弃对讲帧，语音结束后恢复。
  */
+#define LOG_TAG "SvcAudio"
+#include "log.h"
+
 #include "svc_audio.h"
 #include "svc_timer.h"
 #include "drv_audio_out.h"
@@ -12,18 +18,16 @@
 #include <sys/msg.h>
 #include <pthread.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 
-#define MQ_KEY_AUDIO_OUT      ((key_t)0xA001)
-#define MQ_MSG_PCM_MAX        4096
-#define AMP_OFF_DELAY_MS      3000
+#define MQ_KEY_AUDIO_OUT   ((key_t)0xA001)
+#define MQ_MSG_PCM_MAX     4096
+#define AMP_OFF_DELAY_MS   3000
 
-/* mtype: 消息类型必须 > 0 */
-#define MTYPE_VOICE           1
-#define MTYPE_INTERCOM        2
+#define MTYPE_VOICE        1   /* 消息类型：语音（高优先）*/
+#define MTYPE_INTERCOM     2   /* 消息类型：对讲（低优先）*/
 
 typedef struct {
     long     mtype;
@@ -33,18 +37,17 @@ typedef struct {
 
 #define MSG_BODY_SIZE  (sizeof(AudioOutMsg) - sizeof(long))
 
-/* ---- 内部状态（全部用互斥锁保护）---- */
 typedef struct {
     pthread_mutex_t lock;
     int             mq_id;
     int             initialized;
-     int             voice_active;   /* ★ 语音播放中标志 */
+    int             voice_active;   /* 语音播放中标志 */
 } SvcAudioCtx;
 
 static SvcAudioCtx s_aud = {
-    .lock        = PTHREAD_MUTEX_INITIALIZER,
-    .mq_id       = -1,
-    .initialized = 0,
+    .lock         = PTHREAD_MUTEX_INITIALIZER,
+    .mq_id        = -1,
+    .initialized  = 0,
     .voice_active = 0,
 };
 
@@ -64,16 +67,15 @@ static int is_init(void)
     return v;
 }
 
-/* ---- 消息队列创建 ---- */
 static int mq_create(key_t key)
 {
     int old = msgget(key, 0600);
     if (old >= 0) {
         msgctl(old, IPC_RMID, NULL);
-        printf("[SvcAudio] removed stale MQ 0x%X\n", (unsigned)key);
+        LOG_W("removed stale MQ key=0x%X", (unsigned)key);
     }
     int id = msgget(key, IPC_CREAT | IPC_EXCL | 0600);
-    if (id < 0) { perror("[SvcAudio] msgget"); return -1; }
+    if (id < 0) { LOG_E("msgget fail"); return -1; }
 
     /* 扩大队列容量（约 8 帧，root 权限下生效）*/
     struct msqid_ds qattr;
@@ -84,22 +86,19 @@ static int mq_create(key_t key)
     return id;
 }
 
-/* ---- 功放延迟关闭回调 ---- */
 static void on_amp_off(void *arg)
 {
     (void)arg;
     DrvGpioAmpDisable();
-    printf("[SvcAudio] amp off\n");
+    LOG_D("amp off");
 }
 
-/* ---- 消费者线程：优先消费 VOICE 帧 ---- */
 static void *audio_output_thread(void *arg)
 {
     (void)arg;
     AudioOutMsg msg;
-    /* 用于检测"播放结束"：有过数据且队列+AO缓冲均空才触发 restart */
-    int  played_since_restart = 0;
-    printf("[SvcAudio] output thread start\n");
+    int played_since_restart = 0;
+    LOG_I("output thread start");
 
     while (1) {
         int mqid = get_mqid();
@@ -118,19 +117,17 @@ static void *audio_output_thread(void *arg)
 
             DrvAudioOutWrite(msg.pcm, msg.len);
         } else {
-            /* 队列空：等 AO 硬件缓冲也排空后做轻量级 restart，
-             * 防止 AO 长时间打开导致内部缓存积累出错 */
+            /* 队列空：等 AO 缓冲也排空后做轻量级 restart，防止 AO 缓存积累出错 */
             if (played_since_restart && DrvAudioOutRemainLen() == 0) {
                 DrvAudioOutRestart();
                 played_since_restart = 0;
-                printf("[SvcAudio] ao restarted after playback done\n");
+                LOG_D("ao restarted after playback done");
             }
-            usleep(5 * 1000);   /* 5 ms，控制轮询频率 */
+            usleep(5 * 1000);
         }
 
-        /* 溢出检测：缓冲区状态异常时完整重启 AO（close + open）*/
         if (DrvAudioOutIsOverflow()) {
-            printf("[SvcAudio] ao overflow, reinit\n");
+            LOG_W("ao overflow, reinit");
             DrvAudioOutDeinit();
             DrvAudioOutInit();
             played_since_restart = 0;
@@ -138,6 +135,7 @@ static void *audio_output_thread(void *arg)
     }
     return NULL;
 }
+
 /* =========================================================
  *  公开接口
  * ========================================================= */
@@ -145,7 +143,6 @@ int SvcAudioFeed(AudioSource src, const uint8_t *data, uint32_t len)
 {
     if (!is_init() || !data || len == 0 || src >= AUDIO_SRC_MAX) return -1;
 
-    /* ★ 语音播放中，丢弃对讲帧（对应旧版 CircularListLock 机制）*/
     pthread_mutex_lock(&s_aud.lock);
     int voice_playing = s_aud.voice_active;
     pthread_mutex_unlock(&s_aud.lock);
@@ -159,9 +156,7 @@ int SvcAudioFeed(AudioSource src, const uint8_t *data, uint32_t len)
     msg.len   = (len > MQ_MSG_PCM_MAX) ? MQ_MSG_PCM_MAX : len;
     memcpy(msg.pcm, data, msg.len);
 
-    if (msgsnd(mqid, &msg, MSG_BODY_SIZE, IPC_NOWAIT) < 0) {
-        return -1;
-    }
+    if (msgsnd(mqid, &msg, MSG_BODY_SIZE, IPC_NOWAIT) < 0) return -1;
     return 0;
 }
 
@@ -173,7 +168,7 @@ void SvcAudioFlush(AudioSource src)
     AudioOutMsg msg;
     int n = 0;
     while (msgrcv(mqid, &msg, MSG_BODY_SIZE, mtype, IPC_NOWAIT) >= 0) n++;
-    if (n > 0) printf("[SvcAudio] flushed %d frames src=%d\n", n, src);
+    if (n > 0) LOG_D("flushed %d frames src=%d", n, src);
 }
 
 void SvcAudioVoiceLock(int lock)
@@ -181,11 +176,9 @@ void SvcAudioVoiceLock(int lock)
     pthread_mutex_lock(&s_aud.lock);
     s_aud.voice_active = lock;
     pthread_mutex_unlock(&s_aud.lock);
-
-    /* 锁定：清空已在 AO 队列中的对讲帧 */
     SvcAudioFlush(AUDIO_SRC_INTERCOM);
-
 }
+
 int SvcAudioRemainLen(void) { return DrvAudioOutRemainLen(); }
 
 int SvcAudioInit(void)
@@ -204,11 +197,11 @@ int SvcAudioInit(void)
 
     pthread_t tid;
     if (pthread_create(&tid, NULL, audio_output_thread, NULL) != 0) {
-        printf("[SvcAudio] thread create fail\n");
+        LOG_E("thread create fail");
         return -1;
     }
     pthread_detach(tid);
-    printf("[SvcAudio] init ok (mqid=%d)\n", s_aud.mq_id);
+    LOG_I("init ok (mqid=%d)", s_aud.mq_id);
     return 0;
 }
 
@@ -221,6 +214,6 @@ int SvcAudioDeinit(void)
     pthread_mutex_unlock(&s_aud.lock);
     DrvGpioAmpDisable();
     DrvAudioOutDeinit();
-    printf("[SvcAudio] deinit ok\n");
+    LOG_I("deinit ok");
     return 0;
 }

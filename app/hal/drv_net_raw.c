@@ -2,6 +2,9 @@
  * @file    drv_net_raw.c
  * @brief   链路层原始套接字工具库
  */
+#define LOG_TAG "NetRaw"
+#include "log.h"
+
 #include "drv_net_raw.h"
 #include <net/if.h>
 #include <netpacket/packet.h>
@@ -21,13 +24,17 @@
 int NetRawPromiscuousSet(const char *iface)
 {
     int fd = socket(PF_INET, SOCK_DGRAM, 0);
-    if (fd < 0) { perror("[NetRaw] socket"); return -1; }
+    if (fd < 0) { LOG_E("socket fail"); return -1; }
 
     struct ifreq ifr;
     strncpy(ifr.ifr_name, iface, IFNAMSIZ - 1);
-    if (ioctl(fd, SIOCGIFFLAGS, &ifr) < 0) { perror("[NetRaw] SIOCGIFFLAGS"); close(fd); return -1; }
+    if (ioctl(fd, SIOCGIFFLAGS, &ifr) < 0) {
+        LOG_E("SIOCGIFFLAGS fail"); close(fd); return -1;
+    }
     ifr.ifr_flags |= IFF_PROMISC;
-    if (ioctl(fd, SIOCSIFFLAGS, &ifr) < 0) { perror("[NetRaw] SIOCSIFFLAGS"); close(fd); return -1; }
+    if (ioctl(fd, SIOCSIFFLAGS, &ifr) < 0) {
+        LOG_E("SIOCSIFFLAGS fail"); close(fd); return -1;
+    }
     close(fd);
     return 0;
 }
@@ -35,7 +42,7 @@ int NetRawPromiscuousSet(const char *iface)
 int NetRawMacGet(const char *iface, char *mac_out)
 {
     int fd = socket(PF_INET, SOCK_DGRAM, 0);
-    if (fd < 0) { perror("[NetRaw] socket"); return -1; }
+    if (fd < 0) { LOG_E("socket fail"); return -1; }
     struct ifreq req;
     strncpy(req.ifr_name, iface, IFNAMSIZ - 1);
     ioctl(fd, SIOCGIFHWADDR, &req);
@@ -52,7 +59,7 @@ int NetRawIfrBind(int fd, const char *iface, int protocol)
     addr.sll_protocol = htons((uint16_t)protocol);
     addr.sll_ifindex  = (int)if_nametoindex(iface);
     if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        perror("[NetRaw] bind"); return -1;
+        LOG_E("bind fail"); return -1;
     }
     return 0;
 }
@@ -61,7 +68,9 @@ int NetRawIfrAddrConfig(int fd, const char *iface, struct sockaddr_ll *sll)
 {
     struct ifreq req;
     strncpy(req.ifr_name, iface, IFNAMSIZ - 1);
-    if (ioctl(fd, SIOCGIFINDEX, &req) < 0) { perror("[NetRaw] SIOCGIFINDEX"); return -1; }
+    if (ioctl(fd, SIOCGIFINDEX, &req) < 0) {
+        LOG_E("SIOCGIFINDEX fail"); return -1;
+    }
     memset(sll, 0, sizeof(*sll));
     sll->sll_ifindex = req.ifr_ifindex;
     return 0;
@@ -73,10 +82,12 @@ int NetRawPacketHead(uint8_t *buf, const char *iface, int protocol)
     if (!mac_head) {
         mac_head = calloc(1, MAC_HEAD_LEN);
         if (!mac_head) return -1;
-        /* 目的 MAC：01:01:01:01:01:01*/
+        /* 目的 MAC：01:01:01:01:01:01 */
         mac_head[0] = mac_head[1] = mac_head[2] = 0x01;
         mac_head[3] = mac_head[4] = mac_head[5] = 0x01;
-        if (NetRawMacGet(iface, &mac_head[6]) < 0) { free(mac_head); mac_head = NULL; return -1; }
+        if (NetRawMacGet(iface, &mac_head[6]) < 0) {
+            free(mac_head); mac_head = NULL; return -1;
+        }
     }
     mac_head[12] = (char)(protocol / 256);
     mac_head[13] = (char)(protocol % 256);
@@ -97,7 +108,7 @@ int NetRawPacketSend(int fd, struct sockaddr_ll *sll,
         memcpy(&pkg[MAC_HEAD_LEN], &data[sent], chunk);
         if (sendto(fd, pkg, chunk + MAC_HEAD_LEN, 0,
                    (struct sockaddr *)sll, sizeof(*sll)) < 0) {
-            perror("[NetRaw] sendto"); return -1;
+            LOG_E("sendto fail"); return -1;
         }
         sent += chunk;
         size -= chunk;
@@ -107,10 +118,8 @@ int NetRawPacketSend(int fd, struct sockaddr_ll *sll,
 
 int NetRawPacketReceive(int fd, uint8_t *buf, int size, unsigned int timeout_ms)
 {
-    /* 不使用 static 缓冲：audio_rx_thread 与 net_recv_thread 并发调用此函数，
-     * static 共享缓冲会导致数据竞争，引起命令包丢失/损坏。
-     * 改用栈上固定大小缓冲，以太帧最大 1514 字节 + 60 字节 MAC 头 = 1574 字节，
-     * 取 2048 保留余量，满足所有调用场合。*/
+    /* 使用栈缓冲避免多线程共享静态缓冲导致数据竞争
+     * 以太帧最大 1514B + 60B MAC 头，取 2048 保留余量 */
     uint8_t rbuf[MAC_HEAD_LEN + 2048];
     int recv_max = (int)sizeof(rbuf);
 
@@ -132,10 +141,6 @@ int NetRawPacketReceive(int fd, uint8_t *buf, int size, unsigned int timeout_ms)
     return payload;
 }
 
-/**
- * @brief 接收完整以太帧（含 MAC 头）
- * 返回帧总长度（含 MAC 头），0=超时，-1=错误
- */
 int NetRawFrameReceive(int fd, uint8_t *buf, int size, unsigned int timeout_ms)
 {
     fd_set fds;

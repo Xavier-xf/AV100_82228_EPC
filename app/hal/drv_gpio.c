@@ -114,7 +114,8 @@ void DrvGpioInfraredLightSet(int on)
 
 /* =========================================================
  *  继电器（开锁/开闸）
- *  开/关分离为两个接口，定时器由 app_access.c 管理
+ *  DrvGpioLockOpen 为同步接口（阻塞 duration_ms），
+ *  调用方（app_card.c）在独立线程中执行
  * ========================================================= */
 void DrvGpioLockSet(GpioLockType type, int on)
 {

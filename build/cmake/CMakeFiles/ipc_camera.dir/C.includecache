@@ -99,8 +99,6 @@ stdint.h
 ../app/service/svc_svp.h
 drv_video_in.h
 ../app/service/drv_video_in.h
-ak_svp.h
-../app/service/ak_svp.h
 
 ../app/service/svc_timer.h
 stddef.h
@@ -295,6 +293,8 @@ stdbool.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_keypad.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/log.h
 app_upgrade.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/app_upgrade.h
 event_bus.h
@@ -391,6 +391,8 @@ assert.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/log.h
 drv_audio_in.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_audio_in.h
 ak_ai.h
@@ -459,11 +461,11 @@ unistd.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/log.h
 drv_gpio_sysfs.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_gpio_sysfs.h
 stdio.h
--
-stdlib.h
 -
 string.h
 -
@@ -477,6 +479,8 @@ stdbool.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/log.h
 drv_infrared.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.h
 drv_gpio_sysfs.h
@@ -485,14 +489,14 @@ event_bus.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/event_bus.h
 pthread.h
 -
-stdio.h
--
 unistd.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_infrared.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_keypad.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/log.h
 drv_keypad.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_keypad.h
 pthread.h
@@ -500,8 +504,6 @@ pthread.h
 unistd.h
 -
 string.h
--
-stdio.h
 -
 fcntl.h
 -
@@ -535,6 +537,8 @@ ak_md.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/ak_md.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_net_raw.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/log.h
 drv_net_raw.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_net_raw.h
 net/if.h
@@ -569,6 +573,8 @@ stdint.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/log.h
 drv_platform.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_platform.h
 string.h
@@ -627,6 +633,8 @@ ak_venc.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/ak_venc.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_watchdog.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/log.h
 drv_watchdog.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_watchdog.h
 unistd.h
@@ -634,8 +642,6 @@ unistd.h
 fcntl.h
 -
 sys/ioctl.h
--
-stdio.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_watchdog.h
@@ -697,6 +703,8 @@ app_user_config.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/mad.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/log.h
 svc_audio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_audio.h
 svc_timer.h
@@ -714,8 +722,6 @@ sys/msg.h
 pthread.h
 -
 string.h
--
-stdio.h
 -
 stdlib.h
 -
@@ -829,6 +835,8 @@ fcntl.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/log.h
 svc_network.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_network.h
 drv_net_raw.h
@@ -901,17 +909,15 @@ unistd.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_svp.h
 drv_video_in.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/drv_video_in.h
-ak_svp.h
-/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/ak_svp.h
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/log.h
 svc_timer.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_timer.h
 string.h
 -
 stdio.h
--
-unistd.h
 -
 pthread.h
 -

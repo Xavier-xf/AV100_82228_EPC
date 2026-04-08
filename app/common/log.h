@@ -45,14 +45,14 @@
 /* =========================================================
  *  日志级别（全局默认级别）
  * ========================================================= */
-#define LOG_LEVEL_DEBUG  0
-#define LOG_LEVEL_INFO   1
-#define LOG_LEVEL_WARN   2
-#define LOG_LEVEL_ERROR  3
-#define LOG_LEVEL_NONE   4
+#define APP_LOG_DEBUG    0
+#define APP_LOG_INFO     1
+#define APP_LOG_WARN     2
+#define APP_LOG_ERROR    3
+#define APP_LOG_NONE     4
 
-#ifndef LOG_LEVEL
-#define LOG_LEVEL LOG_LEVEL_DEBUG
+#ifndef APP_LOG_LEVEL
+#define APP_LOG_LEVEL    APP_LOG_DEBUG
 #endif
 
 /* =========================================================
@@ -72,7 +72,7 @@
 #define LOG_TAG ""
 #endif
 
-// 如果文件没定义 LOG_ENABLE，默认开启
+/* 若文件未定义 LOG_ENABLE，默认开启 */
 #ifndef LOG_ENABLE
 #define LOG_ENABLE 1
 #endif
@@ -93,25 +93,25 @@
 /* =========================================================
  *  公开宏
  * ========================================================= */
-#if LOG_LEVEL <= LOG_LEVEL_DEBUG
+#if APP_LOG_LEVEL <= APP_LOG_DEBUG
 #define LOG_D(fmt, ...)  _LOG_PRINT(_LC_GRAY,   "D", fmt, ##__VA_ARGS__)
 #else
 #define LOG_D(fmt, ...)  do {} while (0)
 #endif
 
-#if LOG_LEVEL <= LOG_LEVEL_INFO
+#if APP_LOG_LEVEL <= APP_LOG_INFO
 #define LOG_I(fmt, ...)  _LOG_PRINT(_LC_GREEN,  "I", fmt, ##__VA_ARGS__)
 #else
 #define LOG_I(fmt, ...)  do {} while (0)
 #endif
 
-#if LOG_LEVEL <= LOG_LEVEL_WARN
+#if APP_LOG_LEVEL <= APP_LOG_WARN
 #define LOG_W(fmt, ...)  _LOG_PRINT(_LC_YELLOW, "W", fmt, ##__VA_ARGS__)
 #else
 #define LOG_W(fmt, ...)  do {} while (0)
 #endif
 
-#if LOG_LEVEL <= LOG_LEVEL_ERROR
+#if APP_LOG_LEVEL <= APP_LOG_ERROR
 #define LOG_E(fmt, ...)  _LOG_PRINT(_LC_RED,    "E", fmt, ##__VA_ARGS__)
 #else
 #define LOG_E(fmt, ...)  do {} while (0)

@@ -59,10 +59,7 @@ void SvcAudioFlush(AudioSource src);
  */
 int SvcAudioRemainLen(void);
 
-/** 
- * @brief 语音播放锁（1=锁定，丢弃对讲帧；0=解锁）
- * 
-*/
+/** @brief 语音播放锁（1=锁定，丢弃对讲帧；0=解锁）*/
 void SvcAudioVoiceLock(int lock);
 
 /**

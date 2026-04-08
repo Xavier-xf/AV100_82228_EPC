@@ -56,11 +56,10 @@ int SvcSvpIsActive(void);
 
 /**
  * @brief 初始化 SVP 服务
- * @param trd_chn_attr  第三路视频通道属性（用于获取分辨率）
+ * @param chn_width     第三路通道宽度
+ * @param chn_height    第三路通道高度
  * @param dev_id        视频设备 ID（用于运动检测初始化）
- */
-/**
- * @param vi_data_type  第三路通道数据类型（来自 ak_vi.h VI_DATA_TYPE_*）
+ * @param vi_data_type  第三路通道数据类型（VI_DATA_TYPE_*）
  *   0 = VI_DATA_TYPE_YUV420SP → AK_SVP_IMG_YUV420SP
  *   其他（如 VI_DATA_TYPE_RGB_LINEINTL）→ AK_SVP_IMG_RGB_LI
  */

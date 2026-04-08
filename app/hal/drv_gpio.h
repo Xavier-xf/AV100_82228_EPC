@@ -66,7 +66,6 @@ void DrvGpioAmpDisable(void);
 
 /* =========================================================
  *  IRCUT 滤光片电机（GPIO 65/66）
- *  对应旧版 InfraredDetect.c IRCUT_INA/INB_GPIO
  *  用法：先调 Night/Day 给方向脉冲，100ms 后调 Stop
  * ========================================================= */
 void DrvGpioIrcutNight(void);  /* 夜视：INB=HIGH INA=LOW  */

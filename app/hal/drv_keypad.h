@@ -2,14 +2,13 @@
  * @file    drv_keypad.h
  * @brief   XW12A 数字键盘 HAL 驱动
  *
- * 移植自旧版 DrvNumericKeypad.c（框架）+ XW12AKeypad.c（硬件部分）。
  * 负责加载内核模块、打开设备、轮询读取原始字节并解码为按键值，
  * 业务逻辑由 app_keypad.c 通过回调处理。
  */
 #ifndef _DRV_KEYPAD_H_
 #define _DRV_KEYPAD_H_
 
-/* ---- 解码后的按键值（与旧版 KeyVaule 枚举兼容）---- */
+/* 解码后的按键值 */
 #define KEYPAD_KEY_0      0
 #define KEYPAD_KEY_1      1
 #define KEYPAD_KEY_2      2

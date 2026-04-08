@@ -2,30 +2,12 @@
  * @file    svc_svp.c
  * @brief   智能视觉平台服务（SVP + MD 联合检测）
  *
- * ============================================================
- *  设计说明
- * ============================================================
- *
- * Q1: SvcTimerSet 放在 if(total>0&&output){} 外面后移动侦测没法运行？
- * A1: 若 SvcTimerSet 在 if 块外，每次进入 dispatch_detection 无论是否检测到
- *     目标都会刷新 3s 定时器，SVPTimer 永不超时。心跳帧 Arg1.bit0 = svp_active
- *     一直为 1，室内机认为移动侦测持续触发。正确位置在 if(total>0&&output) 内，
- *     只有真正通过过滤的检测结果才刷新定时器。
- *
- * Q2: EventBusPublish(EVT_SVP_MOTION_DETECTED) 的作用？
- * A2: 通过 EventBus 发布，任何订阅 EVT_SVP_MOTION_DETECTED 的模块
- *     （安防、录像等）均可收到。网络通知和 ak_vi_draw_box 在
- *     dispatch_detection 内直接完成，不依赖 EventBus 订阅者。
- *
- * Q3: FILTER_OPTION (NOLY_SVP / SVP_MD / SVP_FILTER_MD) 为什么没了？
- * A3: 用 s_svp.use_md 标志等价替代：
- *       MD 初始化成功 → use_md=1 → SVP_FILTER_MD 模式（MD IoU + 对象过滤器）
- *       MD 初始化失败 → use_md=0 → NOLY_SVP 模式（直接上报 SVP 结果）
- *
- * Q4: 为什么开机时能根据室内机设置的灵敏度开关移动侦测？
- * A4: 室外机心跳（0x55 case-0）→ 发 StreamStatus(0x59)
- *     → 室内机收到后回复 MotionSensitivityEvent(0x63)
- *     → 室外机调用 SvcSvpSetSensitivity，开机约 2s 后完成灵敏度同步。
+ * 设计说明：
+ *   SvcTimerSet(TMR_SVP_ACTIVE) 只在检测到目标时调用，以确保定时器能正常超时。
+ *   s_svp.use_md 标志替代旧版 FILTER_OPTION 枚举：
+ *     MD 初始化成功 → use_md=1 → SVP_FILTER_MD 模式（MD IoU + 对象过滤器）
+ *     MD 初始化失败 → use_md=0 → NOLY_SVP 模式（直接上报 SVP 结果）
+ *   开机灵敏度由室内机通过 MotionSensitivityEvent(0x63) 下发，约 2s 完成同步。
  */
 
 /* ak_common.h 和 ak_log.h 必须在其他 AK SDK 头文件之前 */
@@ -184,8 +166,8 @@ static void dispatch_detection(int total, const AK_SVP_OUTPUT_T *output)
         /* 仅在有检测结果时刷新定时器，确保定时器能正常超时 */
         SvcTimerSet(TMR_SVP_ACTIVE, 3000, NULL, NULL);
 
-        // /* 通知室内机（仅在有检测结果时）*/
-        // SvcNetworkMotionDetectNotify();
+        /* 通知室内机（按需启用）*/
+        /* SvcNetworkMotionDetectNotify(); */
     }
 
     /* 始终画框：total==0 时 box_info 全零 → 清除屏幕上的框 */
@@ -364,27 +346,22 @@ static void *svp_process_thread(void *arg)
 static void on_motion_detect(int dev_id, const MdResult *result)
 {
     (void)dev_id;
-    // if (result && result->result)
-    //     LOG_D("MD triggered, boxes=%d", result->move_box_num);
+    (void)result;
+    /* MD 结果由 SVP 线程通过 DrvMotionDetectGetResult 轮询获取，此回调仅占位 */
 }
 
 /* =========================================================
  *  公开接口
  * ========================================================= */
 
-/* API 兼容性保留，SVP 线程已改为直接 ak_vi_get_frame */
+/* SVP 线程已直接调用 ak_vi_get_frame，此接口保留备用 */
 void SvcSvpFeedFrame(const VideoFrame *frame, int width, int height)
 {
     (void)frame; (void)width; (void)height;
 }
 
-/**
- * SvcSvpSetSensitivity：设置检测灵敏度
- *
- * sensitivity=0 → 关闭上报（enable=0），不停止 MD 线程
- *   这样灵敏度重新置非0时无需重新初始化 MD，响应更快。
- * sensitivity>0 → 开启上报，更新 MD 过滤参数（use_md=1 时）
- */
+/* sensitivity=0 → 关闭上报（不停止 MD 线程，恢复时无需重新初始化）
+ * sensitivity>0 → 开启上报，更新 MD 过滤参数（use_md=1 时）*/
 void SvcSvpSetSensitivity(int sensitivity)
 {
     if (sensitivity < 0) sensitivity = 0;
@@ -412,11 +389,6 @@ int SvcSvpIsActive(void)
     return SvcTimerActive(TMR_SVP_ACTIVE);
 }
 
-/**
- * @param vi_data_type  第三路通道数据类型（VI_DATA_TYPE_*，来自 drv_video_in）
- *                      VI_DATA_TYPE_YUV420SP(0)  → AK_SVP_IMG_YUV420SP
- *                      VI_DATA_TYPE_RGB_LINEINTL  → AK_SVP_IMG_RGB_LI（默认）
- */
 int SvcSvpInit(int chn_width, int chn_height, int dev_id, int vi_data_type)
 {
     if (ak_svp_init() != AK_SUCCESS) {
