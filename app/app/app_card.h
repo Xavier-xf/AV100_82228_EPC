@@ -2,8 +2,7 @@
  * @file    app_card.h
  * @brief   IC 卡管理（数据库 + 刷卡业务逻辑）
  *
- * 移植自旧版 UserCard.h / RC522Card.c 的业务部分。
- * 数据文件：/etc/config/UserCard.cfg
+ * 数据持久化：/etc/config/UserCard.cfg
  */
 #ifndef _APP_CARD_H_
 #define _APP_CARD_H_
@@ -123,7 +122,6 @@ void AppCardUnlockAsync(int type, int duration_ms, int play_voice);
 
 /** @brief 处理一次刷卡事件（RC522 读到的原始 4 字节 UID）
  *
- * 内部逻辑（对应旧版 Rc522CardModuleHandle）：
  *   - 添加模式（TMR_ADD_CARD 激活）：录入卡片
  *   - 删除模式（TMR_DEL_CARD 激活）：删除卡片
  *   - 普通模式：查询卡片权限，驱动开锁

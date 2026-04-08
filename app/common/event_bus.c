@@ -25,9 +25,13 @@
  *   Publish 调用开销（0个handler）= ~10ns
  *   Publish 调用开销（1个handler）= handler 本身耗时
  */
+#define LOG_TAG "EventBus"
+#include "log.h"
+
 #include "event_bus.h"
 #include <string.h>
-#include <stdio.h>
+
+
 
 #define MAX_HANDLERS_PER_EVENT 8
 
@@ -82,22 +86,21 @@ static const char *s_evt_names[EVT_ID_MAX] = {
 void EventBusInit(void)
 {
     memset(s_slots, 0, sizeof(s_slots));
-    printf("[EventBus] init ok, %d event slots, %d handlers/slot\n",
-           EVT_ID_MAX, MAX_HANDLERS_PER_EVENT);
+    LOG_I("init ok, %d event slots, %d handlers/slot",
+          EVT_ID_MAX, MAX_HANDLERS_PER_EVENT);
 }
 
 int EventBusSubscribe(EventId id, EventHandler handler)
 {
     if (id >= EVT_ID_MAX || handler == NULL)
     {
-        printf("[EventBus] Subscribe: invalid id=%d or NULL handler\n", id);
+        LOG_E("Subscribe: invalid id=%d or NULL handler", id);
         return -1;
     }
     EventSlot *slot = &s_slots[id];
     if (slot->count >= MAX_HANDLERS_PER_EVENT)
     {
-        printf("[EventBus] Subscribe: slot full for id=%d (max=%d)\n",
-               id, MAX_HANDLERS_PER_EVENT);
+        LOG_E("Subscribe: slot full for id=%d (max=%d)", id, MAX_HANDLERS_PER_EVENT);
         return -1;
     }
     /* 防止重复订阅 */
@@ -105,15 +108,14 @@ int EventBusSubscribe(EventId id, EventHandler handler)
     {
         if (slot->handlers[i] == handler)
         {
-            printf("[EventBus] Subscribe: duplicate handler for id=%d\n", id);
+            LOG_W("Subscribe: duplicate handler for id=%d", id);
             return 0; /* 幂等，不报错 */
         }
     }
     slot->handlers[slot->count++] = handler;
 
 #ifdef EVENT_BUS_DEBUG
-    printf("[EventBus] Subscribe: id=%d(%s) handler#%d\n",
-           id, EVT_NAME(id), slot->count);
+    LOG_D("Subscribe: id=%d(%s) handler#%d", id, EVT_NAME(id), slot->count);
 #endif
     return 0;
 }
@@ -146,10 +148,7 @@ void EventBusPublish(EventId id, const void *arg, size_t len)
 
 #ifdef EVENT_BUS_DEBUG
     if (count > 0)
-    {
-        printf("[EventBus] Publish: id=%d(%s) → %d handler(s)\n",
-               id, EVT_NAME(id), count);
-    }
+        LOG_D("Publish: id=%d(%s) → %d handler(s)", id, EVT_NAME(id), count);
 #endif
 
     for (int i = 0; i < count; i++)

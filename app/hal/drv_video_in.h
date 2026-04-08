@@ -20,7 +20,7 @@
 #include "ak_venc.h"
 
 /* =========================================================
- *  视频通道枚举（对应旧版 VideoInput.h VI_CHN_NUM）
+ *  视频通道枚举
  * ========================================================= */
 typedef enum {
     VI_CHN_MAIN,
@@ -34,7 +34,7 @@ typedef struct {
     VI_CHN_ATTR_EX ChnAttr;
 } ViChnAttr;
 
-/* 视频采集+编码参数（对应旧版 VideoInput.h VideoInputParam）
+/* 视频采集+编码参数
  * ★ 编码器参数用 struct venc_param（AK SDK 实际类型名），
  *   不是 struct ak_venc_param（该类型不存在）*/
 typedef struct {
@@ -44,7 +44,7 @@ typedef struct {
     struct venc_param VencParam;   /* 对应 ak_venc.h struct venc_param */
 } VideoInputParam;
 
-/* 旧版模块名/路径（对应 VideoInput.h）*/
+/* 内核模块路径与名称 */
 #define VIDEO_MODULE_PATH       "/usr/modules/"
 #define VIDEO_ISP_MODULE_KO     "ak_isp"
 #define VIDEO_SENSOR_MODULE_KO  "sensor_gc2083"
@@ -57,9 +57,7 @@ typedef struct {
  *  视频帧数据
  *
  *  ★ phy_addr：AK SVP 硬件加速所需的物理地址。
- *    旧版 SmartVisionPlatformThread 中：
- *      Input.phy_addr = Frame.phyaddr;
- *    新版通过回调传递，必须携带此字段，否则 SVP 硬件无法工作。
+ *    通过回调传递，必须携带此字段，否则 SVP 硬件无法工作。
  * ========================================================= */
 typedef struct {
     uint8_t    *data;        /* H264/YUV/RGB 数据                */

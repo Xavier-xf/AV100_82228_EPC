@@ -72,6 +72,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.h
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/log.h
 
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.h

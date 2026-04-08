@@ -4,7 +4,7 @@
  *
  * 设计说明：
  *   SvcTimerSet(TMR_SVP_ACTIVE) 只在检测到目标时调用，以确保定时器能正常超时。
- *   s_svp.use_md 标志替代旧版 FILTER_OPTION 枚举：
+ *   s_svp.use_md 标志控制检测模式：
  *     MD 初始化成功 → use_md=1 → SVP_FILTER_MD 模式（MD IoU + 对象过滤器）
  *     MD 初始化失败 → use_md=0 → NOLY_SVP 模式（直接上报 SVP 结果）
  *   开机灵敏度由室内机通过 MotionSensitivityEvent(0x63) 下发，约 2s 完成同步。

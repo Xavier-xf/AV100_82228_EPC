@@ -341,17 +341,21 @@ stdint.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/log.h
 event_bus.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.h
 string.h
--
-stdio.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/event_bus.h
 stdint.h
 -
 stddef.h
+-
+
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/log.h
+stdio.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c

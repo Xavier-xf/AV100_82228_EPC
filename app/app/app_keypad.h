@@ -2,7 +2,6 @@
  * @file    app_keypad.h
  * @brief   数字键盘业务逻辑（菜单状态机）
  *
- * 移植自旧版 NumericKeypad.h / NumericKeypad.c。
  * 由 drv_keypad.c 驱动层回调触发，完成密码开锁、管理菜单等功能。
  */
 #ifndef _APP_KEYPAD_H_
@@ -23,8 +22,8 @@ int AppKeypadInit(void);
 void AppKeypadSetModifyCardIdx(int idx);
 
 /**
- * @brief 开启键盘背光（夜间使用配置时长/86400s，白天固定 10s）
- *        对应旧版 KeypadLightEnable()，由红外夜视切换时调用。
+ * @brief 开启键盘背光（夜间使用配置时长，白天固定 10s）
+ *        由红外夜视切换时调用。
  */
 void AppKeypadLightEnable(void);
 
