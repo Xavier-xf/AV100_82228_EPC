@@ -19,6 +19,8 @@
  *     #define LOG_TAG "NetMgr"
  *     #include "log.h"
  *
+ * 打印开关:
+ * #ifndef LOG_ENABLE
  *   之后直接使用：
  *     LOG_D("收到数据 len=%d", n);
  *     LOG_I("session start fd=%d", cfd);
@@ -41,7 +43,7 @@
 #include <stdio.h>
 
 /* =========================================================
- *  日志级别
+ *  日志级别（全局默认级别）
  * ========================================================= */
 #define LOG_LEVEL_DEBUG  0
 #define LOG_LEVEL_INFO   1
@@ -57,27 +59,36 @@
  *  ANSI 颜色码
  * ========================================================= */
 #define _LC_RESET   "\033[0m"
-#define _LC_GRAY    "\033[2;37m"  /* DEBUG：暗灰   */
-#define _LC_GREEN   "\033[32m"    /* INFO ：绿色   */
-#define _LC_YELLOW  "\033[33m"    /* WARN ：黄色   */
-#define _LC_RED     "\033[31m"    /* ERROR：红色   */
-#define _LC_CYAN    "\033[36m"    /* 函数名：青色  */
+#define _LC_GRAY    "\033[2;37m"
+#define _LC_GREEN   "\033[32m"
+#define _LC_YELLOW  "\033[33m"
+#define _LC_RED     "\033[31m"
+#define _LC_CYAN    "\033[36m"
 
 /* =========================================================
- *  模块标签默认值
+ *  模块默认配置
  * ========================================================= */
 #ifndef LOG_TAG
 #define LOG_TAG ""
 #endif
 
+// 如果文件没定义 LOG_ENABLE，默认开启
+#ifndef LOG_ENABLE
+#define LOG_ENABLE 1
+#endif
+
 /* =========================================================
  *  核心输出宏
- *    格式：[L][TAG] \033[36mfunc\033[0m: message\n
  * ========================================================= */
+#if LOG_ENABLE == 1
 #define _LOG_PRINT(color, lvl_str, fmt, ...)                        \
     printf(color "[" lvl_str "][" LOG_TAG "] "                      \
            _LC_CYAN "%s" _LC_RESET ": " fmt "\n",                   \
            __func__, ##__VA_ARGS__)
+#else
+// 模块关闭 → 所有日志都为空
+#define _LOG_PRINT(color, lvl_str, fmt, ...) do {} while (0)
+#endif
 
 /* =========================================================
  *  公开宏
@@ -106,4 +117,4 @@
 #define LOG_E(fmt, ...)  do {} while (0)
 #endif
 
-#endif /* _LOG_H_ */
+#endif

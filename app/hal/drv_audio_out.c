@@ -2,18 +2,20 @@
  * @file    drv_audio_out.c
  * @brief   音频输出驱动
  */
+#define LOG_TAG "DrvAudioOut"
+#include "log.h"
+
 #include "drv_audio_out.h"
 #include "ak_ao.h"
 #include "ak_common_audio.h"
 #include <pthread.h>
 #include <string.h>
 #include <math.h>
-#include <stdio.h>
 
 /* =========================================================
  *  常量
  * ========================================================= */
-#define PCM_VOLUME_BUF_MAX  4096  
+#define PCM_VOLUME_BUF_MAX  4096
 
 /* =========================================================
  *  模块状态结构体
@@ -66,17 +68,15 @@ static void pcm_volume_scale(unsigned char *src, int size, int volume)
  * ========================================================= */
 static void setup_params(int handle_id)
 {
-    /* 降噪（default_ao_nr_attr = {-40, 0, 1}）*/
+    /* 降噪 */
     struct ak_audio_nr_attr nr = {-40, 0, 1};
     ak_ao_set_nr_attr(handle_id, &nr);
 
-    /* 自动电平控制（default_ao_aslc_attr = {16384, 8, 0}）*/
+    /* 自动电平控制 */
     struct ak_audio_aslc_attr aslc = {16384, 8, 0};
     ak_ao_set_aslc_attr(handle_id, &aslc);
 
-    /* EQ（default_ao_eq_attr，来自 ak_audio_config.h）*/
-    /* AO EQ 参数（来自 ak_audio_config.h default_ao_eq_attr）
-     * 字段名对应 ak_common_audio.h struct ak_audio_eq_attr */
+    /* EQ（字段名对应 ak_common_audio.h struct ak_audio_eq_attr）*/
     struct ak_audio_eq_attr eq = {
         .pre_gain   = 1024,
         .bands      = 5,
@@ -90,13 +90,12 @@ static void setup_params(int handle_id)
     };
     ak_ao_set_eq_attr(handle_id, &eq);
 
-    /* 增益（default_ao_gain = 2）*/
+    /* 增益 */
     ak_ao_set_gain(handle_id, 2);
 
-    /* ak_ao_set_volume：旧版 SetupAudioOutputArgument 未调用，
-     * 音量由软件 pcm_volume_scale 控制，不设硬件等级以避免双重叠加 */
+    /* 注意：音量由软件 pcm_volume_scale 控制，不设硬件等级以避免双重叠加 */
 
-    printf("[DrvAudioOut] params set ok\n");
+    LOG_I("params set ok");
 }
 
 /* =========================================================
@@ -105,7 +104,8 @@ static void setup_params(int handle_id)
 
 /**
  * @brief 初始化音频输出设备
- *只做 open + setup，输出循环在 svc_audio.c 中
+ *
+ * 只做 open + setup，输出循环在 svc_audio.c 中
  */
 int DrvAudioOutInit(void)
 {
@@ -121,7 +121,7 @@ int DrvAudioOutInit(void)
     s_ao.param.pcm_data_attr.sample_bits = AK_AUDIO_SMPLE_BIT_16;
 
     if (ak_ao_open(&s_ao.param, &s_ao.handle_id) != 0) {
-        printf("[DrvAudioOut] ak_ao_open fail\n");
+        LOG_E("ak_ao_open fail");
         s_ao.handle_id = -1;
         pthread_mutex_unlock(&s_ao.lock);
         return -1;
@@ -130,15 +130,12 @@ int DrvAudioOutInit(void)
     setup_params(s_ao.handle_id);
 
     pthread_mutex_unlock(&s_ao.lock);
-    printf("[DrvAudioOut] init ok handle=%d\n", s_ao.handle_id);
+    LOG_I("init ok handle=%d", s_ao.handle_id);
     return 0;
 }
 
 /**
  * @brief 写入 PCM 帧
- *
- *   pcm_volume_scale(data, len, volume);   ← 同 Pcm16bitVolumeCover
- *   ak_ao_send_frame(handle, data, len, NULL);  ← 完全一致
  *
  * 注意：data 会被原地修改（音量缩放），调用方（svc_audio）负责传入可写缓冲。
  */
@@ -151,10 +148,8 @@ int DrvAudioOutWrite(unsigned char *data, unsigned int len)
 
     if (handle < 0 || !data || len == 0) return -1;
 
-    /* 原地音量缩放*/
     pcm_volume_scale(data, (int)len, vol);
 
-    /* 写入 AK AO 硬件（*/
     return ak_ao_send_frame(s_ao.handle_id, data, (int)len, NULL);
 }
 
@@ -163,7 +158,6 @@ int DrvAudioOutWrite(unsigned char *data, unsigned int len)
  */
 void DrvAudioOutSetVolume(int volume)
 {
-    /* volume<=0 或 volume==100 直接返回 */
     if (volume <= 0 || volume == 100) return;
 
     pthread_mutex_lock(&s_ao.lock);

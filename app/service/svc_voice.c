@@ -2,6 +2,9 @@
  * @file    svc_voice.c
  * @brief   语音播放服务
  */
+#define LOG_TAG "SvcVoice"
+#include "log.h"
+
 #include "svc_voice.h"
 #include "svc_audio.h"
 #include "drv_audio_out.h"
@@ -13,7 +16,6 @@
 #include <pthread.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
 #include <assert.h>
@@ -49,9 +51,9 @@ static SvcVoiceCtx s_voc = {
     .busy        = 0,
 };
 
-static int  get_mqid(void)    { pthread_mutex_lock(&s_voc.lock); int v=s_voc.mq_id;   pthread_mutex_unlock(&s_voc.lock); return v; }
+static int  get_mqid(void)    { pthread_mutex_lock(&s_voc.lock); int v=s_voc.mq_id;      pthread_mutex_unlock(&s_voc.lock); return v; }
 static int  is_init(void)     { pthread_mutex_lock(&s_voc.lock); int v=s_voc.initialized; pthread_mutex_unlock(&s_voc.lock); return v; }
-static void set_busy(int val) { pthread_mutex_lock(&s_voc.lock); s_voc.busy=val; pthread_mutex_unlock(&s_voc.lock); }
+static void set_busy(int val) { pthread_mutex_lock(&s_voc.lock); s_voc.busy=val;          pthread_mutex_unlock(&s_voc.lock); }
 
 /* ---- 语音名称表 ---- */
 #define _VOICE_NAME(n) #n,
@@ -64,7 +66,7 @@ static int resolve_path(VoiceId id, char *out, size_t max)
     if (access(out, F_OK) == 0) return 0;
     snprintf(out, max, "%s%s.mp3", VOICE_BASE_PATH, s_names[id]);
     if (access(out, F_OK) == 0) return 0;
-    printf("[SvcVoice] not found: %s\n", s_names[id]);
+    LOG_W("not found: %s", s_names[id]);
     return -1;
 }
 
@@ -88,7 +90,7 @@ static void push_pcm(const uint8_t *pcm, int len)
     /* 流控：固定半帧等待（避免解码过快淹没AO）*/
     usleep((unsigned int)(frame_ms * 500));
 
-    /* AO缓冲充足时追加一帧等待（原条件：AO剩余 > 3×帧大小）*/
+    /* AO缓冲充足时追加一帧等待（AO剩余 > 3×帧大小）*/
     if (SvcAudioRemainLen() > len * 3)
         usleep((unsigned int)(frame_ms * 1000));
 }
@@ -99,7 +101,7 @@ static void push_pcm(const uint8_t *pcm, int len)
 static int decode_pcm(const VoiceReqMsg *req)
 {
     if (access(req->file_path, F_OK) != 0) {
-        printf("[SvcVoice] PCM not found: %s\n", req->file_path); return -1;
+        LOG_W("PCM not found: %s", req->file_path); return -1;
     }
     FILE *fp = fopen(req->file_path, "rb");
     if (!fp) return -1;
@@ -154,7 +156,7 @@ static enum mad_flow mp3_output(void *d, const struct mad_header *h, struct mad_
 {
     (void)h;
     Mp3Ctx *ctx = d;
-    /* 强制单声道*/
+    /* 强制单声道 */
     const mad_fixed_t *left = pcm->samples[0];
     unsigned int n = pcm->length;
     while (n--) {
@@ -166,8 +168,7 @@ static enum mad_flow mp3_output(void *d, const struct mad_header *h, struct mad_
      * 每帧数据大小1152字节，因此不能完整存到 VOICE_CACHE_MAX，
      * 否则会出现数组越界段错误问题。
      * VOICE_CACHE_MAX - (VOICE_CACHE_MAX % 1152) = 4096-640 = 3456
-     * 即缓存满 3456 字节后冲洗，保证下一帧(2304字节) 不溢出 4096 缓冲。 
-     * */
+     * 即缓存满 3456 字节后冲洗，保证下一帧(2304字节) 不溢出 4096 缓冲。 */
     int threshold = VOICE_CACHE_MAX - (VOICE_CACHE_MAX % 1152);
     if (ctx->cache_len >= threshold) mp3_flush(ctx);
     return MAD_FLOW_CONTINUE;
@@ -183,7 +184,7 @@ static enum mad_flow mp3_error(void *d, struct mad_stream *s, struct mad_frame *
 static int decode_mp3(const VoiceReqMsg *req)
 {
     if (access(req->file_path, F_OK) != 0) {
-        printf("[SvcVoice] MP3 not found: %s\n", req->file_path); return -1;
+        LOG_W("MP3 not found: %s", req->file_path); return -1;
     }
     Mp3Ctx ctx;
     memset(&ctx, 0, sizeof(ctx));
@@ -214,19 +215,23 @@ static void decode_and_play(const VoiceReqMsg *req)
 }
 
 /* =========================================================
- *  ★ 解码线程
+ *  解码线程
+ *
+ *  阻塞等待消息队列中的播放请求，逐个解码并送入 SvcAudio。
+ *  语音播放期间持有 AudioVoiceLock，使新到的对讲帧在 SvcAudioFeed
+ *  中被丢弃，AO 队列只有语音帧，保证播放流畅。
  * ========================================================= */
 static void *voice_decode_thread(void *arg)
 {
     (void)arg;
     VoiceReqMsg req;
-    printf("[SvcVoice] decode thread start\n");
+    LOG_I("decode thread start");
 
     while (1) {
         int mqid = get_mqid();
         if (mqid < 0) { usleep(50 * 1000); continue; }
 
-        /* 阻塞等待请求（原 CircularListRead 的阻塞语义）*/
+        /* 阻塞等待请求 */
         ssize_t ret = msgrcv(mqid, &req, VOICE_REQ_BODY_SIZE, 1, 0);
         if (ret <= 0) {
             /* EINVAL/EIDRM：消息队列被销毁，等待 */
@@ -236,23 +241,18 @@ static void *voice_decode_thread(void *arg)
 
         set_busy(1);
 
-        /* 设置播放音量（原 AudioOutputVolumeSet(TmpInfo->Volume)）*/
         DrvAudioOutSetVolume(req.volume);
 
-        /* ★ 对应旧版 VoiceDecodeStart → CircularListLock：
-         * 加锁同时清空已积压的对讲帧，语音播放期间新到的对讲帧
-         * 在 SvcAudioFeed 中被丢弃，AO 队列只有语音帧，播放流畅。*/
         SvcAudioVoiceLock(1);
         if (req.on_start) req.on_start();
 
         decode_and_play(&req);
 
         if (req.on_end) req.on_end();
-        /* ★ 对应旧版 VoiceDecodeEnd → CircularListUnlock */
         SvcAudioVoiceLock(0);
 
         set_busy(0);
-        printf("[SvcVoice] done id=%d\n", req.id);
+        LOG_D("done id=%d", req.id);
     }
     return NULL;
 }
@@ -280,8 +280,8 @@ void SvcVoicePlay(VoiceId id, int volume,
     req.on_end   = on_end;
 
     if (msgsnd(mqid, &req, VOICE_REQ_BODY_SIZE, IPC_NOWAIT) < 0) {
-        if (errno == EAGAIN) printf("[SvcVoice] req queue full, drop id=%d\n", id);
-        else perror("[SvcVoice] msgsnd");
+        if (errno == EAGAIN) LOG_W("req queue full, drop id=%d", id);
+        else                 LOG_E("msgsnd fail");
     }
 }
 
@@ -303,7 +303,7 @@ int SvcVoiceInit(void)
 
     s_voc.mq_id = msgget(MQ_KEY_VOICE_REQ, IPC_CREAT | IPC_EXCL | 0600);
     if (s_voc.mq_id < 0) {
-        perror("[SvcVoice] msgget");
+        LOG_E("msgget fail");
         pthread_mutex_unlock(&s_voc.lock);
         return -1;
     }
@@ -314,10 +314,10 @@ int SvcVoiceInit(void)
 
     pthread_t tid;
     if (pthread_create(&tid, NULL, voice_decode_thread, NULL) != 0) {
-        printf("[SvcVoice] create thread fail\n"); return -1;
+        LOG_E("create thread fail"); return -1;
     }
     pthread_detach(tid);
-    printf("[SvcVoice] init ok (mqid=%d)\n", s_voc.mq_id);
+    LOG_I("init ok (mqid=%d)", s_voc.mq_id);
     return 0;
 }
 
@@ -328,6 +328,6 @@ int SvcVoiceDeinit(void)
     if (s_voc.mq_id >= 0) { msgctl(s_voc.mq_id, IPC_RMID, NULL); s_voc.mq_id = -1; }
     s_voc.initialized = 0;
     pthread_mutex_unlock(&s_voc.lock);
-    printf("[SvcVoice] deinit ok\n");
+    LOG_I("deinit ok");
     return 0;
 }

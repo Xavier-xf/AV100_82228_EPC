@@ -94,7 +94,7 @@ int DrvPlatformInit(void)
     }
 
     /* SVP 日志级别：LOG_LEVEL_DEBUG=最详细（调试用），量产可改为 LOG_LEVEL_NOTICE */
-    ak_print_set_level(MODULE_ID_SVP, LOG_LEVEL_DEBUG);
+    ak_print_set_level(MODULE_ID_SVP, LOG_LEVEL_RESERVED);
 
     printf("[DrvPlatform] AK SDK init ok (ITS=%d ATS=%d)\n",
            ITS_ENABLE, ATS_ENABLE);

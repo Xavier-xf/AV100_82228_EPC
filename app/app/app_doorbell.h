@@ -1,6 +1,6 @@
 /**
  * @file    app_doorbell.h
- * @brief   门铃按键业务（原 AdcDetectEvent.c 重写）
+ * @brief   门铃按键业务
  *
  * 职责：
  *   - 向 DrvAdc 注册电压回调

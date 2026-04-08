@@ -2,9 +2,11 @@
  * @file    app_card.c
  * @brief   IC 卡管理（数据库 + 刷卡业务逻辑）
  *
- * 移植自旧版 UserCard.c + RC522Card.c（业务部分）。
- * 硬件读卡由 drv_card.c 完成，刷卡回调调用 AppCardHandle。
+ * 硬件读卡由 drv_card.c 完成，刷卡结果通过回调传入 AppCardHandle。
  */
+#define LOG_TAG "AppCard"
+#include "log.h"
+
 #include "app_card.h"
 #include "app_keypad.h"
 #include "app_user_config.h"
@@ -18,7 +20,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <fcntl.h>
 #include <pthread.h>
 
@@ -35,7 +36,7 @@ static int s_code_card_idx = -1;
 
 int AppCardCodeCardIdxGet(void) { return s_code_card_idx; }
 
-/* 前向声明（定义在后面，公开包装在前面引用）*/
+/* 前向声明 */
 static void unlock_async(GpioLockType type, int duration_ms, int play_voice);
 static void security_error_update(void);
 
@@ -47,7 +48,7 @@ int AppCardSave(void)
 {
     int fd = open(CARD_CONFIG_PATH, O_WRONLY | O_CREAT, 0644);
     if (fd < 0) {
-        printf("[AppCard] open %s fail\n", CARD_CONFIG_PATH);
+        LOG_E("open %s fail", CARD_CONFIG_PATH);
         return 0;
     }
     write(fd, &s_deck, sizeof(AppCardInfo));
@@ -79,7 +80,7 @@ int AppCardDeckInit(void)
 {
     int fd = open(CARD_CONFIG_PATH, O_RDONLY);
     if (fd < 0) {
-        printf("[AppCard] %s not found, creating empty deck\n", CARD_CONFIG_PATH);
+        LOG_W("%s not found, creating empty deck", CARD_CONFIG_PATH);
         AppCardSave();
         return 0;
     }
@@ -114,7 +115,7 @@ int AppCardAdd(int index, char *data, char permissions)
     } else if (s_deck.Deck[index].Perm != 0) {
         char *d = s_deck.Deck[index].Data;
         if ((d[0] ^ d[1] ^ d[2] ^ d[3]) != d[4]) {
-            printf("[AppCard] Card %d data error, replacing\n", index);
+            LOG_W("card[%d] data error, replacing", index);
             deck_check();
             memcpy(s_deck.Deck[index].Data, data, sizeof(s_deck.Deck[index].Data));
             memcpy(s_deck.Deck[index].Code, CARD_INITIAL_CODE, sizeof(s_deck.Deck[index].Code));
@@ -202,7 +203,7 @@ char AppCardIndexPerm(int index)
 
 int AppCardDeckPermGet(unsigned char **deck)
 {
-    /* 与旧版 UserDeckPermGet 保持一致：固定 1280 字节
+    /* 固定 1280 字节格式：
      * [0]       = DeckSize
      * [1..1200] = 200 * 6 字节（Perm(1) + Data(5)）
      * [1201..1279] = 零填充
@@ -222,8 +223,7 @@ int AppCardDeckPermGet(unsigned char **deck)
 /* =========================================================
  *  开锁（异步，避免阻塞刷卡线程）
  *
- *  play_voice=1 时在开锁前播放语言提示音（对应旧版 Unlock.c 中
- *  `!TimerEnablestatus(对侧锁) && UnlockVoiceEn` 的逻辑）。
+ *  play_voice=1 时在开锁前播放语言提示音。
  *  调用方确保同一次开锁动作只有第一路锁传 play_voice=1，避免重复播音。
  * ========================================================= */
 typedef struct {
@@ -236,7 +236,6 @@ static void *unlock_thread(void *arg)
 {
     UnlockArg *ua = (UnlockArg *)arg;
 
-    /* 开锁提示音（对应旧版 VoiceRingPlay(Language + UnlockEng, 90)）*/
     if (ua->play_voice) {
         AppUserConfig *cfg = AppUserConfigGet();
         if (cfg->UnlockVoiceEn) {
@@ -274,9 +273,9 @@ static void unlock_async(GpioLockType type, int duration_ms, int play_voice)
 }
 
 /* =========================================================
- *  安防错误计数（对应旧版 SecurityMode.c）
+ *  安防错误计数
+ *  错误次数超限（10次/60s窗口）后触发保护期（60s 不响应）
  * ========================================================= */
-/* 对应旧版 SecurityMode.c：SecurityErrorMax=10，窗口 60s，触发保护 60s */
 #define SECURITY_ERROR_MAX      10
 #define SECURITY_ERROR_WINDOW   (60 * 1000)   /* 统计窗口：60s 内累计错误 */
 #define SECURITY_TRIGGER_TIME   (60 * 1000)   /* 触发后保护期：60s 不响应 */
@@ -301,17 +300,16 @@ void AppCardSecurityErrorUpdate(void) { security_error_update(); }
 
 static void security_error_update(void)
 {
-    /* 第一次错误时启动统计窗口计时器（到期自动清零，对应旧版 SecirityErrorHandle）*/
+    /* 第一次错误时启动统计窗口计时器（到期自动清零）*/
     if (s_error_count == 0)
         SvcTimerSet(TMR_SECURITY_ERROR, SECURITY_ERROR_WINDOW, security_error_reset_cb, NULL);
 
-    printf("[AppCard] SecurityErrorCount=%d\n", s_error_count + 1);
+    LOG_W("SecurityErrorCount=%d", s_error_count + 1);
     if (++s_error_count >= SECURITY_ERROR_MAX) {
         s_error_count = 0;
         SvcTimerStop(TMR_SECURITY_ERROR);
-        /* 触发安防保护（对应旧版 SecurityModeTrigger），保护期内不响应刷卡 */
         SvcTimerSet(TMR_SECURITY_TRIGGER, SECURITY_TRIGGER_TIME, NULL, NULL);
-        printf("[AppCard] Security triggered! Too many wrong cards.\n");
+        LOG_W("Security triggered! Too many wrong cards.");
     }
 }
 
@@ -352,7 +350,7 @@ static int filter_duplicate(const char *uid4)
 }
 
 /* =========================================================
- *  刷卡业务处理（对应旧版 Rc522CardModuleHandle）
+ *  刷卡业务处理
  * ========================================================= */
 void AppCardHandle(char *raw_uid4)
 {
@@ -371,33 +369,29 @@ void AppCardHandle(char *raw_uid4)
     memcpy(data, raw_uid4, 4);
     data[4] = (char)(data[0] ^ data[1] ^ data[2] ^ data[3]);
 
-    printf("[AppCard] CARD: [%02x %02x %02x %02x %02x]\n",
-           (unsigned char)data[0], (unsigned char)data[1],
-           (unsigned char)data[2], (unsigned char)data[3],
-           (unsigned char)data[4]);
+    LOG_D("CARD: [%02x %02x %02x %02x %02x]",
+          (unsigned char)data[0], (unsigned char)data[1],
+          (unsigned char)data[2], (unsigned char)data[3],
+          (unsigned char)data[4]);
 
     int card_idx = AppCardSearch(data);
     if (card_idx != -1)
-        printf("[AppCard] Card %d found, code=%.4s\n",
-               card_idx, s_deck.Deck[card_idx].Code);
+        LOG_D("card[%d] found, code=%.4s", card_idx, s_deck.Deck[card_idx].Code);
 
     /* ---- 添加模式 ---- */
     if (SvcTimerActive(TMR_ADD_CARD)) {
         int ret = 0;
         if (card_idx == -1) {
-            /* 卡不存在，尝试添加 */
             ret = AppCardAdd(-1, data, CARD_PERM_LOCK);
             if (ret) {
-                printf("[AppCard] Add card succeed\n");
+                LOG_I("add card succeed");
                 SvcTimerRefresh(TMR_ADD_CARD, 30000);
             }
         }
-        /* card_idx != -1：卡已存在，ret=0，视为失败 */
-        printf("[AppCard] Add card %s\n", ret ? "succeed" : "fail");
+        LOG_I("add card %s", ret ? "succeed" : "fail");
         SvcVoicePlaySimple(ret ? VOICE_Bi2 : VOICE_Bi4, VOICE_VOL_DEFAULT);
 
-        /* 回传结果到室内机（对应旧版 NetManageShortPack(1, ManageAddCard, ret?1:9, 0)）
-         * arg1=1 表示成功，arg1=9 表示失败，室内机据此刷新显示 */
+        /* 回传结果到室内机（arg1=1 表示成功，arg1=9 表示失败，室内机据此刷新显示）*/
         SvcNetManageSendShort(NET_MGR_ADD_CARD, (unsigned char)(ret ? 1 : 9), 0);
         return;
     }
@@ -406,13 +400,13 @@ void AppCardHandle(char *raw_uid4)
     if (SvcTimerActive(TMR_DEL_CARD)) {
         if (card_idx != -1) {
             if (AppCardSetPerm(card_idx, 0)) {
-                printf("[AppCard] Del card %d succeed\n", card_idx);
+                LOG_I("del card[%d] succeed", card_idx);
                 SvcVoicePlaySimple(VOICE_Bi3, VOICE_VOL_DEFAULT);
                 return;
             }
         }
         SvcVoicePlaySimple(VOICE_Bi4, VOICE_VOL_DEFAULT);
-        printf("[AppCard] Del card fail\n");
+        LOG_W("del card fail");
         return;
     }
 
@@ -436,8 +430,7 @@ void AppCardHandle(char *raw_uid4)
                 s_code_card_idx = card_idx;
                 SvcTimerSet(TMR_CODE_CARD_UNLOCK, 30000, NULL, NULL);
                 SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
-                printf("[AppCard] CardAndCode: waiting for keypad code, card=%d\n",
-                       card_idx);
+                LOG_I("CardAndCode: waiting for keypad code, card=%d", card_idx);
             }
             return;
         }
@@ -447,8 +440,7 @@ void AppCardHandle(char *raw_uid4)
 
         char perm = s_deck.Deck[card_idx].Perm;
 
-        /* 第一路开锁传 play_voice=1，后续传 0，避免重复播音
-         * （对应旧版 !TimerEnablestatus(对侧锁) && UnlockVoiceEn）*/
+        /* 第一路开锁传 play_voice=1，后续传 0，避免重复播音 */
         int first = 1;
         if (perm & CARD_PERM_LOCK) {
             unlock_async(GPIO_LOCK_DOOR, cfg->UnlockTime * 1000, first);
@@ -457,19 +449,20 @@ void AppCardHandle(char *raw_uid4)
         if (perm & CARD_PERM_GATE)
             unlock_async(GPIO_LOCK_GATE, cfg->UngateTime * 1000, first);
 
-        printf("[AppCard] Card verify OK, perm=%d unlock=%ds ungate=%ds\n",
-               (int)(unsigned char)perm, cfg->UnlockTime, cfg->UngateTime);
+        LOG_I("card[%d] verify OK, perm=%d unlock=%ds ungate=%ds",
+              card_idx, (int)(unsigned char)perm,
+              cfg->UnlockTime, cfg->UngateTime);
         return;
     }
 
     /* ---- 未知卡 ---- */
     SvcVoicePlaySimple(VOICE_Bi4, VOICE_VOL_DEFAULT);
     security_error_update();
-    printf("[AppCard] Card verify FAIL\n");
+    LOG_W("card verify FAIL");
 }
 
 /* =========================================================
- *  远程开锁（EVT_NET_UNLOCK_CMD，对应旧版 UnlockEventFunc）
+ *  远程开锁（EVT_NET_UNLOCK_CMD）
  * ========================================================= */
 static void on_net_unlock(EventId id, const void *data, size_t len)
 {
@@ -484,8 +477,6 @@ static void on_net_unlock(EventId id, const void *data, size_t len)
                     ? (ua->unlock_time * 1000) : (cfg->UnlockTime * 1000);
     int ungate_ms = cfg->UngateTime * 1000;
 
-    /* 播放提示音（与旧版 Unlock() 内逻辑等效）
-     * 旧版临时修改 Language 再调用 Unlock()，新版直接用 language_idx */
     SvcVoicePlaySimple(VOICE_Bi1, VOICE_VOL_DEFAULT);
     if (cfg->UnlockVoiceEn) {
         int lang = (ua->language_idx < APP_LANG_TOTAL)
@@ -502,8 +493,8 @@ static void on_net_unlock(EventId id, const void *data, size_t len)
     if (do_door) unlock_async(GPIO_LOCK_DOOR, unlock_ms, 0);
     if (do_gate) unlock_async(GPIO_LOCK_GATE, ungate_ms, 0);
 
-    printf("[AppCard] NET_UNLOCK type=%d time=%dms lang=%d\n",
-           ua->lock_type, unlock_ms, ua->language_idx);
+    LOG_I("NET_UNLOCK type=%d time=%dms lang=%d",
+          ua->lock_type, unlock_ms, ua->language_idx);
 }
 
 /* =========================================================
@@ -514,6 +505,6 @@ int AppCardInit(void)
     AppCardDeckInit();
     DrvCardSetCallback(AppCardHandle);
     EventBusSubscribe(EVT_NET_UNLOCK_CMD, on_net_unlock);
-    printf("[AppCard] init ok, DeckSize=%d\n", (int)(unsigned char)s_deck.DeckSize);
+    LOG_I("init ok, DeckSize=%d", (int)(unsigned char)s_deck.DeckSize);
     return 0;
 }

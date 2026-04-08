@@ -2,33 +2,35 @@
  * @file    drv_gpio.c
  * @brief   门口机 GPIO 业务驱动（灯光 / 电锁 / 功放 / IRCUT / 拨码）
  */
+#define LOG_TAG "DrvGpio"
+#include "log.h"
+
 #include "drv_gpio.h"
 #include "drv_gpio_sysfs.h"
 #include <unistd.h>
-#include <stdio.h>
 
 /* =========================================================
  *  ★ GPIO 引脚号配置（根据实际 PCB 确认）★
  * ========================================================= */
-/* 灯光（来源：LightControl.h）*/
+/* 灯光 */
 #define PIN_KEY1_LIGHT     24   /* 呼叫按键1 指示灯   */
 #define PIN_KEY2_LIGHT     50   /* 呼叫按键2 指示灯   */
 #define PIN_KEYPAD_BL      32   /* 数字键盘背光       */
 #define PIN_CARD_LIGHT     27   /* 刷卡指示灯         */
 #define PIN_INFRARED_LIGHT 58   /* 红外补光灯         */
 
-/* 继电器（来源：Unlock.c）*/
-#define PIN_LOCK_DOOR      37   /* 单元门锁继电器（LOCK_GPIO）  */
-#define PIN_LOCK_GATE      34   /* 围墙门/闸继电器（GATE_GPIO） */
+/* 继电器 */
+#define PIN_LOCK_DOOR      37   /* 单元门锁继电器     */
+#define PIN_LOCK_GATE      34   /* 围墙门/闸继电器    */
 
-/* 功放（来源：SpeakAmp.c: #define APEAK_AMP_GPIO 69）*/
-#define PIN_AMP_EN         69   /* 功放使能（APEAK_AMP_GPIO）   */
+/* 功放 */
+#define PIN_AMP_EN         69   /* 功放使能           */
 
-/* IRCUT 滤光片电机（来源：InfraredDetect.c）*/
+/* IRCUT 滤光片电机 */
 #define PIN_IRCUT_INA      65   /* IRCUT 电机 A 相（夜视：LOW）  */
 #define PIN_IRCUT_INB      66   /* IRCUT 电机 B 相（夜视：HIGH） */
 
-/* 拨码开关（来源：main.c: GpioOpen(26, GPIO_DIR_IN, true)）*/
+/* 拨码开关 */
 #define PIN_DIP_SW         26   /* DOOR1/DOOR2 选择拨码         */
 
 /* =========================================================
@@ -44,13 +46,13 @@ int DrvGpioDipSwRead(void)
 
     GpioLevel level = GPIO_LEVEL_UNKNOWN;
     if (!GpioSysfsLevelGet(PIN_DIP_SW, &level)) {
-        printf("[DrvGpio] DipSw read fail, default DOOR1\n");
+        LOG_W("DipSw read fail, default DOOR1");
         return 1;
     }
 
     int door_id = (level == GPIO_LEVEL_LOW) ? 1 : 2;
-    printf("[DrvGpio] DipSw GPIO%d=%s → DOOR%d\n",
-           PIN_DIP_SW, (level == GPIO_LEVEL_LOW) ? "LOW" : "HIGH", door_id);
+    LOG_I("DipSw GPIO%d=%s => DOOR%d",
+          PIN_DIP_SW, (level == GPIO_LEVEL_LOW) ? "LOW" : "HIGH", door_id);
     return door_id;
 }
 
@@ -59,26 +61,26 @@ int DrvGpioDipSwRead(void)
  * ========================================================= */
 int DrvGpioInit(void)
 {
-    /* 灯光引脚：输出，默认低电平*/
+    /* 灯光引脚：输出，默认低电平 */
     GpioSysfsOpen(PIN_KEY1_LIGHT,     GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_KEY2_LIGHT,     GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_KEYPAD_BL,      GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_CARD_LIGHT,     GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_INFRARED_LIGHT, GPIO_DIR_LOW, false);
 
-    /* IRCUT 电机：输出，默认低电平（对应旧版 GpioOpen(65/66, GPIO_DIR_LOW, false)）*/
+    /* IRCUT 电机：输出，默认低电平 */
     GpioSysfsOpen(PIN_IRCUT_INA, GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_IRCUT_INB, GPIO_DIR_LOW, false);
 
-    /* 继电器：输出，默认低电平*/
+    /* 继电器：输出，默认低电平 */
     GpioSysfsOpen(PIN_LOCK_DOOR, GPIO_DIR_LOW, false);
     GpioSysfsOpen(PIN_LOCK_GATE, GPIO_DIR_LOW, false);
 
-    /* 功放：输出，默认低电平*/
+    /* 功放：输出，默认低电平 */
     GpioSysfsOpen(PIN_AMP_EN, GPIO_DIR_LOW, false);
 
     DrvGpioAmpDisable();
-    printf("[DrvGpio] init ok\n");
+    LOG_I("init ok");
     return 0;
 }
 
@@ -118,9 +120,9 @@ void DrvGpioLockSet(GpioLockType type, int on)
 {
     int pin = (type == GPIO_LOCK_GATE) ? PIN_LOCK_GATE : PIN_LOCK_DOOR;
     GpioSysfsLevelSet(pin, on ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW);
-    printf("[DrvGpio] %s %s\n",
-           (type == GPIO_LOCK_GATE) ? "GATE" : "LOCK",
-           on ? "OPEN" : "CLOSE");
+    LOG_I("%s %s",
+          (type == GPIO_LOCK_GATE) ? "GATE" : "LOCK",
+          on ? "OPEN" : "CLOSE");
 }
 
 int DrvGpioLockOpen(GpioLockType type, int duration_ms)
@@ -146,7 +148,7 @@ void DrvGpioAmpDisable(void)
 
 /* =========================================================
  *  IRCUT 滤光片电机控制
- *  对应旧版 InfraredDetect.c：GpioLevelSet(IRCUT_INA/INB_GPIO, ...)
+ *
  *  用法：DrvGpioIrcutNight/Day() 给电机一个方向脉冲，
  *        100ms 后由定时器回调调用 DrvGpioIrcutStop() 停止电机。
  * ========================================================= */
@@ -165,7 +167,7 @@ void DrvGpioIrcutDay(void)
     GpioSysfsLevelSet(PIN_IRCUT_INB, GPIO_LEVEL_LOW);
 }
 
-/** 电机停止（脉冲结束后调用，两相均置低）对应旧版 IrCurClose */
+/** 电机停止（脉冲结束后调用，两相均置低）*/
 void DrvGpioIrcutStop(void)
 {
     GpioSysfsLevelSet(PIN_IRCUT_INA, GPIO_LEVEL_LOW);

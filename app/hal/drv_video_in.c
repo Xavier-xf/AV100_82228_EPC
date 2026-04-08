@@ -2,13 +2,15 @@
  * @file    drv_video_in.c
  * @brief   视频采集与编码驱动（互斥锁版，无原子操作）
  */
+#define LOG_TAG "DrvVideoIn"
+#include "log.h"
+
 #include "drv_video_in.h"
 #include "ak_vi.h"
 #include "ak_venc.h"
 #include "ak_common.h"
 #include <pthread.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -44,7 +46,7 @@ static DrvVideoInCtx s_vi = {
     .night_mode = 0,
     .curr_mode  = 0,
     .venc_id    = -1,
-    .frame_cb       = NULL,
+    .frame_cb   = NULL,
 };
 
 void DrvVideoInSetCallback(DrvVideoInFrameCb cb)
@@ -66,15 +68,15 @@ static int module_load(const char *path, const char *name, const char *param)
     if (module_is_loaded(name)) return 0;
     char cmd[256];
     snprintf(cmd, sizeof(cmd), "insmod %s%s.ko %s", path, name, param ? param : "");
-    if (system(cmd) != 0) { printf("[DrvVideoIn] insmod %s fail\n", name); return -1; }
-    printf("[DrvVideoIn] module %s loaded\n", name);
+    if (system(cmd) != 0) { LOG_E("insmod %s fail", name); return -1; }
+    LOG_I("module %s loaded", name);
     return 0;
 }
 
 static void init_param(void)
 {
     memset(&s_vi.param, 0, sizeof(s_vi.param));
-    snprintf(s_vi.param.IspPath, sizeof(s_vi.param.IspPath), "%s", ISP_PATH);  /* /app/isp_gc2083_mipi_2lane_av100.conf */
+    snprintf(s_vi.param.IspPath, sizeof(s_vi.param.IspPath), "%s", ISP_PATH);
     s_vi.param.DevId = VIDEO_DEV0;
 
     s_vi.param.DevChn[VI_CHN_MAIN].EnChn = 1;
@@ -99,7 +101,6 @@ static void init_param(void)
     s_vi.param.DevChn[VI_CHN_TRD].ChnAttr.data_type   = VI_DATA_TYPE_RGB_LINEINTL;
 
     struct venc_param *vp = &s_vi.param.VencParam;
-    /* 编码器参数（来源：旧版 VideoTransfer.c VideoInputParamInit）*/
     vp->width        = MAIN_W;
     vp->height       = MAIN_H;
     vp->fps          = 25;
@@ -114,7 +115,6 @@ static void init_param(void)
     vp->chroma_mode  = CHROMA_4_2_0;
     vp->enc_out_type = H264_ENC_TYPE;
     vp->profile      = PROFILE_MAIN;
-    /* 以下字段旧版也有设置，新版不可省略 */
     vp->max_picture_size  = 0;
     vp->enc_level         = 50;
     vp->smart_mode        = 0;
@@ -126,7 +126,7 @@ static void init_param(void)
 static int video_dev_init(void)
 {
 #define VIFAIL(fn, ...) if ((fn)(__VA_ARGS__) != AK_SUCCESS) { \
-    printf("[DrvVideoIn] " #fn " fail\n"); ak_vi_close(s_vi.param.DevId); return -1; }
+    LOG_E(#fn " fail"); ak_vi_close(s_vi.param.DevId); return -1; }
 
     VIFAIL(ak_vi_open, s_vi.param.DevId);
     VIFAIL(ak_vi_load_sensor_cfg, s_vi.param.DevId, s_vi.param.IspPath);
@@ -153,14 +153,13 @@ static int video_dev_init(void)
         VIFAIL(ak_vi_enable_chn, s_vi.param.DevChn[i].ChnAttr.chn_id);
     }
     if (ak_venc_open(&s_vi.param.VencParam, &s_vi.venc_id) != AK_SUCCESS) {
-        printf("[DrvVideoIn] ak_venc_open fail\n");
+        LOG_E("ak_venc_open fail");
         ak_vi_close(s_vi.param.DevId); return -1;
     }
-        /* 设置画框颜色表（对应旧版 VideoInputDevInit 的 ak_vi_set_box_color_table 调用）
-     * 必须在 ak_vi_draw_box 之前设置，否则 draw_box 画出的框不可见 */
+    /* 设置画框颜色表，必须在 ak_vi_draw_box 之前设置，否则画出的框不可见 */
     unsigned int color_table[] = {0xff00ff00};
     ak_vi_set_box_color_table(s_vi.param.DevId, color_table);
-    printf("[DrvVideoIn] device init ok\n");
+    LOG_I("device init ok");
     return 0;
 }
 
@@ -182,15 +181,7 @@ static void *video_capture_thread(void *arg)
 
         if (!running) break;
 
-        /* 对应旧版 VideoInputThread：
-         *   if (is_video_input_enable == true) {
-         *       ak_vi_get_frame(CHN0); encode; release;
-         *   }
-         *   ak_sleep_ms(1);
-         *
-         * 旧版 is_video_input_enable=false 时，不取帧，直接 sleep(1ms) 循环。
-         * CHN16（SVP 通道）由独立的 svc_svp 线程自己调用 ak_vi_get_frame 获取，
-         * 与 CHN0 是否被消耗无关（各通道有独立缓冲）。*/
+        /* capturing=false 时不取帧，仅空转等待 */
         if (!capturing) { ak_sleep_ms(1); continue; }
 
         memset(&vi_frame, 0, sizeof(vi_frame));
@@ -235,7 +226,7 @@ static void *video_capture_thread(void *arg)
 
         ak_sleep_ms(1);
     }
-    printf("[DrvVideoIn] capture thread exit\n");
+    LOG_I("capture thread exit");
     return NULL;
 }
 
@@ -253,10 +244,10 @@ int DrvVideoInInit(void)
 
     pthread_t tid;
     if (pthread_create(&tid, NULL, video_capture_thread, NULL) != 0) {
-        printf("[DrvVideoIn] create thread fail\n"); return -1;
+        LOG_E("create thread fail"); return -1;
     }
     pthread_detach(tid);
-    printf("[DrvVideoIn] init ok\n");
+    LOG_I("init ok");
     return 0;
 }
 

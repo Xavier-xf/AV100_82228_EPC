@@ -2,15 +2,13 @@
  * @file    app_doorbell.c
  * @brief   门铃按键业务实现
  *
- * 对比原代码的改进：
- *   原 CallKeyHandle 里直接调用 NetworkMsgSned / VoiceRingPlay / Key1LightControl
- *   → 现在只发布 EVT_CALL_KEY_PRESSED 事件
- *   → 网络/语音/灯光各自订阅，互不影响，新增功能只需新增订阅者
- *
- *   原 ExitBtnHandle 直接调用 Unlock()
- *   → 现在发布 EVT_EXIT_BTN_PRESSED 事件
- *   → app_access.c 订阅后处理开锁
+ * 通过 EventBus 解耦按键检测与上层响应：
+ *   - 呼叫按键 → 发布 EVT_CALL_KEY_PRESSED（网络/语音/灯光各自订阅）
+ *   - 退出按键 → 发布 EVT_EXIT_BTN_PRESSED（app_access.c 订阅后处理开锁）
  */
+#define LOG_TAG "Doorbell"
+#include "log.h"
+
 #include "app_doorbell.h"
 #include "event_bus.h"
 #include "drv_adc.h"
@@ -19,7 +17,6 @@
 #include "svc_network.h"
 #include "drv_gpio.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 /* =========================================================
  *  ADC 按键映射表（电压值单位 mV，容差 ±100mV）
@@ -54,7 +51,7 @@ static const KeyMap s_key_map[KEY_MAP_MAX] = {
 static void on_call_busy_timeout(void *arg)
 {
     (void)arg;
-    printf("[AppDoorbell] call busy timeout\n");
+    LOG_I("call busy timeout");
     SvcVoicePlaySimple(VOICE_CallBusy, VOICE_VOL_DEFAULT);
 }
 
@@ -63,7 +60,7 @@ static void on_call_busy_timeout(void *arg)
  * ========================================================= */
 static void on_call_key_pressed(int key_idx)
 {
-    printf("[AppDoorbell] call key %d pressed\n", key_idx + 1);
+    LOG_I("call key %d pressed", key_idx + 1);
 
     /* 1. 发布按键事件（网络模块/灯光模块订阅） */
     EventBusPublish(EVT_CALL_KEY_PRESSED, &key_idx, sizeof(key_idx));
@@ -79,7 +76,7 @@ static void on_call_key_pressed(int key_idx)
 
 static void on_exit_btn_pressed(int key_idx)
 {
-    printf("[AppDoorbell] exit button %d pressed\n", key_idx + 1);
+    LOG_I("exit button %d pressed", key_idx + 1);
     EventBusPublish(EVT_EXIT_BTN_PRESSED, &key_idx, sizeof(key_idx));
 }
 
@@ -147,6 +144,6 @@ int AppDoorbellInit(void)
     EventBusSubscribe(EVT_CALL_KEY_PRESSED, on_call_key_for_light);
     // EventBusSubscribe(EVT_NET_CALL_END,     on_call_end_for_light);
 
-    printf("[AppDoorbell] init ok\n");
+    LOG_I("init ok");
     return 0;
 }

@@ -2,9 +2,6 @@
  * @file    app_keypad.c
  * @brief   数字键盘业务逻辑（菜单状态机）
  *
- * 移植自旧版 NumericKeypad.c。
- * 旧版使用 GetClockTimeMs/DiffClockTimeMs；新版直接调用 clock_gettime。
- *
  * 菜单命令速查（管理员模式内，管理密码默认 999999#）：
  *   099#          → 恢复出厂
  *   08 + 0/1 + #  → 关/开 开锁提示音
@@ -24,6 +21,9 @@
  *   9 + 语言(2位)# → 修改语言（99xx#=修改出厂默认）
  *   *#             → 进入修改卡密码待机（再刷卡触发）
  */
+#define LOG_TAG "AppKeypad"
+#include "log.h"
+
 #include "app_keypad.h"
 #include "app_card.h"
 #include "app_user_config.h"
@@ -37,12 +37,11 @@
 #include "utils.h"
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
 
 /* =========================================================
- *  内部类型（对应旧版 NumericKeypad.h）
+ *  内部类型
  * ========================================================= */
 #define ATOI(c)  ((c) - '0')
 
@@ -169,7 +168,7 @@ static void push_route(KeyAction action)
     if (*cur == NULL) {
         /* 栈空：直接入栈（初始化时专用）*/
         *cur = &s_routes[action];
-        printf("[Keypad] Enter %s\n", (*cur)->ActionStr);
+        LOG_D("Enter %s", (*cur)->ActionStr);
     } else {
         /* 检查 action 是否在当前节点的合法后继中 */
         for (int i = 0; i < (*cur)->NextRouteCount; i++) {
@@ -177,9 +176,9 @@ static void push_route(KeyAction action)
                 s_routes[action].RouteData = (*cur)->RouteData;
                 s_stack.CurrentRoute++;
                 s_stack.Routes[s_stack.CurrentRoute] = &s_routes[action];
-                printf("[Keypad] %s => %s\n",
-                       (*cur)->ActionStr,
-                       s_stack.Routes[s_stack.CurrentRoute]->ActionStr);
+                LOG_D("%s => %s",
+                      (*cur)->ActionStr,
+                      s_stack.Routes[s_stack.CurrentRoute]->ActionStr);
                 break;
             }
         }
@@ -193,8 +192,8 @@ static void pop_route(void)
         if (cur && cur->ExitHandle)
             cur->ExitHandle(NULL, NULL);
         s_stack.CurrentRoute--;
-        printf("[Keypad] Back to %s\n",
-               s_stack.Routes[s_stack.CurrentRoute]->ActionStr);
+        LOG_D("Back to %s",
+              s_stack.Routes[s_stack.CurrentRoute]->ActionStr);
     }
 }
 
@@ -204,7 +203,7 @@ static void pop_route(void)
 static void admin_timeout_cb(void *arg)
 {
     (void)arg;
-    printf("[Keypad] AdminOutTimer expired, exit admin mode\n");
+    LOG_I("admin timeout, exit admin mode");
     while (s_stack.CurrentRoute != KeyStandby)
         pop_route();
     SvcVoicePlaySimple(VOICE_Bi3, VOICE_VOL_DEFAULT);
@@ -213,14 +212,14 @@ static void admin_timeout_cb(void *arg)
 static void modify_code_card_timeout_cb(void *arg)
 {
     (void)arg;
-    printf("[Keypad] ModifyCodeCardTimer expired\n");
+    LOG_D("modify code card timeout");
     pop_route();
 }
 
 static void add_del_card_timeout_cb(void *arg)
 {
     (void)arg;
-    printf("[Keypad] AddDelCardTimer expired, exit add/del mode\n");
+    LOG_I("add/del card timeout, exit mode");
     pop_route();
 }
 
@@ -299,13 +298,13 @@ finish:
         if (perm & CARD_PERM_GATE)
             AppCardUnlockAsync(GPIO_LOCK_GATE, cfg->UngateTime * 1000,
                                !(perm & CARD_PERM_LOCK));
-        printf("[Keypad] CodeUnlock OK perm=%d\n", perm);
+        LOG_I("CodeUnlock OK perm=%d", perm);
         return 1;
     }
 
 error:
     AppCardSecurityErrorUpdate();
-    printf("[Keypad] CodeUnlock FAIL\n");
+    LOG_W("CodeUnlock FAIL");
     return 0;
 }
 
@@ -394,7 +393,7 @@ static int enter_card_code_verify(Keyboard *k, ActionRoute *r)
 
     if (r->RouteData &&
         memcmp(k->Buff, r->RouteData, (size_t)(k->Cursor - 1)) == 0) {
-        printf("[Keypad] Modify card[%d] code succeed\n", card_idx);
+        LOG_I("modify card[%d] code succeed", card_idx);
         memcpy(AppCardInfoGet()->Deck[card_idx].Code, k->Buff,
                (size_t)(k->Cursor - 1));
         AppCardSave();
@@ -487,14 +486,14 @@ static int enter_admin_code_verify(Keyboard *k, ActionRoute *r)
     if (!r->RouteData || k->Cursor - 1 != ADMIN_CODE_LEN)
         return 0;
     if (memcmp(k->Buff, r->RouteData, ADMIN_CODE_LEN) == 0) {
-        printf("[Keypad] Modify admin code succeed\n");
+        LOG_I("modify admin code succeed");
         memcpy(AppUserConfigGet()->AdminCode, k->Buff, ADMIN_CODE_LEN);
         AppUserConfigSave();
         pop_route(); pop_route();
         SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
         return 1;
     }
-    printf("[Keypad] Admin code verify fail\n");
+    LOG_W("admin code verify fail");
     return 0;
 }
 
@@ -557,7 +556,7 @@ static int enter_lock_code_verify(Keyboard *k, ActionRoute *r)
         AppUserConfigSave();
         pop_route(); pop_route();
         SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-        printf("[Keypad] Modify lock code succeed (factory=%d)\n", fac);
+        LOG_I("modify lock code succeed (factory=%d)", fac);
         return 1;
     }
     return 0;
@@ -622,7 +621,7 @@ static int enter_gate_code_verify(Keyboard *k, ActionRoute *r)
         AppUserConfigSave();
         pop_route(); pop_route();
         SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-        printf("[Keypad] Modify gate code succeed (factory=%d)\n", fac);
+        LOG_I("modify gate code succeed (factory=%d)", fac);
         return 1;
     }
     return 0;
@@ -651,7 +650,7 @@ static int set_unlock_time(Keyboard *k, ActionRoute *r)
         AppUserDefaultConfigSave();
     }
     SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-    printf("[Keypad] Unlock time = %ds (factory=%d)\n", t, fac);
+    LOG_I("unlock time = %ds (factory=%d)", t, fac);
     return 1;
 }
 
@@ -678,7 +677,7 @@ static int set_ungate_time(Keyboard *k, ActionRoute *r)
         AppUserDefaultConfigSave();
     }
     SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-    printf("[Keypad] Ungate time = %ds (factory=%d)\n", t, fac);
+    LOG_I("ungate time = %ds (factory=%d)", t, fac);
     return 1;
 }
 
@@ -692,7 +691,7 @@ static int set_backlight_time(Keyboard *k, ActionRoute *r)
     AppUserConfigSave();
     keypad_light_enable();
     SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-    printf("[Keypad] Backlight time = %ds\n", AppUserConfigGet()->NumKeyLightTime);
+    LOG_I("backlight time = %ds", AppUserConfigGet()->NumKeyLightTime);
     return 1;
 }
 
@@ -710,7 +709,7 @@ static int set_lock_way(Keyboard *k, ActionRoute *r)
     AppUserConfigGet()->LockWay = (AppUnlockWay)way;
     AppUserConfigSave();
     SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-    printf("[Keypad] LockWay = %d\n", way);
+    LOG_I("LockWay = %d", way);
     return 1;
 }
 
@@ -728,7 +727,7 @@ static int set_safe_mode(Keyboard *k, ActionRoute *r)
     AppUserConfigGet()->SafeMode = (AppSafeMode)mode;
     AppUserConfigSave();
     SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-    printf("[Keypad] SafeMode = %d\n", mode);
+    LOG_I("SafeMode = %d", mode);
     return 1;
 }
 
@@ -743,7 +742,7 @@ static int set_public_unlock(Keyboard *k, ActionRoute *r)
     AppUserConfigGet()->PublicUnlockEn = (char)en;
     AppUserConfigSave();
     SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-    printf("[Keypad] PublicUnlockEn = %d\n", en);
+    LOG_I("PublicUnlockEn = %d", en);
     return 1;
 }
 
@@ -813,7 +812,7 @@ static int del_user_card(Keyboard *k, ActionRoute *r)
     if (idx == 888) {
         AppCardDeckFormat();
         SvcVoicePlaySimple(VOICE_Bi3, VOICE_VOL_DEFAULT);
-        printf("[Keypad] Deck format done\n");
+        LOG_I("deck format done");
         return 1;
     }
     if (idx == 999) {
@@ -826,7 +825,7 @@ static int del_user_card(Keyboard *k, ActionRoute *r)
     if (idx < DECK_SIZE_MAX) {
         AppCardSetPerm(idx, 0);
         SvcVoicePlaySimple(VOICE_Bi3, VOICE_VOL_DEFAULT);
-        printf("[Keypad] Del card[%d] done\n", idx);
+        LOG_I("del card[%d] done", idx);
         return 1;
     }
     return 0;
@@ -848,7 +847,7 @@ static int set_language(Keyboard *k, ActionRoute *r)
             AppUserConfigSave();
             AppUserDefaultConfigSave();
             SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-            printf("[Keypad] Default language = %d\n", lang);
+            LOG_I("default language = %d", lang);
             ret = 1;
         }
     } else if (cursor == 4) {
@@ -857,7 +856,7 @@ static int set_language(Keyboard *k, ActionRoute *r)
             AppUserConfigGet()->Language = (AppLanguage)lang;
             AppUserConfigSave();
             SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
-            printf("[Keypad] Language = %d\n", lang);
+            LOG_I("language = %d", lang);
             ret = 1;
         }
     }
@@ -1017,7 +1016,7 @@ static void routes_init(void)
 }
 
 /* =========================================================
- *  按键缓冲处理（对应旧版 KeypadDataVerify + XW12AModuleHandle）
+ *  按键缓冲处理
  * ========================================================= */
 static Keyboard s_kb;
 
@@ -1043,8 +1042,7 @@ static int kb_process_key(int key)
             s_kb.Cursor--;  /* 退格 */
             return 0;
         }
-        /* 空缓冲区按 * ：立即触发命令（对应旧版 KeypadDataVerify 中 KEYSTAR
-         * 无 return 语句、跌落到最后 return 1 的行为）*/
+        /* 空缓冲区按 * ：立即触发命令（跌落到最后 return 1 的行为）*/
         s_kb.Buff[s_kb.Cursor++] = '*';
         return 1;
     }
@@ -1082,7 +1080,7 @@ static void keypad_key_handler(int key)
     if (SvcTimerActive(TMR_SECURITY_TRIGGER))
         return;
 
-    /* 语音播放期间屏蔽（与旧版 VoiceDecodeStatus 一致）*/
+    /* 语音播放期间屏蔽 */
     if (SvcVoiceBusy())
         return;
 
@@ -1094,7 +1092,7 @@ static void keypad_key_handler(int key)
     keypad_light_enable();
 
     if (ret < 0) {
-        printf("[Keypad] Buffer overflow\n");
+        LOG_W("buffer overflow");
         SvcVoicePlaySimple(VOICE_Bi4, VOICE_VOL_DEFAULT);
         return;
     }
@@ -1118,6 +1116,6 @@ int AppKeypadInit(void)
     routes_init();
     push_route(KeyStandby);
     DrvKeypadSetCallback(keypad_key_handler);
-    printf("[AppKeypad] init ok\n");
+    LOG_I("init ok");
     return 0;
 }

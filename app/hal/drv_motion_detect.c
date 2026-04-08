@@ -1,25 +1,21 @@
 /**
  * @file    drv_motion_detect.c
- * @brief   运动检测 HAL 驱动（原 MotionDetect.c 重写）
- *
- * 原代码改进：
- *   ① ak_thread_mutex    → pthread_mutex_t
- *   ② ak_thread_create   → pthread_create / pthread_detach
- *   ③ ak_thread_sem      → sem_t（POSIX 信号量）
- *   ④ 弱函数 SvpMdParamInit / MotionDetectCallBack → 注册式回调 + 默认参数
- *   ⑤ ThreadStat 普通 int，由互斥锁保护
+ * @brief   运动检测 HAL 驱动
  */
 /* ak_common.h 和 ak_log.h 必须在其他 AK SDK 头文件之前包含，
  * 因为 ak_vpss.h/ak_mrd.h 使用了 MODULE_ID_* 宏（定义在 ak_log.h）*/
 #include "ak_common.h"
 #include "ak_log.h"
+
+#define LOG_TAG "DrvMD"
+#include "log.h"
+
 #include "drv_motion_detect.h"
 #include "ak_vpss.h"
 #include "ak_mrd.h"
 #include <pthread.h>
 #include <semaphore.h>
 #include <string.h>
-#include <stdio.h>
 #include <unistd.h>
 
 #define VIDEO_DEV_MUX   2    /* 最大支持的视频设备数 */
@@ -33,7 +29,7 @@
 #define MD_THREAD_RUN   2
 
 /* =========================================================
- *  内部结构（ak_thread_mutex → pthread_mutex_t）
+ *  内部结构
  * ========================================================= */
 typedef struct {
     pthread_mutex_t lock;
@@ -74,7 +70,7 @@ void DrvMotionDetectSetCallback(DrvMdCallback cb)
 }
 
 /* =========================================================
- *  参数设置（替换弱函数 SvpMdParamInit）
+ *  参数设置
  * ========================================================= */
 static void apply_default_param(int dev_id, MdParam *p)
 {
@@ -100,12 +96,12 @@ static int md_get_stat(int dev, struct vpss_md_info *md)
 {
     int ret = ak_vpss_md_get_stat(dev, md);
     if (ret != 0)
-        printf("[DrvMD] get stat fail dev=%d\n", dev);
+        LOG_W("get stat fail dev=%d", dev);
     return ret;
 }
 
 /* =========================================================
- *  运动检测判断（原 MotionDetectCheck）
+ *  运动检测判断
  * ========================================================= */
 static int md_check(MdCtrl *ctrl)
 {
@@ -133,10 +129,7 @@ static int md_check(MdCtrl *ctrl)
 }
 
 /* =========================================================
- *  运动检测线程（原 MotionDetectThread）
- *  改动：ak_thread_mutex → pthread_mutex_t
- *        ak_sleep_ms     → usleep
- *        ak_get_ostime   → clock_gettime
+ *  运动检测线程
  * ========================================================= */
 static void *md_thread(void *arg)
 {
@@ -146,7 +139,7 @@ static void *md_thread(void *arg)
     long last_md_sec = 0;
     struct timespec now;
 
-    printf("[DrvMD] dev=%d thread start\n", dev);
+    LOG_I("dev=%d thread start", dev);
 
     while (1) {
         pthread_mutex_lock(&ctrl->lock);
@@ -168,7 +161,6 @@ static void *md_thread(void *arg)
         if (md_check(ctrl)) {
             move_count++;
             if (move_count >= 1) {
-                /* 触发回调 */
                 pthread_mutex_lock(&s_md.cb_lock);
                 DrvMdCallback cb = s_md.callback;
                 pthread_mutex_unlock(&s_md.cb_lock);
@@ -187,7 +179,7 @@ static void *md_thread(void *arg)
                 sem_post(&ctrl->sem);
             }
         } else {
-            /* 4秒内未取走结果则清除（原逻辑）*/
+            /* 4秒内未取走结果则清除 */
             clock_gettime(CLOCK_REALTIME, &now);
             pthread_mutex_lock(&s_md_result[dev].lock);
             if (s_md_result[dev].result.result &&
@@ -201,7 +193,7 @@ static void *md_thread(void *arg)
         usleep((unsigned int)(interval_ms * 1000));
     }
 
-    printf("[DrvMD] dev=%d thread exit\n", dev);
+    LOG_I("dev=%d thread exit", dev);
     return NULL;
 }
 
@@ -229,7 +221,7 @@ int DrvMotionDetectInit(int dev_id)
 
     ctrl->mrd_handle = ak_mrd_init();
     if (!ctrl->mrd_handle) {
-        printf("[DrvMD] ak_mrd_init fail\n"); return -1;
+        LOG_E("ak_mrd_init fail"); return -1;
     }
 
     ctrl->dev       = dev_id;
@@ -243,14 +235,14 @@ int DrvMotionDetectInit(int dev_id)
     ak_mrd_set_floating_wadding_params(ctrl->mrd_handle, 3, 1, 3, 36, 2, 2);
 
     if (pthread_create(&ctrl->tid, NULL, md_thread, &ctrl->dev) != 0) {
-        printf("[DrvMD] create thread fail\n");
+        LOG_E("create thread fail");
         ak_mrd_destroy(ctrl->mrd_handle);
         return -1;
     }
     pthread_detach(ctrl->tid);
 
     s_inited[dev_id] = 1;
-    printf("[DrvMD] dev=%d init ok fps=%d\n", dev_id, p->md_fps);
+    LOG_I("dev=%d init ok fps=%d", dev_id, p->md_fps);
     return 0;
 }
 
@@ -266,7 +258,7 @@ int DrvMotionDetectEnable(int dev_id, int enable)
         ctrl->thread_stat = MD_THREAD_STOP;
     pthread_mutex_unlock(&ctrl->lock);
 
-    printf("[DrvMD] dev=%d %s\n", dev_id, enable ? "enabled" : "disabled");
+    LOG_I("dev=%d %s", dev_id, enable ? "enabled" : "disabled");
     return 0;
 }
 
@@ -312,6 +304,6 @@ int DrvMotionDetectUninit(int dev_id)
     pthread_mutex_destroy(&ctrl->lock);
     pthread_mutex_destroy(&s_md_result[dev_id].lock);
 
-    printf("[DrvMD] dev=%d uninit ok\n", dev_id);
+    LOG_I("dev=%d uninit ok", dev_id);
     return 0;
 }
