@@ -5,6 +5,7 @@
 #include "utils.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <time.h>
 
 unsigned long long UtilsDiffMs(struct timespec *last_time)
@@ -30,6 +31,13 @@ unsigned long long UtilsDiffMs(struct timespec *last_time)
 void UtilsGetTime(struct timespec *ts)
 {
     clock_gettime(CLOCK_MONOTONIC, ts);
+}
+
+uint64_t UtilsMonoMs(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000ULL + (uint64_t)ts.tv_nsec / 1000000ULL;
 }
 
 struct tm UtilsCompileTime(void)
