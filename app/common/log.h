@@ -55,6 +55,12 @@
 #define APP_LOG_LEVEL    APP_LOG_DEBUG
 #endif
 
+// #if APP_LOG_LEVEL <= APP_LOG_DEBUG
+// # define EVENT_BUS_DEBUG 1
+// #else
+// # undef  EVENT_BUS_DEBUG 0
+// #endif
+
 /* =========================================================
  *  ANSI 颜色码
  * ========================================================= */

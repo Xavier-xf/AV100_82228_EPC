@@ -281,7 +281,22 @@ static void unlock_async(GpioLockType type, int duration_ms, int play_voice)
 #define SECURITY_ERROR_WINDOW   (5 * 60 * 1000)  /* 统计窗口：5分钟 */
 #define SECURITY_TRIGGER_TIME   (2 * 60 * 1000)  /* 触发后保护期：2分钟 */
 
-static int s_error_count = 0;
+#define ALARM_SOUND_INTERVAL_MS  2000  /* 报警音重复间隔（ms）*/
+#define ALARM_SOUND_REPEAT_MAX   29    /* 初次播放 + 29次回调 = 30次，约60s */
+
+static int s_error_count   = 0;
+static int s_alarm_count   = 0;  /* 剩余报警音播放次数 */
+
+static void alarm_sound_cb(void *arg)
+{
+    (void)arg;
+    if (s_alarm_count <= 0)
+        return;
+    --s_alarm_count;
+    SvcVoicePlaySimple(VOICE_LongBi, VOICE_VOL_DEFAULT);
+    if (s_alarm_count > 0)
+        SvcTimerSet(TMR_ALARM_SOUND, ALARM_SOUND_INTERVAL_MS, alarm_sound_cb, NULL);
+}
 
 static void security_error_reset_cb(void *arg)
 {
@@ -315,9 +330,12 @@ static void security_error_update(void)
         SvcTimerStop(TMR_SECURITY_ERROR);
         SvcTimerSet(TMR_SECURITY_TRIGGER, SECURITY_TRIGGER_TIME, NULL, NULL);
 
-        /* 报警模式：触发蜂鸣器长鸣 */
-        if (AppUserConfigGet()->SafeMode == APP_SAFE_MODE_ALARM)
+        /* 报警模式：蜂鸣器持续报警1分钟（每2s重复一次，共30次）*/
+        if (AppUserConfigGet()->SafeMode == APP_SAFE_MODE_ALARM) {
+            s_alarm_count = ALARM_SOUND_REPEAT_MAX;
             SvcVoicePlaySimple(VOICE_LongBi, VOICE_VOL_DEFAULT);
+            SvcTimerSet(TMR_ALARM_SOUND, ALARM_SOUND_INTERVAL_MS, alarm_sound_cb, NULL);
+        }
 
         /* 通知其他模块（app_intercom.c 订阅后自动呼叫室内机）*/
         EventBusPublish(EVT_SYSTEM_SECURITY_TRIGGERED, NULL, 0);

@@ -45,6 +45,7 @@ typedef enum {
     TMR_SECURITY_TRIGGER,      /* 安防触发保护时间                      */
     TMR_SECURITY_ERROR,        /* 安防错误次数统计窗口（超时清零）      */
     TMR_ALARM_LIGHT,           /* 报警灯闪烁（500ms 循环）              */
+    TMR_ALARM_SOUND,           /* 报警音重复播放（2s 循环，持续1分钟）  */
 
     /* --- 继电器 --- */
     TMR_UNLOCK_HOLD,           /* 门锁保持时间    */
@@ -85,7 +86,7 @@ typedef enum {
     TMR_ID_MAX                 /* 定时器槽位总数，勿手动赋值            */
 } TimerId;
 
-/* 当前 TMR_ID_MAX = 25，svc_timer.c 中断言不超过 64 */
+/* 当前 TMR_ID_MAX = 26，svc_timer.c 中断言不超过 64 */
 
 typedef void (*SvcTimerCallback)(void *arg);
 
