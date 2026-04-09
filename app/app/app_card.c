@@ -225,12 +225,22 @@ int AppCardDeckPermGet(unsigned char **deck)
  *
  *  play_voice=1 时在开锁前播放语言提示音。
  *  调用方确保同一次开锁动作只有第一路锁传 play_voice=1，避免重复播音。
+ *  开锁期间重复刷卡不会再次触发开锁
+ *  和语音播报，需等开锁时间结束后才能再次刷卡开锁。
  * ========================================================= */
 typedef struct {
     GpioLockType type;
     int          duration_ms;
     int          play_voice;  /* 1=播放开锁提示音 */
 } UnlockArg;
+
+/* 开锁忙标志：开锁期间置 1，开锁结束后清 0 */
+static volatile int s_lock_busy[2] = {0, 0}; /* [0]=DOOR, [1]=GATE */
+
+static inline int lock_busy_idx(GpioLockType type)
+{
+    return (type == GPIO_LOCK_GATE) ? 1 : 0;
+}
 
 static void *unlock_thread(void *arg)
 {
@@ -247,6 +257,7 @@ static void *unlock_thread(void *arg)
     }
 
     DrvGpioLockOpen(ua->type, ua->duration_ms);
+    s_lock_busy[lock_busy_idx(ua->type)] = 0;
     free(ua);
     return NULL;
 }
@@ -259,13 +270,20 @@ void AppCardUnlockAsync(int type, int duration_ms, int play_voice)
 
 static void unlock_async(GpioLockType type, int duration_ms, int play_voice)
 {
+    int idx = lock_busy_idx(type);
+    /* 锁正在开着时不重复开锁 */
+    if (s_lock_busy[idx])
+        return;
+    s_lock_busy[idx] = 1;
+
     UnlockArg *ua = malloc(sizeof(UnlockArg));
-    if (!ua) return;
+    if (!ua) { s_lock_busy[idx] = 0; return; }
     ua->type        = type;
     ua->duration_ms = duration_ms;
     ua->play_voice  = play_voice;
     pthread_t t;
     if (pthread_create(&t, NULL, unlock_thread, ua) != 0) {
+        s_lock_busy[idx] = 0;
         free(ua);
         return;
     }

@@ -741,8 +741,14 @@ void SvcIntercomStreamRefresh(const void *status)
     const NetStreamStatus *s = (const NetStreamStatus *)status;
     SvcTimerRefresh(TMR_INTERCOM_WATCHDOG, STREAM_WATCHDOG_MS);
     if (s) {
-        /* audio_volume 在 svc_network.c 中已换算（arg1*3+66），直接使用 */
-        DrvAudioOutSetVolume((int)s->audio_volume);
+        /* 仅通话模式下跟随室内机音量；监控模式不改音量，
+           避免室内机监控界面调音量时影响室外机语音播放 */
+        pthread_mutex_lock(&s_stm.lock);
+        StreamMode mode = s_stm.mode;
+        pthread_mutex_unlock(&s_stm.lock);
+        if (mode == STREAM_MODE_TALK) {
+            DrvAudioOutSetVolume((int)s->audio_volume);
+        }
     }
 }
 
