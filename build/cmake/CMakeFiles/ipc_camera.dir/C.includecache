@@ -209,6 +209,8 @@ svc_voice.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_voice.h
 svc_network.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_network.h
+svc_net_manage.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/svc_net_manage.h
 drv_gpio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/app/drv_gpio.h
 stdlib.h

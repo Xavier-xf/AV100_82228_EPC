@@ -107,7 +107,7 @@ int AppUserConfigInit(void)
         LOG_W("%s not found, using default", USER_CONFIG_PATH);
         s_conf = s_conf_default;
         AppUserConfigSave();
-        return 0;
+        return 1;
     }
     read(fd, &s_conf, sizeof(AppUserConfig));
     close(fd);
@@ -115,5 +115,5 @@ int AppUserConfigInit(void)
     LOG_I("loaded: lang=%d unlock=%ds ungate=%ds voice=%d",
           s_conf.Language, s_conf.UnlockTime, s_conf.UngateTime,
           s_conf.UnlockVoiceEn);
-    return 1;
+    return 0;  /* 0=成功（与 INIT_MODULE 约定一致）*/
 }

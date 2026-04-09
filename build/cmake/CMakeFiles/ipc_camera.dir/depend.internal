@@ -19,6 +19,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
  ../app/common/log.h
  ../app/hal/drv_adc.h
  ../app/hal/drv_gpio.h
+ ../app/service/svc_net_manage.h
  ../app/service/svc_network.h
  ../app/service/svc_timer.h
  ../app/service/svc_voice.h

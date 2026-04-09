@@ -15,6 +15,7 @@
 #include "svc_timer.h"
 #include "svc_voice.h"
 #include "svc_network.h"
+#include "svc_net_manage.h"
 #include "drv_gpio.h"
 #include <stdlib.h>
 
@@ -60,6 +61,10 @@ static void on_call_busy_timeout(void *arg)
  * ========================================================= */
 static void on_call_key_pressed(int key_idx)
 {
+    /* 室内机管理会话期间（添加卡/删除卡等界面）屏蔽呼叫按键，与旧版一致 */
+    if (SvcNetManageConnected())
+        return;
+
     LOG_I("call key %d pressed", key_idx + 1);
 
     /* 1. 发布按键事件（网络模块/灯光模块订阅） */

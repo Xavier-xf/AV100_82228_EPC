@@ -102,7 +102,7 @@ int AppUserDefaultConfigSave(void);
 int AppUserConfigReset(void);
 
 /** @brief 初始化：先加载出厂默认文件，再加载运行时配置文件；文件不存在则创建
- *  @return 1=从文件加载  0=使用内置默认值 */
+ *  @return 0=从文件加载  1=使用内置默认值 */
 int AppUserConfigInit(void);
 
 #endif /* _APP_USER_CONFIG_H_ */

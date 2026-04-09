@@ -52,7 +52,7 @@
 #define APP_LOG_NONE     4
 
 #ifndef APP_LOG_LEVEL
-#define APP_LOG_LEVEL    APP_LOG_DEBUG
+#define APP_LOG_LEVEL    APP_LOG_WARN
 #endif
 
 // #if APP_LOG_LEVEL <= APP_LOG_DEBUG
@@ -121,6 +121,16 @@
 #define LOG_E(fmt, ...)  _LOG_PRINT(_LC_RED,    "E", fmt, ##__VA_ARGS__)
 #else
 #define LOG_E(fmt, ...)  do {} while (0)
+#endif
+
+/**
+ * LOG_RAW —— 裸输出（不带标签/颜色/换行），用于键盘输入缓冲区等
+ *             需要原始格式的场景。受 LOG_ENABLE 控制。
+ */
+#if LOG_ENABLE == 1
+#define LOG_RAW(fmt, ...)  printf(fmt, ##__VA_ARGS__)
+#else
+#define LOG_RAW(fmt, ...)  do {} while (0)
 #endif
 
 #endif

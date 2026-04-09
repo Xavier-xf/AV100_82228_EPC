@@ -86,10 +86,13 @@ static int mq_create(key_t key)
     return id;
 }
 
+static volatile int s_amp_off_flag = 1;  /* 供 audio_output_thread 读取 */
+
 static void on_amp_off(void *arg)
 {
     (void)arg;
     DrvGpioAmpDisable();
+    s_amp_off_flag = 1;
     LOG_D("amp off");
 }
 
@@ -98,6 +101,7 @@ static void *audio_output_thread(void *arg)
     (void)arg;
     AudioOutMsg msg;
     int played_since_restart = 0;
+    /* s_amp_off_flag 由 on_amp_off 回调置 1，此处清 0 */
     LOG_I("output thread start");
 
     while (1) {
@@ -109,7 +113,12 @@ static void *audio_output_thread(void *arg)
         if (ret > 0 && msg.len > 0) {
             played_since_restart = 1;
 
-            DrvGpioAmpEnable();
+            if (s_amp_off_flag) {
+                /* 功放从关闭→开启，等待稳定后再输出音频，避免第一声音量偏小 */
+                DrvGpioAmpEnable();
+                usleep(50 * 1000);  /* 50ms 功放稳定时间 */
+                s_amp_off_flag = 0;
+            }
             if (SvcTimerActive(TMR_AMP_OFF))
                 SvcTimerRefresh(TMR_AMP_OFF, AMP_OFF_DELAY_MS);
             else

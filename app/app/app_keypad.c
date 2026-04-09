@@ -155,29 +155,19 @@ static void keypad_light_enable(void)
 }
 
 /* =========================================================
- *  路由栈操作
+ *  路由栈操作（打印统一使用 log.h）
  * ========================================================= */
 static void push_route(KeyAction action);
 static void pop_route(void);
 
-/* 居中打印*/
-static void print_centered(const char *str, int width)
-{
-    int len = (int)strlen(str);
-    int pad = (width - len) / 2;
-    if (pad < 0) pad = 0;
-    printf("[%*s%s%*s]\n", pad, "", str, width - len - pad, "");
-}
-
 static void print_action_stack(void)
 {
-    print_centered("ActionStack Top", 37);
+    LOG_RAW("[%11sActionStack Top%12s]\n", "", "");
     for (int i = s_stack.CurrentRoute; i >= 0; i--) {
         if (s_stack.Routes[i])
-            print_centered(s_stack.Routes[i]->ActionStr, 30);
+            LOG_RAW("[%10s%s%10s]\n", "", s_stack.Routes[i]->ActionStr, "");
     }
-    print_centered("ActionStack Bottom", 37);
-    printf("\n");
+    LOG_RAW("[%9sActionStack Bottom%10s]\n\n", "", "");
 }
 
 static void push_route(KeyAction action)
@@ -186,23 +176,16 @@ static void push_route(KeyAction action)
     ActionRoute **cur = &(s_stack.Routes[s_stack.CurrentRoute]);
 
     if (*cur == NULL) {
-        /* 栈空：直接入栈（初始化时专用）*/
         *cur = &s_routes[action];
         LOG_D("Enter %s", (*cur)->ActionStr);
     } else {
-        /* 检查 action 是否在当前节点的合法后继中 */
         for (int i = 0; i < (*cur)->NextRouteCount; i++) {
             if ((*cur)->NextRoute[i] == action) {
                 s_routes[action].RouteData = (*cur)->RouteData;
                 s_stack.CurrentRoute++;
                 s_stack.Routes[s_stack.CurrentRoute] = &s_routes[action];
-
-                struct timespec ts;
-                clock_gettime(CLOCK_MONOTONIC, &ts);
-                printf("%s => %s [%ld]\n",
-                       (*cur)->ActionStr,
-                       s_stack.Routes[s_stack.CurrentRoute]->ActionStr,
-                       ts.tv_sec);
+                LOG_D("%s => %s", (*cur)->ActionStr,
+                      s_stack.Routes[s_stack.CurrentRoute]->ActionStr);
                 break;
             }
         }
@@ -216,12 +199,7 @@ static void pop_route(void)
         if (cur && cur->ExitHandle)
             cur->ExitHandle(NULL, NULL);
         s_stack.CurrentRoute--;
-
-        struct timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        printf("%s [%ld]\n",
-               s_stack.Routes[s_stack.CurrentRoute]->ActionStr,
-               ts.tv_sec);
+        LOG_D("Back to %s", s_stack.Routes[s_stack.CurrentRoute]->ActionStr);
     }
 }
 
@@ -240,8 +218,7 @@ static void admin_timeout_cb(void *arg)
 static void modify_code_card_timeout_cb(void *arg)
 {
     (void)arg;
-    printf("ModifyCodeCardTimer[Disable]\n");
-    LOG_D("modify code card timeout");
+    LOG_D("ModifyCodeCardTimer[Disable]");
     pop_route();
 }
 
@@ -262,7 +239,7 @@ static void standby_error(void)
 
 static void error_handle(void)
 {
-    printf("ErrorHandle\n");
+    LOG_D("ErrorHandle");
     pop_route();
     pop_route();
     SvcVoicePlaySimple(VOICE_Bi4, VOICE_VOL_DEFAULT);
@@ -343,7 +320,7 @@ static int exit_standby_ready(Keyboard *k, ActionRoute *r)
 {
     (void)k; (void)r;
     if (SvcTimerActive(TMR_MODIFY_CODE_CARD))
-        printf("ModifyCodeCardTimer[Disable]\n");
+        LOG_D("ModifyCodeCardTimer[Disable]");
     SvcTimerStop(TMR_MODIFY_CODE_CARD);
     return 1;
 }
@@ -352,7 +329,7 @@ static int standby_ready_mode(Keyboard *k, ActionRoute *r)
 {
     (void)k; (void)r;
     if (!SvcTimerActive(TMR_MODIFY_CODE_CARD)) {
-        printf("ModifyCodeCardTimer[Enable]\n");
+        LOG_D("ModifyCodeCardTimer[Enable]");
         SvcTimerSet(TMR_MODIFY_CODE_CARD, 30000,
                     modify_code_card_timeout_cb, NULL);
     }
@@ -445,8 +422,8 @@ error:
 static int exit_admin_mode(Keyboard *k, ActionRoute *r)
 {
     (void)k; (void)r;
-    printf("[ExitAdminMode] Destroy AdminOutTimer[Current Status %s] !!!!!\n",
-           SvcTimerActive(TMR_ADMIN_TIMEOUT) ? "true" : "false");
+    LOG_D("[ExitAdminMode] Destroy AdminOutTimer[Current Status %s]",
+          SvcTimerActive(TMR_ADMIN_TIMEOUT) ? "true" : "false");
     SvcTimerStop(TMR_ADMIN_TIMEOUT);
     return 1;
 }
@@ -456,17 +433,17 @@ static int enter_admin_mode(Keyboard *k, ActionRoute *r)
     (void)r;
     AppUserConfig *cfg = AppUserConfigGet();
     if (k->Cursor - 1 != (int)strlen(cfg->AdminCode)) {
-        printf("[EnterAdminMode]Not enough password bits!!\n");
+        LOG_D("[EnterAdminMode] Not enough password bits!!");
         return 0;
     }
     if (memcmp(k->Buff, cfg->AdminCode, strlen(cfg->AdminCode)) != 0)
         return 0;
 
     if (SvcTimerActive(TMR_MODIFY_CODE_CARD))
-        printf("ModifyCodeCardTimer[Disable]\n");
+        LOG_D("ModifyCodeCardTimer[Disable]");
     SvcTimerStop(TMR_MODIFY_CODE_CARD);
     push_route(KeyAdmin);
-    printf("[EnterAdminMode] Open AdminOutTimer !!!!!\n");
+    LOG_D("[EnterAdminMode] Open AdminOutTimer");
     SvcTimerSet(TMR_ADMIN_TIMEOUT, 30000, admin_timeout_cb, NULL);
     SvcVoicePlaySimple(VOICE_Bi2, VOICE_VOL_DEFAULT);
     return 1;
@@ -1143,19 +1120,16 @@ static void keypad_key_handler(int key)
 
     if (ret > 0) {
         /* # 键按下，处理命令 */
-        printf("\r\n");
+        LOG_RAW("\r\n");
         kb_process_command();
         s_kb.Cursor = 0;
     } else {
-        /* 数字键按下，打印当前输入缓冲*/
-        printf("[");
-        for (int i = 0; i < KEYPAD_BUFFER_SIZE; i++) {
-            if (i < s_kb.Cursor)
-                printf("%c", s_kb.Buff[i]);
-            else
-                printf(" ");
-        }
-        printf("]\r");
+        /* 数字键按下，打印当前输入缓冲（方便调试键盘增删改操作）*/
+        char buf[KEYPAD_BUFFER_SIZE + 1];
+        for (int i = 0; i < KEYPAD_BUFFER_SIZE; i++)
+            buf[i] = (i < s_kb.Cursor) ? s_kb.Buff[i] : ' ';
+        buf[KEYPAD_BUFFER_SIZE] = '\0';
+        LOG_RAW("[%s]\r", buf);
         fflush(stdout);
     }
 }
