@@ -278,24 +278,41 @@ static void unlock_async(GpioLockType type, int duration_ms, int play_voice)
  *  SafeMode=OFF 时直接忽略，不累计也不触发
  * ========================================================= */
 #define SECURITY_ERROR_MAX      10
-#define SECURITY_ERROR_WINDOW   (5 * 60 * 1000)  /* 统计窗口：5分钟 */
-#define SECURITY_TRIGGER_TIME   (2 * 60 * 1000)  /* 触发后保护期：2分钟 */
 
-#define ALARM_SOUND_INTERVAL_MS  2000  /* 报警音重复间隔（ms）*/
-#define ALARM_SOUND_REPEAT_MAX   29    /* 初次播放 + 29次回调 = 30次，约60s */
+/* 错误窗口 / 保护时长：锁死模式 120s，报警模式 60s */
+#define SECURITY_TIME_LOCK_MS   (120 * 1000)
+#define SECURITY_TIME_ALARM_MS  (60  * 1000)
 
-static int s_error_count   = 0;
-static int s_alarm_count   = 0;  /* 剩余报警音播放次数 */
+static int s_error_count = 0;
 
-static void alarm_sound_cb(void *arg)
+static inline unsigned int security_time_ms(void)
 {
+    return (AppUserConfigGet()->SafeMode == APP_SAFE_MODE_LOCK)
+           ? SECURITY_TIME_LOCK_MS : SECURITY_TIME_ALARM_MS;
+}
+
+/* --- 报警音链式播放（on_end 回调自动续播）--- */
+static void alarm_sound_end_cb(void)
+{
+    if (SvcTimerActive(TMR_SECURITY_TRIGGER))
+        SvcVoicePlay(VOICE_Bi4, VOICE_VOL_DEFAULT, NULL, alarm_sound_end_cb);
+}
+
+/* --- 报警灯闪烁（500ms 切换，保护期内持续）--- */
+static void alarm_light_flash_cb(void *arg)
+{
+    static int s_light_on = 1;
     (void)arg;
-    if (s_alarm_count <= 0)
-        return;
-    --s_alarm_count;
-    SvcVoicePlaySimple(VOICE_LongBi, VOICE_VOL_DEFAULT);
-    if (s_alarm_count > 0)
-        SvcTimerSet(TMR_ALARM_SOUND, ALARM_SOUND_INTERVAL_MS, alarm_sound_cb, NULL);
+    if (SvcTimerActive(TMR_SECURITY_TRIGGER)) {
+        s_light_on = !s_light_on;
+        DrvGpioKeypadLightSet(s_light_on);
+        SvcTimerSet(TMR_ALARM_LIGHT, 500, alarm_light_flash_cb, NULL);
+    } else {
+        /* 保护期结束，恢复灯光：按对讲状态恢复 Key1/Key2 */
+        int on = SvcTimerActive(TMR_INTERCOM_WATCHDOG) ? 1 : 0;
+        DrvGpioKey1LightSet(on);
+        DrvGpioKey2LightSet(on);
+    }
 }
 
 static void security_error_reset_cb(void *arg)
@@ -322,20 +339,20 @@ static void security_error_update(void)
 
     /* 第一次错误时启动统计窗口计时器（到期自动清零）*/
     if (s_error_count == 0)
-        SvcTimerSet(TMR_SECURITY_ERROR, SECURITY_ERROR_WINDOW, security_error_reset_cb, NULL);
+        SvcTimerSet(TMR_SECURITY_ERROR, security_time_ms(), security_error_reset_cb, NULL);
 
     LOG_W("SecurityErrorCount=%d", s_error_count + 1);
     if (++s_error_count >= SECURITY_ERROR_MAX) {
         s_error_count = 0;
         SvcTimerStop(TMR_SECURITY_ERROR);
-        SvcTimerSet(TMR_SECURITY_TRIGGER, SECURITY_TRIGGER_TIME, NULL, NULL);
+        SvcTimerSet(TMR_SECURITY_TRIGGER, security_time_ms(), NULL, NULL);
 
-        /* 报警模式：蜂鸣器持续报警1分钟（每2s重复一次，共30次）*/
-        if (AppUserConfigGet()->SafeMode == APP_SAFE_MODE_ALARM) {
-            s_alarm_count = ALARM_SOUND_REPEAT_MAX;
-            SvcVoicePlaySimple(VOICE_LongBi, VOICE_VOL_DEFAULT);
-            SvcTimerSet(TMR_ALARM_SOUND, ALARM_SOUND_INTERVAL_MS, alarm_sound_cb, NULL);
-        }
+        /* 报警灯闪烁（锁死/报警模式共用，首次 200ms 后开始）*/
+        SvcTimerSet(TMR_ALARM_LIGHT, 200, alarm_light_flash_cb, NULL);
+
+        /* 报警模式：蜂鸣器链式播放，直到保护期结束 */
+        if (AppUserConfigGet()->SafeMode == APP_SAFE_MODE_ALARM)
+            SvcVoicePlay(VOICE_Bi4, VOICE_VOL_DEFAULT, NULL, alarm_sound_end_cb);
 
         /* 通知其他模块（app_intercom.c 订阅后自动呼叫室内机）*/
         EventBusPublish(EVT_SYSTEM_SECURITY_TRIGGERED, NULL, 0);

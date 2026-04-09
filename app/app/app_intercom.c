@@ -276,8 +276,7 @@ static void on_security_triggered(EventId id, const void *arg, size_t len)
 {
     (void)id; (void)arg; (void)len;
     LOG_W("security triggered → auto-call indoor unit");
-    /* security 字段传 0 表示安防触发，streaming 字段传 0（呼叫时尚未开流）*/
-    SvcNetworkDoorbellNotify(0, 0);
+    SvcNetworkDoorbellNotify(0, 1);
 }
 
 /* 出厂复位（远程触发，保留语言设置后重启）*/
