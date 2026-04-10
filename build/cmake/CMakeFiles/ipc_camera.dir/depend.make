@@ -78,6 +78,7 @@ cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/common/utils.h
 
+cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.o: ../app/common/log.h
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c
 cmake/CMakeFiles/ipc_camera.dir/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c.o: /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.h
 

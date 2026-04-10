@@ -52,7 +52,7 @@
 #define APP_LOG_NONE     4
 
 #ifndef APP_LOG_LEVEL
-#define APP_LOG_LEVEL    APP_LOG_WARN
+#define APP_LOG_LEVEL    APP_LOG_INFO
 #endif
 
 // #if APP_LOG_LEVEL <= APP_LOG_DEBUG

@@ -1,16 +1,17 @@
 /**
  * @file    drv_adc.c
- * @brief   ADC 采集驱动（AK SARADC sysfs，互斥锁版）
+ * @brief   ADC 采集驱动
  *
- * 移植说明：
  *   注册式回调 DrvAdcSetCallback，并直接通过 sysfs 读取电压值。
  *
  *   sysfs 路径：/sys/bus/iio/devices/iio:device0/in_voltage0_raw
  *   内核模块：  /usr/modules/ak_saradc.ko
  *   采样间隔：  50ms
  */
+#define LOG_TAG "DrvAdc"
+#include "log.h"
+
 #include "drv_adc.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -49,30 +50,28 @@ static void *adc_thread(void *arg)
     assert(access(SARADC_DEV, F_OK) == 0);
 
     int fd = open(SARADC_DEV, O_RDONLY);
-    if (fd < 0) { printf("[DrvAdc] open %s fail\n", SARADC_DEV); return NULL; }
+    if (fd < 0) { LOG_E("open %s fail", SARADC_DEV); return NULL; }
 
     char raw[64];
-    int running = 1;
 
-    while (running) {
+    while (1) {
+        pthread_mutex_lock(&s_adc.lock);
+        int running = s_adc.running;
+        DrvAdcCallback cb = s_adc.callback;
+        pthread_mutex_unlock(&s_adc.lock);
+
+        if (!running) break;
+
         lseek(fd, 0, SEEK_SET);
         memset(raw, 0, sizeof(raw));
         if (read(fd, raw, sizeof(raw)) > 0) {
             int voltage = atoi(raw);
-            pthread_mutex_lock(&s_adc.lock);
-            DrvAdcCallback cb = s_adc.callback;
-            running = s_adc.running;
-            pthread_mutex_unlock(&s_adc.lock);
             if (cb) cb(voltage);
-        } else {
-            pthread_mutex_lock(&s_adc.lock);
-            running = s_adc.running;
-            pthread_mutex_unlock(&s_adc.lock);
         }
         usleep((unsigned int)(SAMPLE_INTERVAL_MS * 1000));
     }
     close(fd);
-    printf("[DrvAdc] thread exit\n");
+    LOG_I("thread exit");
     return NULL;
 }
 
@@ -91,10 +90,11 @@ int DrvAdcInit(void)
     pthread_t tid;
     if (pthread_create(&tid, NULL, adc_thread, NULL) != 0) {
         pthread_mutex_lock(&s_adc.lock); s_adc.running = 0; pthread_mutex_unlock(&s_adc.lock);
+        LOG_E("thread create failed");
         return -1;
     }
     pthread_detach(tid);
-    printf("[DrvAdc] init ok, dev=%s\n", SARADC_DEV);
+    LOG_I("init ok, dev=%s", SARADC_DEV);
     return 0;
 }
 

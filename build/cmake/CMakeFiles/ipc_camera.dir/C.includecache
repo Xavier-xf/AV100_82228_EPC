@@ -377,10 +377,10 @@ stdint.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.c
+log.h
+/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/log.h
 drv_adc.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/hal/drv_adc.h
-stdio.h
--
 stdlib.h
 -
 string.h
