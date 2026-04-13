@@ -155,7 +155,11 @@ static bool step1_decompress_check(const char *pack_path)
                 found |= (1 << i);
         }
     }
-    pclose(pf);
+    int tar_ret = pclose(pf);
+    if (tar_ret != 0) {
+        LOG_E("tar decompress returned %d", tar_ret);
+        return false;
+    }
 
     int count = 0;
     for (int v = found; v; v &= v - 1) count++;
@@ -184,6 +188,7 @@ static bool step2_verify_sha1(void)
             int n = (int)(sp - line);
             if (n > 127) n = 127;
             strncpy(current_hash, line, (size_t)n);
+            current_hash[n] = '\0';
         }
     }
     pclose(pf);
@@ -221,7 +226,11 @@ static bool step3_flash(void)
     if (!pf) { LOG_E("decompress image fail"); return false; }
     char line[256];
     while (fgets(line, sizeof(line), pf)) ;
-    pclose(pf);
+    int pret = pclose(pf);
+    if (pret != 0) {
+        LOG_E("decompress image returned %d", pret);
+        return false;
+    }
 
     if (access("/tmp/update.sh", F_OK) != 0) {
         LOG_E("/tmp/update.sh not found");
@@ -253,6 +262,7 @@ static void *upgrade_thread(void *arg)
     uint8_t sender = ta->sender_dev;
     char pack_path[256];
     strncpy(pack_path, ta->pack_path, sizeof(pack_path) - 1);
+    pack_path[sizeof(pack_path) - 1] = '\0';
     free(ta);
 
     LOG_I("upgrade thread start");
@@ -292,6 +302,7 @@ static void start_upgrade_thread(uint8_t sender_dev, const char *pack_path)
     if (!ta) { LOG_E("malloc fail"); return; }
     ta->sender_dev = sender_dev;
     strncpy(ta->pack_path, pack_path, sizeof(ta->pack_path) - 1);
+    ta->pack_path[sizeof(ta->pack_path) - 1] = '\0';
 
     pthread_t tid;
     if (pthread_create(&tid, NULL, upgrade_thread, ta) != 0) {

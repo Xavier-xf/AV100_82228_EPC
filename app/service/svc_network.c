@@ -258,11 +258,12 @@ static void raw_packet_handle(const uint8_t *buf, int len)
         upg.is_long_pack = (len > NET_PACK_LEN) ? 1 : 0;
 
         if (upg.is_long_pack) {
-            if (len < (NET_PACK_LEN + 8)) break;
+            /* 长包最小长度：起始码(1) + src(1) + dst(1) + cmd(1) + index(4) + datalen(4) + sum(1) + end(1) = 14 */
+            if (len < 14) break;
             upg.arg1 = (uint32_t)((buf[4]<<24)|(buf[5]<<16)|(buf[6]<<8)|buf[7]);
             upg.arg2 = (uint32_t)((buf[8]<<24)|(buf[9]<<16)|(buf[10]<<8)|buf[11]);
             upg.data = (uint8_t *)&buf[12];
-            int avail = len - 12 - 2;
+            int avail = len - 12 - 2;  /* 去掉头部(12B) + 尾部 sum+end(2B) */
             if (avail < 0) avail = 0;
             upg.data_len = ((int)upg.arg2 > 0 && (int)upg.arg2 <= avail)
                            ? (int)upg.arg2 : avail;

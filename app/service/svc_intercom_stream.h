@@ -5,7 +5,6 @@
  * ===================== 架构说明 =====================
  *
  *  Linux System V 消息队列（msgget / msgsnd / msgrcv）
- *  取代原来的 CircularList 环形队列。
  *
  *  队列拓扑：
  *

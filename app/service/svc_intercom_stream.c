@@ -117,6 +117,10 @@ static SvcStreamCtx s_stm = {
 static const uint8_t AUDIO_START_CODE[4] = {0x00, 0x00, 0x01, 0xFC};
 static const uint8_t VIDEO_START_CODE[4] = {0x00, 0x00, 0x01, 0xFC};
 
+/* 发包缓冲区（在 SvcIntercomStreamInit 中统一分配，避免多线程懒初始化竞态）*/
+static uint8_t *s_audio_send_buf = NULL;
+static uint8_t *s_video_send_buf = NULL;
+
 /* ---- 辅助：加锁读状态 ---- */
 static int  get_active(void)           { pthread_mutex_lock(&s_stm.lock); int v=s_stm.active;          pthread_mutex_unlock(&s_stm.lock); return v; }
 static int  get_threads_running(void)  { pthread_mutex_lock(&s_stm.lock); int v=s_stm.threads_running; pthread_mutex_unlock(&s_stm.lock); return v; }
@@ -256,8 +260,8 @@ static void net_audio_send(int fd, const uint8_t *alaw, uint32_t alaw_size)
      *   buf[0..59]  = MAC 头（重新填充）
      *   buf[60..]   = 剩余音频数据
      */
-    static uint8_t *buf = NULL;
-    if (!buf) { buf = malloc(AUDIO_PKG_MAX); if (!buf) return; }
+    uint8_t *buf = s_audio_send_buf;
+    if (!buf) return;
 
     static uint32_t frame_idx = 0; frame_idx++;
     struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -316,8 +320,8 @@ static void net_audio_send(int fd, const uint8_t *alaw, uint32_t alaw_size)
 static void net_video_send(int fd, const uint8_t *data, uint32_t size,
                             uint64_t pts, uint32_t frame_idx)
 {
-    static uint8_t *buf = NULL;
-    if (!buf) { buf = malloc(VIDEO_PKG_MAX); if (!buf) return; }
+    uint8_t *buf = s_video_send_buf;
+    if (!buf) return;
 
     pthread_mutex_lock(&s_stm.sock_lock);
     struct sockaddr_in addr = s_stm.video_tx_addr;
@@ -763,6 +767,16 @@ void SvcIntercomStreamRequestKeyFrame(void) { DrvVideoInRequestIdr(); }
 
 int SvcIntercomStreamInit(void)
 {
+    /* 预分配发包缓冲区（避免工作线程中懒初始化竞态）*/
+    if (!s_audio_send_buf) {
+        s_audio_send_buf = malloc(AUDIO_PKG_MAX);
+        if (!s_audio_send_buf) { LOG_E("alloc audio send buf fail"); return -1; }
+    }
+    if (!s_video_send_buf) {
+        s_video_send_buf = malloc(VIDEO_PKG_MAX);
+        if (!s_video_send_buf) { LOG_E("alloc video send buf fail"); return -1; }
+    }
+
     /* 初始化视频池互斥锁 */
     for (int i = 0; i < VIDEO_POOL_SLOTS; i++) {
         memset(&s_video_pool[i], 0, sizeof(VideoSlot));

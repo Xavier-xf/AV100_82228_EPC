@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     /* ================================================
      * Step 4: HAL 层
      * ================================================ */
-    // INIT_MODULE(DrvWdtOpen(WDT_TIMEOUT_SEC));    /* 硬件看门狗*/
+    INIT_MODULE(DrvWdtOpen(WDT_TIMEOUT_SEC));    /* 硬件看门狗*/
 
     INIT_MODULE(DrvGpioInit());         /* GPIO 引脚初始化*/
     INIT_MODULE(DrvAudioInInit());      /* 音频输入*/
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
      * Step 9: 主循环
      * ================================================ */
     while (1) {
-        // DrvWdtFeed();
+        DrvWdtFeed();
         DrvSystemTickFeed();   /* 喂软件心跳看门狗 */
         sleep(MAIN_LOOP_INTERVAL);
     }

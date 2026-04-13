@@ -242,6 +242,7 @@ static void on_infrared_night(EventId id, const void *arg, size_t len)
     (void)id; (void)arg; (void)len;
     LOG_D("IR → 夜视");
     DrvVideoInSwitchMode(1);
+    SvcTimerStop(TMR_IRCUT_CLOSE);   /* 停止先前可能仍在运行的 IRCUT 脉冲定时器 */
     DrvGpioIrcutNight();
     SvcTimerSet(TMR_IRCUT_CLOSE, 100, ircut_close_cb, NULL);
     if (AppIntercomGetState() != INTERCOM_STATE_IDLE)
@@ -263,6 +264,7 @@ static void on_infrared_day(EventId id, const void *arg, size_t len)
     (void)id; (void)arg; (void)len;
     LOG_D("IR → 白天");
     DrvVideoInSwitchMode(0);
+    SvcTimerStop(TMR_IRCUT_CLOSE);   /* 停止先前可能仍在运行的 IRCUT 脉冲定时器 */
     DrvGpioIrcutDay();
     SvcTimerSet(TMR_IRCUT_CLOSE, 100, ircut_close_cb, NULL);
     DrvGpioInfraredLightSet(0);

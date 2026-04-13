@@ -81,14 +81,8 @@ int DrvPlatformInit(void)
         return -1;
     }
 
-    ak_print_set_level(MODULE_ID_SVP, LOG_LEVEL_ERROR);
-    // 关闭 VQE 模块所有打印
-    ak_print_set_level(MODULE_ID_VQE, LOG_LEVEL_ERROR);
-
-    // 关闭回声模块打印
-    ak_print_set_level(MODULE_ID_ATC_ECHO, LOG_LEVEL_ERROR);
-
-    ak_print_set_level(MODULE_ID_AO,         LOG_LEVEL_RESERVED);
+    // ak_print_set_level(MODULE_ID_SVP, LOG_LEVEL_ERROR);
+    ak_print_set_level(MODULE_ID_ALL,         LOG_LEVEL_WARNING);
     LOG_I("AK SDK init ok (ITS=%d ATS=%d)", ITS_ENABLE, ATS_ENABLE);
     return 0;
 }
