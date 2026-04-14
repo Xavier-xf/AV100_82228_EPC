@@ -630,7 +630,12 @@ static int start_threads(void)
     for (int i = 0; i < (int)(sizeof(tbl)/sizeof(tbl[0])); i++) {
         pthread_t tid;
         if (pthread_create(&tid, NULL, tbl[i].fn, NULL) != 0) {
-            LOG_E("create thread %d fail", i); return -1;
+            LOG_E("create thread %d fail", i);
+            /* 让已启动的线程在下一轮循环自动退出 */
+            pthread_mutex_lock(&s_stm.lock);
+            s_stm.threads_running = 0;
+            pthread_mutex_unlock(&s_stm.lock);
+            return -1;
         }
         pthread_detach(tid);
     }
@@ -774,7 +779,11 @@ int SvcIntercomStreamInit(void)
     }
     if (!s_video_send_buf) {
         s_video_send_buf = malloc(VIDEO_PKG_MAX);
-        if (!s_video_send_buf) { LOG_E("alloc video send buf fail"); return -1; }
+        if (!s_video_send_buf) {
+            LOG_E("alloc video send buf fail");
+            free(s_audio_send_buf); s_audio_send_buf = NULL;
+            return -1;
+        }
     }
 
     /* 初始化视频池互斥锁 */
@@ -787,7 +796,12 @@ int SvcIntercomStreamInit(void)
     DrvAudioInSetCallback(on_audio_in_frame);
     DrvVideoInSetCallback(on_video_frame);
 
-    if (start_threads() != 0) return -1;
+    if (start_threads() != 0) {
+        free(s_audio_send_buf); s_audio_send_buf = NULL;
+        free(s_video_send_buf); s_video_send_buf = NULL;
+        for (int i = 0; i < VIDEO_POOL_SLOTS; i++) pthread_mutex_destroy(&s_video_pool[i].lock);
+        return -1;
+    }
     LOG_I("init ok");
     return 0;
 }

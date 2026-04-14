@@ -197,8 +197,6 @@ int SvcAudioInit(void)
 
     s_aud.mq_id = mq_create(MQ_KEY_AUDIO_OUT);
     if (s_aud.mq_id < 0) { pthread_mutex_unlock(&s_aud.lock); return -1; }
-
-    s_aud.initialized = 1;
     pthread_mutex_unlock(&s_aud.lock);
 
     DrvAudioOutInit();
@@ -207,9 +205,17 @@ int SvcAudioInit(void)
     pthread_t tid;
     if (pthread_create(&tid, NULL, audio_output_thread, NULL) != 0) {
         LOG_E("thread create fail");
+        pthread_mutex_lock(&s_aud.lock);
+        msgctl(s_aud.mq_id, IPC_RMID, NULL);
+        s_aud.mq_id = -1;
+        pthread_mutex_unlock(&s_aud.lock);
         return -1;
     }
     pthread_detach(tid);
+
+    pthread_mutex_lock(&s_aud.lock);
+    s_aud.initialized = 1;
+    pthread_mutex_unlock(&s_aud.lock);
     LOG_I("init ok (mqid=%d)", s_aud.mq_id);
     return 0;
 }

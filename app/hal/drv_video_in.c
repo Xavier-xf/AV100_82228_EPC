@@ -244,7 +244,9 @@ int DrvVideoInInit(void)
 
     pthread_t tid;
     if (pthread_create(&tid, NULL, video_capture_thread, NULL) != 0) {
-        LOG_E("create thread fail"); return -1;
+        LOG_E("create thread fail");
+        pthread_mutex_lock(&s_vi.lock); s_vi.running = 0; pthread_mutex_unlock(&s_vi.lock);
+        return -1;
     }
     pthread_detach(tid);
     LOG_I("init ok");

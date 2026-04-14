@@ -92,6 +92,7 @@ int DrvInfraredInit(void)
     pthread_t tid;
     if (pthread_create(&tid, NULL, infrared_poll_thread, NULL) != 0) {
         LOG_E("create poll thread fail");
+        GpioSysfsClose(PIN_IR_FEED);
         return -1;
     }
     pthread_detach(tid);

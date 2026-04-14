@@ -124,9 +124,73 @@ HAL → Service → App：
 本仓库为新版重构实现。功能行为与产品形态需与旧版保持一致，但代码架构不强制对齐。
 
 
-修改日志：
+## 修改日志：
 
-修改时间：2026 年 4 月 14 日 11:11
+
+## 修改时间：2026 年 4 月 14 日 14:30
+修改文件：app/service/svc_voice.c、app/service/svc_intercom_stream.c、app/hal/drv_net_raw.c、app/service/svc_network.c、app/service/svc_audio.c、app/hal/drv_infrared.c、app/hal/drv_video_in.c
+
+一、修复问题列表
+
+1. MP3 解码缓存越界（svc_voice.c）
+   mp3_output 每帧写入 2304 字节，VOICE_CACHE_MAX = 4096，阈值冲洗放在 while 循环外；第 2 帧在循环体内就会写到 4608 字节，越界 512 字节造成段错误或栈破坏。
+
+2. MAD 可恢复错误刷屏（svc_voice.c）
+   ID3 标签扫描阶段 libmad 每次失步都触发 mp3_error，打成 WARN 污染日志。
+
+3. 对讲流线程阵列创建失败状态不一致（svc_intercom_stream.c）
+   start_threads 循环中第 i 个线程创建失败直接 return -1，已启动的线程仍在跑；SvcIntercomStreamInit 后续 malloc 分配的 send_buf 也不回收。
+
+4. ifreq 结构未初始化（drv_net_raw.c、svc_network.c）
+   struct ifreq ifr; 栈上声明后直接 strncpy(ifr.ifr_name, ..., IFNAMSIZ-1)，iface 为 IFNAMSIZ-1 字节时不补 \0；其余字段为栈残留。已有正确写法参考 svc_intercom_stream.c（先 memset）。
+
+5. pthread_create 失败后资源未回滚（svc_audio.c、svc_network.c、drv_infrared.c、drv_video_in.c）
+   与 svc_voice 同类问题：线程创建失败时已申请的消息队列 / 套接字 / GPIO / running 标志未回收。
+
+二、代码修改详情
+
+1. svc_voice.c：mp3_output 阈值检查前移进循环
+   while (n--) {
+       if (ctx->cache_len + 2 > VOICE_CACHE_MAX) mp3_flush(ctx);
+       ...
+   }
+   每次写 2 字节前先判断剩余空间，避免越界。
+
+2. svc_voice.c：mp3_error 使用 MAD_RECOVERABLE 分级
+   可恢复错误（ID3 扫描、坏帧）降为 DEBUG；仅高字节 0x02 的致命错误打 WARN。
+
+3. svc_intercom_stream.c：start_threads 失败时将 threads_running 置 0
+   已启动的工作线程会在下一轮循环检查标志后自动退出。
+
+4. svc_intercom_stream.c：SvcIntercomStreamInit 失败时释放 send_buf + destroy 池锁
+   video_send_buf 分配失败时也释放已分配的 audio_send_buf，避免双路径泄漏。
+
+5. drv_net_raw.c / svc_network.c：struct ifreq 先 memset 再 strncpy，末尾显式补 \0
+   NetRawMacGet 额外补上 SIOCGIFHWADDR 的返回值检查。
+
+6. svc_audio.c：pthread_create 失败时 msgctl(IPC_RMID)
+   将 initialized=1 后移至线程启动成功后才设置。
+
+7. svc_network.c：pthread_create 失败时关闭 send_fd、清 running
+   与 SvcNetworkDeinit 路径等价。
+
+8. drv_infrared.c：pthread_create 失败时 GpioSysfsClose(PIN_IR_FEED)
+
+9. drv_video_in.c：pthread_create 失败时清 running 标志
+
+三、修改效果
+可靠性
+所有 *Init 失败路径均可完整回滚，重试初始化不再死锁或泄漏；MP3 长音频不再触发越界。
+可维护性
+日志分级合理：可恢复的解码错误不再刷屏，真正的致命错误凸显。
+健壮性
+ifreq 等内核接口结构均按要求清零，避免未定义行为。
+
+
+---
+
+
+## 修改时间：2026 年 4 月 14 日 11:11
 修改文件：app/service/svc_voice.c
 一、修复问题列表
 初始化线程创建失败，资源泄漏 + 状态异常

@@ -27,7 +27,9 @@ int NetRawPromiscuousSet(const char *iface)
     if (fd < 0) { LOG_E("socket fail"); return -1; }
 
     struct ifreq ifr;
+    memset(&ifr, 0, sizeof(ifr));
     strncpy(ifr.ifr_name, iface, IFNAMSIZ - 1);
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
     if (ioctl(fd, SIOCGIFFLAGS, &ifr) < 0) {
         LOG_E("SIOCGIFFLAGS fail"); close(fd); return -1;
     }
@@ -44,8 +46,12 @@ int NetRawMacGet(const char *iface, char *mac_out)
     int fd = socket(PF_INET, SOCK_DGRAM, 0);
     if (fd < 0) { LOG_E("socket fail"); return -1; }
     struct ifreq req;
+    memset(&req, 0, sizeof(req));
     strncpy(req.ifr_name, iface, IFNAMSIZ - 1);
-    ioctl(fd, SIOCGIFHWADDR, &req);
+    req.ifr_name[IFNAMSIZ - 1] = '\0';
+    if (ioctl(fd, SIOCGIFHWADDR, &req) < 0) {
+        LOG_E("SIOCGIFHWADDR fail"); close(fd); return -1;
+    }
     close(fd);
     memcpy(mac_out, req.ifr_hwaddr.sa_data, 6);
     return 0;
@@ -67,7 +73,9 @@ int NetRawIfrBind(int fd, const char *iface, int protocol)
 int NetRawIfrAddrConfig(int fd, const char *iface, struct sockaddr_ll *sll)
 {
     struct ifreq req;
+    memset(&req, 0, sizeof(req));
     strncpy(req.ifr_name, iface, IFNAMSIZ - 1);
+    req.ifr_name[IFNAMSIZ - 1] = '\0';
     if (ioctl(fd, SIOCGIFINDEX, &req) < 0) {
         LOG_E("SIOCGIFINDEX fail"); return -1;
     }

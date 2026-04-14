@@ -150,10 +150,12 @@ static void net_msg_send(uint8_t dst, uint8_t cmd, uint8_t arg1, uint8_t arg2)
 static int eth_interface_state(const char *iface, int enable)
 {
     struct ifreq ifr;
+    memset(&ifr, 0, sizeof(ifr));
     int fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (fd < 0) { LOG_E("socket fail"); return -1; }
 
     strncpy(ifr.ifr_name, iface, IFNAMSIZ - 1);
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
     if (ioctl(fd, SIOCGIFFLAGS, &ifr) < 0) {
         LOG_E("SIOCGIFFLAGS fail"); close(fd); return -1;
     }
@@ -449,6 +451,10 @@ int SvcNetworkInit(void)
     pthread_t tid;
     if (pthread_create(&tid, NULL, net_recv_thread, NULL) != 0) {
         LOG_E("create recv thread fail");
+        pthread_mutex_lock(&s_net.state_lock);
+        s_net.running = 0;
+        if (s_net.send_fd >= 0) { close(s_net.send_fd); s_net.send_fd = -1; }
+        pthread_mutex_unlock(&s_net.state_lock);
         return -1;
     }
     pthread_detach(tid);
