@@ -126,6 +126,118 @@ HAL → Service → App：
 
 ## 修改日志：
 
+## 修改时间：2026 年 4 月 14 日 19:00
+修改文件：app/service/svc_net_manage.c
+
+一、修复问题列表
+
+P0 — 协议正确性 / 进程存活
+
+1. TCP 流未做分帧，粘包/拆包直接错位
+   原实现把一次 `recv` 的返回值当作"整包长度"交给 `check_packet`，长包 1288B 几乎必然跨 MTU 分片 → 第一次 `recv` 只收到 ~1460 以内 → 长度不匹配丢包，剩余字节被当作新包头继续解析 → 彻底错位。
+
+2. `check_packet` 长度守卫不足
+   `len <= 0` 后直接访问 `buf[2]/buf[len-1]`，`len=1/2` 为越界未定义行为。
+
+3. 短包 sum 字段从不校验
+   发送侧认真填 sum，接收侧直接跳过 → 通信抖动或对端 bug 可触发 `NET_MGR_DEL_CARD + arg1=DECK_SIZE_MAX`，静默格式化整张卡库。
+
+4. `tcp_send` 单次 send，`n>0` 就视为成功；未屏蔽 SIGPIPE
+   部分写会截断长包；对端关闭后首次 send 可能触发 SIGPIPE 杀掉 `ipc_camera` 进程。
+
+P1 — 运行时可靠性
+
+5. `send_long` 数据超限静默截断（`LONG_PACK_LEN - 7 = 1281` 之上直接 memcpy 截断）。
+6. 会话无空闲超时、无 TCP keepalive，对端假死时内层 `recv` 循环永远 -1（超时），新 `connect` 挂在 backlog 里永不被 accept。
+7. `s_client_fd` 与 `s_connected` 分两把锁 + 一个裸读，关联状态可能短暂不一致；`SvcNetManageSendShort` 无锁读 fd 存在读到已关闭 fd 的窗口。
+
+P2 — 功能毛刺
+
+8. `manage_light_cb` 内 `static int light_on` 跨会话残留，第二次进入添加卡模式闪烁相位不定。
+9. 会话结束只停了 `TMR_ADD_CARD`，未显式停 `TMR_MANAGE_LIGHT`，依赖链隐晦。
+
+P3 — 可读性 / 可维护性
+
+10. `handle_packet` 末尾 `(void)arg2` 与上文 `SET_CARD_PERM` 使用 `arg2` 冲突。
+11. `NET_MGR_DEL_CARD`/`NET_MGR_SET_CARD_PERM` 对越界 arg 静默丢弃，无日志。
+12. `dest/src=1`、`LONG_PACK_LEN - 7` 等 magic number 散布，无集中定义。
+13. `perror` 与 `LOG_E` 混用，日志走两条路径。
+14. 每次 recv 前 `memset(buf,0,1288)` 纯浪费。
+15. 静态变量 `s_server_fd/s_client_fd/s_connected/两把锁` 散落文件头，未结构化。
+16. server socket 多余的 `O_NONBLOCK`（已配合 select 使用）。
+
+二、代码修改详情
+
+1. 状态全部结构化
+   新增三个结构体集中管理运行期状态：
+   ```c
+   typedef struct {
+       pthread_mutex_t lock, send_lock;   /* 状态锁 + 发送串行化锁 */
+       int server_fd, client_fd, connected;
+   } SvcNetMgrCtx;
+
+   typedef struct {                        /* 接收组帧器 */
+       unsigned char buf[LONG_PACK_LEN];
+       int have, need;                     /* need=0 表示未锁定起始 */
+   } RxFramer;
+
+   typedef struct { int running, on; } LightBlinkCtx;
+   ```
+   原有 6 个散落静态变量统一归入 `s_ctx`/`s_blink`，并通过 `ctx_get_client_fd()` / `ctx_set_session()` 封装原子读写。
+
+2. TCP 分帧器（RxFramer）
+   实现 `framer_append` / `framer_try_parse` / `framer_drop_front` 三个原语，按"首字节锁定 → 攒满期望长度 → check_packet → 消费"的状态机工作。`check_packet` 失败或首字节非 0xAA/0xBB 时 resync（丢 1 字节重扫）。`session_run` 里 `tcp_read_once → framer_append → while try_parse` 循环消费，彻底解决粘包/拆包。
+
+3. 协议字段、常量集中定义
+   `PKT_OFF_START/DEST/SRC/CMD/ARG1/ARG2/SUM`、`LONG_OFF_DATA`、`LONG_PACK_DATA_MAX=1281`、`DEVICE_ID_SELF/INDOOR/BROADCAST=0x01/0x01/0xFF` 全部集中到文件顶部常量区，彻底消除 magic number。
+
+4. 短包 sum 校验
+   新增 `short_checksum(pkt)` helper；`SvcNetManageSendShort` 用它生成 sum，`check_packet` 用它校验；不匹配时 `LOG_W` 并视为无效包 resync。
+
+5. send 路径重写
+   - `tcp_send_all(fd, buf, len, total_timeout_ms)`：循环 `select(write)` + `send(MSG_DONTWAIT|MSG_NOSIGNAL)`，支持部分写续传与总超时。
+   - `SvcNetManageInit` 开头 `signal(SIGPIPE, SIG_IGN)`（双保险）。
+   - `net_send_bytes` 统一走 `send_lock` 串行化，失败返回 -1 向上传递，`SvcNetManageSendShort` / `send_long` 不再吞错。
+
+6. `send_long` 数据边界守卫
+   `data_len < 0` 归零；`data_len > LONG_PACK_DATA_MAX` 拒绝发送并 `LOG_E`，不再静默截断。
+
+7. 会话 liveness：空闲超时 + TCP keepalive 双保险
+   - `tcp_enable_keepalive(fd)`：`SO_KEEPALIVE` + `TCP_KEEPIDLE=10s` + `TCP_KEEPINTVL=5s` + `TCP_KEEPCNT=3`，死链 25s 可感知。
+   - `session_run` 每次循环前计算 `ts_elapsed_ms(&last_rx)`，超过 `SESSION_IDLE_TIMEOUT_MS=60000ms` 主动断开。
+
+8. 指示灯闪烁抽象
+   `light_blink_start/stop` 显式管理 `LightBlinkCtx`；回调 `manage_light_cb` 检查 `s_blink.running && SvcTimerActive(TMR_ADD_CARD)` 两个条件，任一不满足即调用 stop 清零。第二次进入添加卡模式时 `on` 显式复位为 0，闪烁相位稳定。
+
+9. `check_packet` 健壮化
+   先 `len < SHORT_PACK_LEN` 守卫；同时校验 `dest`（必须为本机或广播）；失败路径全部带 `LOG_W`。
+
+10. `handle_packet` 参数校验完善
+    `NET_MGR_DEL_CARD` 的非法 arg1 区间（>DECK_SIZE_MAX）加 `LOG_W` 明示；`NET_MGR_SET_CARD_PERM` 越界 idx 加守卫；`NET_MGR_GET_CARD` 对 `AppCardDeckPermGet` 返回值做空/负值检查。
+
+11. 其他清理
+    - `perror` 全部换成 `LOG_E(...strerror(errno))`。
+    - 去掉 server socket 的 `O_NONBLOCK`（已由 select 处理）。
+    - 去掉每次 recv 前的 1288B `memset`。
+    - 去掉 `handle_packet` 末尾与上文冲突的 `(void)arg2`。
+
+三、修改效果
+
+可靠性
+粘包/拆包、checksum 错误、SIGPIPE、部分写、死连接全部封堵；高危命令（格式化卡库）不再可能因通信抖动误触发。
+
+安全性
+所有包都经 sum + 起止字节 + 地址三重校验才放行命令执行。
+
+可维护性
+运行期状态由 3 个结构体封装；协议字段偏移、时序参数、设备 ID 全部常量化；session 入/出/清理分离为 `session_run` / `session_cleanup`；灯控抽象为 `light_blink_start/stop`。后续协议扩展只需在常量区加字段、在 `handle_packet` 增 case。
+
+可读性
+`tcp_read_once` → `framer_append` → `framer_try_parse` → `check_packet` → `handle_packet` → `framer_drop_front` 形成清晰的数据流，每一步职责单一。
+
+---
+
+
 ## 修改时间：2026 年 4 月 14 日 17:30
 修改文件：app/service/svc_audio.c
 

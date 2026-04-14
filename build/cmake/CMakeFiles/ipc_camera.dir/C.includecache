@@ -819,11 +819,15 @@ drv_gpio.h
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/drv_gpio.h
 netinet/in.h
 -
+netinet/tcp.h
+-
 arpa/inet.h
 -
 sys/socket.h
 -
 sys/select.h
+-
+sys/types.h
 -
 pthread.h
 -
@@ -836,6 +840,12 @@ stdlib.h
 stdio.h
 -
 fcntl.h
+-
+errno.h
+-
+time.h
+-
+signal.h
 -
 
 /home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/app/service/svc_net_manage.h
