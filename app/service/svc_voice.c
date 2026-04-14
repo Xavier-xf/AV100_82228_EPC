@@ -159,20 +159,16 @@ static enum mad_flow mp3_output(void *d, const struct mad_header *h, struct mad_
     /* 强制单声道 */
     const mad_fixed_t *left = pcm->samples[0];
     unsigned int n = pcm->length;
+    /* 写入前检查剩余空间，满了立即冲洗，避免越界。 */
     while (n--) {
+        if (ctx->cache_len + 2 > VOICE_CACHE_MAX) mp3_flush(ctx);
         int16_t s = mad_to_s16(*left++);
         ctx->cache[ctx->cache_len++] = (uint8_t)(s & 0xFF);
         ctx->cache[ctx->cache_len++] = (uint8_t)((s >> 8) & 0xFF);
     }
-    /* 阈值冲洗：
-     * 每帧数据大小1152字节，因此不能完整存到 VOICE_CACHE_MAX，
-     * 否则会出现数组越界段错误问题。
-     * VOICE_CACHE_MAX - (VOICE_CACHE_MAX % 1152) = 4096-640 = 3456
-     * 即缓存满 3456 字节后冲洗，保证下一帧(2304字节) 不溢出 4096 缓冲。 */
-    int threshold = VOICE_CACHE_MAX - (VOICE_CACHE_MAX % 1152);
-    if (ctx->cache_len >= threshold) mp3_flush(ctx);
     return MAD_FLOW_CONTINUE;
 }
+
 
 static enum mad_flow mp3_error(void *d, struct mad_stream *s, struct mad_frame *f)
 {

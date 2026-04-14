@@ -12,5 +12,5 @@
         "socket.h": "c",
         "types.h": "c"
     },
-    "cmake.sourceDirectory": "/home/hare/share/bk_hare/DOOR_BELL/AV100_82228_EPC/AV100_82228_EPC/build"
+    "cmake.sourceDirectory": "/home/xiaoxiao/workspace/82228EPC/AV100_82228_EPC_new/build"
 }
