@@ -86,14 +86,25 @@ static int mq_create(key_t key)
     return id;
 }
 
-static volatile int s_amp_off_flag = 1;  /* 供 audio_output_thread 读取 */
+/* s_amp_mutex 串行化 on_amp_off 回调与输出线程的功放操作，消除竞态：
+ * 关键场景——上一次播放的 TMR_AMP_OFF 在新帧到来的瞬间刚好到期。
+ * 定时器线程与输出线程如果各自独立操作功放/flag，会出现：输出线程刚"刷新"
+ * 定时器后，in-flight 的 on_amp_off 紧接着把功放关掉，本轮音频静音。 */
+static pthread_mutex_t s_amp_mutex = PTHREAD_MUTEX_INITIALIZER;
+static volatile int    s_amp_off_flag = 1;
 
 static void on_amp_off(void *arg)
 {
     (void)arg;
-    DrvGpioAmpDisable();
-    s_amp_off_flag = 1;
-    LOG_D("amp off");
+    pthread_mutex_lock(&s_amp_mutex);
+    /* 若输出线程已抢先重置了定时器（active=1），说明有新音频在路上，
+     * 放弃本次关机，交给新定时器处理。 */
+    if (!SvcTimerActive(TMR_AMP_OFF)) {
+        DrvGpioAmpDisable();
+        s_amp_off_flag = 1;
+        LOG_D("amp off");
+    }
+    pthread_mutex_unlock(&s_amp_mutex);
 }
 
 static void *audio_output_thread(void *arg)
@@ -101,7 +112,6 @@ static void *audio_output_thread(void *arg)
     (void)arg;
     AudioOutMsg msg;
     int played_since_restart = 0;
-    /* s_amp_off_flag 由 on_amp_off 回调置 1，此处清 0 */
     LOG_I("output thread start");
 
     while (1) {
@@ -113,18 +123,24 @@ static void *audio_output_thread(void *arg)
         if (ret > 0 && msg.len > 0) {
             played_since_restart = 1;
 
+            /* 功放启停 + 写 AO 必须与 on_amp_off 互斥，避免回调抢在写入前关闭功放。 */
+            pthread_mutex_lock(&s_amp_mutex);
             if (s_amp_off_flag) {
                 /* 功放从关闭→开启，等待稳定后再输出音频，避免第一声音量偏小 */
                 DrvGpioAmpEnable();
                 usleep(50 * 1000);  /* 50ms 功放稳定时间 */
                 s_amp_off_flag = 0;
             }
+            /* 先把定时器推后，再写 AO。这样即便 on_amp_off 已被定时器线程
+             * 提取（active=0，马上要执行），它拿到锁后会 re-check active：
+             * 由于我们刚 Set/Refresh 让 active=1，回调会放弃关功放。 */
             if (SvcTimerActive(TMR_AMP_OFF))
                 SvcTimerRefresh(TMR_AMP_OFF, AMP_OFF_DELAY_MS);
             else
                 SvcTimerSet(TMR_AMP_OFF, AMP_OFF_DELAY_MS, on_amp_off, NULL);
 
             DrvAudioOutWrite(msg.pcm, msg.len);
+            pthread_mutex_unlock(&s_amp_mutex);
         } else {
             /* 队列空：等 AO 缓冲也排空后做轻量级 restart，防止 AO 缓存积累出错 */
             if (played_since_restart && DrvAudioOutRemainLen() == 0) {

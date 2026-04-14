@@ -126,6 +126,39 @@ HAL → Service → App：
 
 ## 修改日志：
 
+## 修改时间：2026 年 4 月 14 日 17:30
+修改文件：app/service/svc_audio.c
+
+一、修复问题列表
+
+1. 语音播放偶发静音（上一次 AMP_OFF 定时器到期瞬间触发的竞态）
+   现象：连续播放两段语音，如果上一次播放结束启动的 `TMR_AMP_OFF` 恰好在下一段语音开始推帧的瞬间到期，这一段语音全程静音。
+   根因：`audio_output_thread` 与 `on_amp_off` 回调（跑在 svc_timer 专用线程）对功放状态与定时器的"检查—操作"不是原子的。典型坏序：
+   - 输出线程读出新帧，检查 `s_amp_off_flag==0`（功放还开着），跳过 AmpEnable。
+   - 输出线程 `SvcTimerActive(TMR_AMP_OFF)` 返回 true。
+   - 此时定时器线程已在 svc_timer 内把 slot.active 置 0 并取出 cb，马上要调 `on_amp_off`。
+   - 输出线程 `SvcTimerRefresh` 把 active 重置为 1、deadline 推后 3s。
+   - 定时器线程调用 `on_amp_off`：`DrvGpioAmpDisable()` + `s_amp_off_flag=1`。
+   - 输出线程 `DrvAudioOutWrite` 写入——功放已关，整段语音静音；新定时器 3s 后才再响，而本段语音期间队列一直不为空，不会进入 idle 分支重开功放。
+
+二、代码修改详情（svc_audio.c）
+
+1. 新增 `s_amp_mutex`，把"检查 flag → 开功放 → 刷新定时器 → 写 AO"整段与 `on_amp_off` 回调互斥。
+2. `on_amp_off` 拿到锁后重检 `SvcTimerActive(TMR_AMP_OFF)`：若为 true，说明输出线程已抢先把定时器推后，放弃本次关机，交给新定时器处理。避免 in-flight 回调把刚开的功放再关掉。
+3. `DrvAudioOutWrite` 放在锁内：即使 `on_amp_off` 已被定时器线程提取，也必须等写入完成并看到 active=1 后放弃关机，保证本帧一定在"功放开"状态下写入。
+4. 为 `s_amp_off_flag`、`on_amp_off`、输出线程内的加锁段补充注释，说明竞态场景与互斥意图。
+
+三、修改效果
+可靠性
+消除"上一次语音尾巴 + 下一次语音开头"这段时间窗口内的功放竞态，连续语音播放不再出现随机整段静音。
+性能
+互斥段内的操作均为毫秒级（开功放 50ms 稳定 + 一次 AO write），`on_amp_off` 每 3s 才可能被调用一次，锁争用可忽略。
+可维护性
+功放状态机收敛到"s_amp_mutex + s_amp_off_flag + TMR_AMP_OFF"三元组，后续若新增其它功放操作源（例如对讲流），只需遵循同一互斥约定即可。
+
+---
+
+
 ## 修改时间：2026 年 4 月 14 日 16:00
 修改文件：app/service/svc_intercom_stream.c
 
