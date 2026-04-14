@@ -77,14 +77,15 @@ static int resolve_path(VoiceId id, char *out, size_t max)
 static void push_pcm(const uint8_t *pcm, int len)
 {
     if (len <= 0 || !pcm) return;
-    /* 帧持续时间(ms) = len / (16000Hz × 2byte) × 1000 */
-    int frame_ms = (int)((float)len / (16000.0f * 2.0f) * 1000.0f);
+    /* 帧持续时间(ms) = len / (16000Hz × 2byte) × 1000 = len / 32 */
+    int frame_ms = len / 32;
+    if (frame_ms <= 0) frame_ms = 1;
 
     /* 重试送入队列（队列满时退避）*/
     int retry = 0;
-    while (SvcAudioFeed(AUDIO_SRC_VOICE, pcm, (uint32_t)len) < 0 && retry < 10) {
+    while (SvcAudioFeed(AUDIO_SRC_VOICE, pcm, (uint32_t)len) < 0) {
+        if (++retry >= 10) { LOG_W("feed drop %d bytes after %d retries", len, retry); return; }
         usleep((unsigned int)(frame_ms * 1000));
-        retry++;
     }
 
     /* 流控：固定半帧等待（避免解码过快淹没AO）*/
@@ -172,10 +173,14 @@ static enum mad_flow mp3_output(void *d, const struct mad_header *h, struct mad_
 
 static enum mad_flow mp3_error(void *d, struct mad_stream *s, struct mad_frame *f)
 {
-    (void)s; (void)f;
-    mp3_flush((Mp3Ctx *)d);   /* 冲洗最后一段 */
+    (void)d; (void)f;
+    /* 可恢复错误(高字节0x01，如 LOSTSYNC/BADDATAPTR)在扫描 ID3 标签和坏帧时
+     * 频繁触发，降为 DEBUG；致命错误(高字节0x02)才告警。 */
+    if (MAD_RECOVERABLE(s->error)) LOG_D("mad recoverable: 0x%04x", s->error);
+    else                           LOG_W("mad fatal: 0x%04x",      s->error);
     return MAD_FLOW_CONTINUE;
 }
+
 
 static int decode_mp3(const VoiceReqMsg *req)
 {
@@ -304,16 +309,21 @@ int SvcVoiceInit(void)
         return -1;
     }
 
-    s_voc.initialized = 1;
-    s_voc.busy = 0;
-    pthread_mutex_unlock(&s_voc.lock);
-
     pthread_t tid;
     if (pthread_create(&tid, NULL, voice_decode_thread, NULL) != 0) {
-        LOG_E("create thread fail"); return -1;
+        LOG_E("create thread fail");
+        msgctl(s_voc.mq_id, IPC_RMID, NULL);
+        s_voc.mq_id = -1;
+        pthread_mutex_unlock(&s_voc.lock);
+        return -1;
     }
     pthread_detach(tid);
-    LOG_I("init ok (mqid=%d)", s_voc.mq_id);
+
+    s_voc.initialized = 1;
+    s_voc.busy = 0;
+    int mqid = s_voc.mq_id;
+    pthread_mutex_unlock(&s_voc.lock);
+    LOG_I("init ok (mqid=%d)", mqid);
     return 0;
 }
 
