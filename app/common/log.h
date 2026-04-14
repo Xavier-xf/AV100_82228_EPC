@@ -62,20 +62,32 @@
 // #endif
 
 /* =========================================================
- *  ANSI 颜色码
+ *  ANSI 颜色码（编译期加 -DLOG_NO_COLOR 可彻底移除，便于重定向到文件）
  * ========================================================= */
+#ifdef LOG_NO_COLOR
+#define _LC_RESET   ""
+#define _LC_GRAY    ""
+#define _LC_GREEN   ""
+#define _LC_YELLOW  ""
+#define _LC_RED     ""
+#define _LC_CYAN    ""
+#else
 #define _LC_RESET   "\033[0m"
 #define _LC_GRAY    "\033[2;37m"
 #define _LC_GREEN   "\033[32m"
 #define _LC_YELLOW  "\033[33m"
 #define _LC_RED     "\033[31m"
 #define _LC_CYAN    "\033[36m"
+#endif
 
 /* =========================================================
  *  模块默认配置
  * ========================================================= */
-#ifndef LOG_TAG
-#define LOG_TAG ""
+/* LOG_TAG 未定义时不显示空方括号，保持输出整洁 */
+#ifdef LOG_TAG
+#define _LOG_TAG_FMT  "[" LOG_TAG "] "
+#else
+#define _LOG_TAG_FMT  ""
 #endif
 
 /* 若文件未定义 LOG_ENABLE，默认开启 */
@@ -88,7 +100,7 @@
  * ========================================================= */
 #if LOG_ENABLE == 1
 #define _LOG_PRINT(color, lvl_str, fmt, ...)                        \
-    printf(color "[" lvl_str "][" LOG_TAG "] "                      \
+    printf(color "[" lvl_str "]" _LOG_TAG_FMT                       \
            _LC_CYAN "%s" _LC_RESET ": " fmt "\n",                   \
            __func__, ##__VA_ARGS__)
 #else

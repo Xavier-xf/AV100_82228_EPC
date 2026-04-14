@@ -121,6 +121,46 @@ static const uint8_t VIDEO_START_CODE[4] = {0x00, 0x00, 0x01, 0xFC};
 static uint8_t *s_audio_send_buf = NULL;
 static uint8_t *s_video_send_buf = NULL;
 
+/* =========================================================
+ *  会话级状态（每次 Stop 复位，避免上次通话残留污染下次）
+ *
+ *  尺寸说明:
+ *    INTERCOM_ALAW_ACCUM_SIZE = 2048  ─ 累积多少 G711 字节再送一次 AO
+ *      G711 1 字节 ↔ PCM 2 字节 (s16le)
+ *      2048 G711 解压后 = 4096 PCM = AUDIO_MSG_PCM_MAX 的上限
+ *    AUDIO_MSG_PCM_MAX     = 4096   ─ AudioRxMsg.pcm 的容量
+ *    rx_parse.buf[PCM_MAX*2]        ─ 容纳 1 个音频帧最大总长度
+ * ========================================================= */
+#define INTERCOM_ALAW_ACCUM_SIZE  2048
+
+typedef struct {
+    int      valid;
+    uint32_t total;
+    uint32_t got;
+    uint8_t  buf[AUDIO_MSG_PCM_MAX * 2];
+} RxParseState;
+
+static unsigned char s_rx_accum[INTERCOM_ALAW_ACCUM_SIZE];
+static uint32_t      s_rx_accum_len       = 0;   /* audio_rx_handle 累积长度 */
+static uint32_t      s_audio_tx_frame_idx = 0;   /* net_audio_send 递增帧号 */
+static RxParseState  s_rx_parse           = {0}; /* audio_rx_thread 分帧状态 */
+
+static void reset_stream_state(void)
+{
+    s_rx_accum_len       = 0;
+    s_audio_tx_frame_idx = 0;
+    memset(&s_rx_parse, 0, sizeof(s_rx_parse));
+}
+
+/* 大端 32 位写入：简化发包时的头部填充 */
+static inline void be32_put(uint8_t *dst, uint32_t v)
+{
+    dst[0] = (uint8_t)(v >> 24);
+    dst[1] = (uint8_t)(v >> 16);
+    dst[2] = (uint8_t)(v >>  8);
+    dst[3] = (uint8_t)(v      );
+}
+
 /* ---- 辅助：加锁读状态 ---- */
 static int  get_active(void)           { pthread_mutex_lock(&s_stm.lock); int v=s_stm.active;          pthread_mutex_unlock(&s_stm.lock); return v; }
 static int  get_threads_running(void)  { pthread_mutex_lock(&s_stm.lock); int v=s_stm.threads_running; pthread_mutex_unlock(&s_stm.lock); return v; }
@@ -135,6 +175,7 @@ static int get_ifindex(int fd, const char *iface)
 {
     struct ifreq ifr; memset(&ifr, 0, sizeof(ifr));
     strncpy(ifr.ifr_name, iface, IFNAMSIZ - 1);
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
     if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0) { LOG_E("SIOCGIFINDEX fail"); return -1; }
     return ifr.ifr_ifindex;
 }
@@ -225,7 +266,11 @@ static int open_video_tx_socket(void)
     if (fd < 0) { LOG_E("video_tx socket fail"); return -1; }
     struct ifreq ifr; memset(&ifr, 0, sizeof(ifr));
     strncpy(ifr.ifr_name, NET_IFACE, IFNAMSIZ - 1);
-    setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr));
+    ifr.ifr_name[IFNAMSIZ - 1] = '\0';
+    if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
+        LOG_E("video_tx SO_BINDTODEVICE fail (iface=%s)", NET_IFACE);
+        close(fd); return -1;
+    }
     int opt = 1;
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt));
@@ -263,7 +308,7 @@ static void net_audio_send(int fd, const uint8_t *alaw, uint32_t alaw_size)
     uint8_t *buf = s_audio_send_buf;
     if (!buf) return;
 
-    static uint32_t frame_idx = 0; frame_idx++;
+    uint32_t frame_idx = ++s_audio_tx_frame_idx;   /* Stop 时归零 */
     struct timespec ts; clock_gettime(CLOCK_MONOTONIC, &ts);
     uint64_t pts = (uint64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 
@@ -282,20 +327,12 @@ static void net_audio_send(int fd, const uint8_t *alaw, uint32_t alaw_size)
         if (first) {
             first = 0;
             /* 音频起始码 + 帧头（偏移 60）*/
-            memcpy(&buf[AUDIO_PAYLOAD_OFFSET], AUDIO_START_CODE, 4);
-            buf[AUDIO_PAYLOAD_OFFSET+4]=(uint8_t)((alaw_size>>24)&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+5]=(uint8_t)((alaw_size>>16)&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+6]=(uint8_t)((alaw_size>>8)&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+7]=(uint8_t)(alaw_size&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+8]=(uint8_t)((pts>>24)&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+9]=(uint8_t)((pts>>16)&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+10]=(uint8_t)((pts>>8)&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+11]=(uint8_t)(pts&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+12]=(uint8_t)((frame_idx>>24)&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+13]=(uint8_t)((frame_idx>>16)&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+14]=(uint8_t)((frame_idx>>8)&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+15]=(uint8_t)(frame_idx&0xFF);
-            buf[AUDIO_PAYLOAD_OFFSET+16]=0;   /* FrameType = PCM */
+            uint8_t *hdr = &buf[AUDIO_PAYLOAD_OFFSET];
+            memcpy(hdr, AUDIO_START_CODE, 4);
+            be32_put(hdr + 4,  alaw_size);
+            be32_put(hdr + 8,  (uint32_t)pts);
+            be32_put(hdr + 12, frame_idx);
+            hdr[16] = 0;   /* FrameType = PCM */
 
             int max_data = AUDIO_PKG_MAX - AUDIO_PAYLOAD_OFFSET - AUDIO_HDR_LEN;
             uint32_t copy = (remain > (uint32_t)max_data) ? (uint32_t)max_data : remain;
@@ -333,13 +370,10 @@ static void net_video_send(int fd, const uint8_t *data, uint32_t size,
         if (first) {
             first = 0;
             memcpy(buf, VIDEO_START_CODE, 4);
-            buf[4]=(size>>24)&0xFF; buf[5]=(size>>16)&0xFF;
-            buf[6]=(size>>8)&0xFF;  buf[7]=size&0xFF;
-            buf[8]=(pts>>24)&0xFF;  buf[9]=(pts>>16)&0xFF;
-            buf[10]=(pts>>8)&0xFF;  buf[11]=pts&0xFF;
-            buf[12]=(frame_idx>>24)&0xFF; buf[13]=(frame_idx>>16)&0xFF;
-            buf[14]=(frame_idx>>8)&0xFF;  buf[15]=frame_idx&0xFF;
-            buf[16]=0;
+            be32_put(buf + 4,  size);
+            be32_put(buf + 8,  (uint32_t)pts);
+            be32_put(buf + 12, frame_idx);
+            buf[16] = 0;
             uint32_t copy = remain;
             if ((int)copy > (VIDEO_PKG_MAX - VIDEO_HDR_LEN)) copy = (uint32_t)(VIDEO_PKG_MAX - VIDEO_HDR_LEN);
             memcpy(&buf[VIDEO_HDR_LEN], data + sent, copy);
@@ -355,6 +389,10 @@ static void net_video_send(int fd, const uint8_t *data, uint32_t size,
         usleep(1000);
     }
 }
+
+/* 前向声明：video 池操作（定义见后文） */
+static int  video_pool_claim_slot(void);
+static void video_pool_release_slot(int idx);
 
 /* =========================================================
  *  工作线程
@@ -391,43 +429,34 @@ static void *audio_tx_thread(void *arg)
  * 关键：累积满 2048 字节 G711（= 4096 字节 PCM）再一次性丢入 AO，
  * 而不是每包立即解码，避免 AO 每次写入量太小导致音频断续。
  */
-#define INTERCOM_ALAW_ACCUM_SIZE  2048   
-
 static void audio_rx_handle(const uint8_t *alaw, uint32_t alaw_size)
 {
-    /* 静态积累缓冲*/
-    static unsigned char accum_buf[INTERCOM_ALAW_ACCUM_SIZE];
-    static unsigned int  accum_len = 0;
-
     int mqid = get_mq_audio_rx();
     if (mqid < 0) return;
 
     uint32_t offset = 0;
     while (offset < alaw_size) {
-        /* 本次能拷入的字节数 */
-        uint32_t space   = (uint32_t)(INTERCOM_ALAW_ACCUM_SIZE - accum_len);
+        uint32_t space   = INTERCOM_ALAW_ACCUM_SIZE - s_rx_accum_len;
         uint32_t to_copy = alaw_size - offset;
         if (to_copy > space) to_copy = space;
 
-        memcpy(&accum_buf[accum_len], alaw + offset, to_copy);
-        accum_len += to_copy;
-        offset    += to_copy;
+        memcpy(&s_rx_accum[s_rx_accum_len], alaw + offset, to_copy);
+        s_rx_accum_len += to_copy;
+        offset         += to_copy;
 
-        /* 累积满 2048 字节*/
-        if (accum_len >= INTERCOM_ALAW_ACCUM_SIZE) {
-            uint32_t pcm_len = accum_len * 2;   /* G711→PCM 大小翻倍 */
+        if (s_rx_accum_len >= INTERCOM_ALAW_ACCUM_SIZE) {
+            uint32_t pcm_len = s_rx_accum_len * 2;   /* G711→PCM 大小翻倍 */
             if (pcm_len > AUDIO_MSG_PCM_MAX) pcm_len = AUDIO_MSG_PCM_MAX;
 
             AudioRxMsg msg;
             msg.mtype = 1;
             msg.len   = pcm_len;
-            /* alaw_to_pcm16：解压 accum_len 字节 G711 → pcm_len 字节 PCM */
-            alaw_to_pcm16(accum_len, (const char *)accum_buf, (char *)msg.pcm);
+            alaw_to_pcm16((int)s_rx_accum_len, (const char *)s_rx_accum, (char *)msg.pcm);
 
             if (msgsnd(mqid, &msg, AUDIO_RX_BODY, IPC_NOWAIT) < 0) {
-                /* 队列满丢弃*/
+                /* 队列满丢弃 */
             }
-            accum_len = 0;
+            s_rx_accum_len = 0;
         }
     }
 }
@@ -437,7 +466,6 @@ static void *audio_rx_thread(void *arg)
     (void)arg;
     alaw_pcm16_tableinit();
     uint8_t recv_buf[2048];
-    struct { int valid; uint32_t total; uint32_t got; uint8_t buf[AUDIO_MSG_PCM_MAX*2]; } rx = {0};
 
     while (get_threads_running()) {
         pthread_mutex_lock(&s_stm.lock);
@@ -445,26 +473,29 @@ static void *audio_rx_thread(void *arg)
         pthread_mutex_unlock(&s_stm.lock);
         if (!active || fd < 0) { usleep(10*1000); continue; }
 
-        /* 使用 NetRawPacketReceive 接收
-         * 返回有效载荷长度，timeout=5ms*/
+        /* 使用 NetRawPacketReceive 接收，返回有效载荷长度，timeout=5ms */
         int len = NetRawPacketReceive(fd, recv_buf, sizeof(recv_buf), 5);
         if (len <= 0) continue;
 
         uint8_t *p = recv_buf; int left = len;
         while (left > 0) {
             if (memcmp(p, AUDIO_START_CODE, 4) == 0 && left >= 17) {
-                rx.valid = 1;
-                rx.total = (uint32_t)((p[4]<<24)|(p[5]<<16)|(p[6]<<8)|p[7]);
-                rx.got   = 0;
-                if (rx.total > sizeof(rx.buf)) rx.total = (uint32_t)sizeof(rx.buf);
+                s_rx_parse.valid = 1;
+                s_rx_parse.total = (uint32_t)((p[4]<<24)|(p[5]<<16)|(p[6]<<8)|p[7]);
+                s_rx_parse.got   = 0;
+                if (s_rx_parse.total > sizeof(s_rx_parse.buf))
+                    s_rx_parse.total = (uint32_t)sizeof(s_rx_parse.buf);
                 p += 17; left -= 17; continue;
             }
-            if (rx.valid && left > 0) {
+            if (s_rx_parse.valid && left > 0) {
                 uint32_t copy = (uint32_t)left;
-                if (rx.got + copy > rx.total) copy = rx.total - rx.got;
-                memcpy(&rx.buf[rx.got], p, copy);
-                rx.got += copy; p += copy; left -= (int)copy;
-                if (rx.got >= rx.total) { audio_rx_handle(rx.buf, rx.total); rx.valid = 0; }
+                if (s_rx_parse.got + copy > s_rx_parse.total) copy = s_rx_parse.total - s_rx_parse.got;
+                memcpy(&s_rx_parse.buf[s_rx_parse.got], p, copy);
+                s_rx_parse.got += copy; p += copy; left -= (int)copy;
+                if (s_rx_parse.got >= s_rx_parse.total) {
+                    audio_rx_handle(s_rx_parse.buf, s_rx_parse.total);
+                    s_rx_parse.valid = 0;
+                }
             } else break;
         }
     }
@@ -521,12 +552,7 @@ static void *video_tx_thread(void *arg)
             pthread_mutex_unlock(&slot->lock);
             net_video_send(fd, data, len, pts, fidx);
         }
-
-        pthread_mutex_lock(&slot->lock);
-        free(slot->data);
-        slot->data   = NULL;
-        slot->in_use = 0;
-        pthread_mutex_unlock(&slot->lock);
+        video_pool_release_slot(idx);
     }
     LOG_I("video_tx_thread exit");
     return NULL;
@@ -558,51 +584,62 @@ static void on_audio_in_frame(const AudioInFrame *frame)
 /* =========================================================
  *  drv_video_in 回调（视频帧 → 槽位 → 消息队列）
  * ========================================================= */
-static void on_video_frame(const VideoFrame *frame)
+/* 原子占用一个空闲槽位（in_use:0 → 1），失败返回 -1。*/
+static int video_pool_claim_slot(void)
 {
-    pthread_mutex_lock(&s_stm.lock);
-    int active = s_stm.active; int mqid = s_stm.mq_video_tx;
-    pthread_mutex_unlock(&s_stm.lock);
-
-    if (!active || mqid < 0) return;
-
     for (int i = 0; i < VIDEO_POOL_SLOTS; i++) {
         pthread_mutex_lock(&s_video_pool[i].lock);
         if (s_video_pool[i].in_use == 0) {
             s_video_pool[i].in_use = 1;
             pthread_mutex_unlock(&s_video_pool[i].lock);
-
-            uint8_t *buf = malloc(frame->len);
-            if (!buf) {
-                pthread_mutex_lock(&s_video_pool[i].lock);
-                s_video_pool[i].in_use = 0;
-                pthread_mutex_unlock(&s_video_pool[i].lock);
-                LOG_W("malloc %u bytes fail, drop frame", frame->len);
-                return;
-            }
-            memcpy(buf, frame->data, frame->len);
-
-            pthread_mutex_lock(&s_video_pool[i].lock);
-            s_video_pool[i].data      = buf;
-            s_video_pool[i].len       = frame->len;
-            s_video_pool[i].pts_ms    = frame->pts_ms;
-            s_video_pool[i].frame_idx = frame->frame_idx;
-            s_video_pool[i].in_use    = 2;
-            pthread_mutex_unlock(&s_video_pool[i].lock);
-
-            VideoTxMsg msg = {.mtype = 1, .slot_idx = i};
-            if (msgsnd(mqid, &msg, VIDEO_MSG_BODY, IPC_NOWAIT) < 0) {
-                pthread_mutex_lock(&s_video_pool[i].lock);
-                free(s_video_pool[i].data);
-                s_video_pool[i].data   = NULL;
-                s_video_pool[i].in_use = 0;
-                pthread_mutex_unlock(&s_video_pool[i].lock);
-            }
-            return;
+            return i;
         }
         pthread_mutex_unlock(&s_video_pool[i].lock);
     }
-    LOG_W("video pool full, drop frame");
+    return -1;
+}
+
+static void video_pool_release_slot(int idx)
+{
+    pthread_mutex_lock(&s_video_pool[idx].lock);
+    free(s_video_pool[idx].data);
+    s_video_pool[idx].data   = NULL;
+    s_video_pool[idx].in_use = 0;
+    pthread_mutex_unlock(&s_video_pool[idx].lock);
+}
+
+static void on_video_frame(const VideoFrame *frame)
+{
+    pthread_mutex_lock(&s_stm.lock);
+    int active = s_stm.active; int mqid = s_stm.mq_video_tx;
+    pthread_mutex_unlock(&s_stm.lock);
+    if (!active || mqid < 0) return;
+
+    int idx = video_pool_claim_slot();
+    if (idx < 0) { LOG_W("video pool full, drop frame"); return; }
+
+    uint8_t *buf = malloc(frame->len);
+    if (!buf) {
+        pthread_mutex_lock(&s_video_pool[idx].lock);
+        s_video_pool[idx].in_use = 0;
+        pthread_mutex_unlock(&s_video_pool[idx].lock);
+        LOG_W("malloc %u bytes fail, drop frame", frame->len);
+        return;
+    }
+    memcpy(buf, frame->data, frame->len);
+
+    pthread_mutex_lock(&s_video_pool[idx].lock);
+    s_video_pool[idx].data      = buf;
+    s_video_pool[idx].len       = frame->len;
+    s_video_pool[idx].pts_ms    = frame->pts_ms;
+    s_video_pool[idx].frame_idx = frame->frame_idx;
+    s_video_pool[idx].in_use    = 2;
+    pthread_mutex_unlock(&s_video_pool[idx].lock);
+
+    VideoTxMsg msg = {.mtype = 1, .slot_idx = idx};
+    if (msgsnd(mqid, &msg, VIDEO_MSG_BODY, IPC_NOWAIT) < 0) {
+        video_pool_release_slot(idx);
+    }
 }
 
 /* =========================================================
@@ -730,6 +767,8 @@ int SvcIntercomStreamStop(void)
 
     /* 清空残留的对讲音频，避免下次启动时播出旧数据 */
     SvcAudioFlush(AUDIO_SRC_INTERCOM);
+    /* 复位会话级状态：G711 累积缓冲、接收分帧状态、帧序号 */
+    reset_stream_state();
     DrvGpioAmpDisable();
     LOG_I("stopped");
     return 0;

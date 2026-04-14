@@ -126,6 +126,72 @@ HAL → Service → App：
 
 ## 修改日志：
 
+## 修改时间：2026 年 4 月 14 日 16:00
+修改文件：app/service/svc_intercom_stream.c
+
+一、修复问题列表
+
+1. 流重启后 G711 累积缓冲残留（audio_rx_handle）
+   原 `static accum_buf/accum_len` 在 SvcIntercomStreamStop 后不清零，下次 Start 会把上次通话残留的几百字节拼到新数据上，导致重新呼叫的头几十毫秒出现爆音/错位。
+
+2. 流重启后接收分帧状态残留（audio_rx_thread）
+   函数局部 `rx` 结构体在线程生命周期内持续存在（线程常驻），Stop 中断时 valid=1/got<total 会被保留，下次 Start 时继续向未完整帧 memcpy，混入错乱数据。
+
+3. net_audio_send 静态 frame_idx 不归零
+   流重启后帧序号延续递增，与对端去重/排序逻辑对齐异常。
+
+4. open_video_tx_socket 的 SO_BINDTODEVICE 未检查返回值
+   eth0 未 up 时绑定失败后继续发包，可能打到 lo 或其他接口，排查困难。
+
+5. get_ifindex 缺显式 '\0' 结尾
+   memset 在前实际无 bug，但与本文件其他位置风格不一致。
+
+6. 魔数分散、尺寸换算关系不直观
+   2048/4096/1152 这些 G711↔PCM 关联尺寸缺乏集中说明。
+
+7. net_audio_send / net_video_send 手搓大端字节序填充
+   两函数各有 12+ 行字节移位，完全可复用。
+
+8. on_video_frame 锁粒度与控制流混在一起
+   单一函数里嵌套 for + if + 多次 lock/unlock + 两处错误路径的回滚，读起来要跳步核对。
+
+二、代码修改详情
+
+1. 新增文件级会话状态 + reset_stream_state()
+   ```c
+   static unsigned char s_rx_accum[INTERCOM_ALAW_ACCUM_SIZE];
+   static uint32_t      s_rx_accum_len       = 0;
+   static uint32_t      s_audio_tx_frame_idx = 0;
+   static RxParseState  s_rx_parse           = {0};
+   static void reset_stream_state(void) { ... memset ... }
+   ```
+   将 audio_rx_handle 的 static accum、audio_rx_thread 的 local rx、net_audio_send 的 static frame_idx 全部上提到文件级，统一管理。
+
+2. SvcIntercomStreamStop 结尾调用 reset_stream_state()
+   在 SvcAudioFlush(AUDIO_SRC_INTERCOM) 后、DrvGpioAmpDisable 前执行，确保下次 Start 是干净状态。
+
+3. open_video_tx_socket：SO_BINDTODEVICE 失败立即 close + return -1，并打印所绑接口名便于排查。
+
+4. get_ifindex：strncpy 后补 `ifr.ifr_name[IFNAMSIZ - 1] = '\0'`。
+
+5. 新增 `be32_put(uint8_t *dst, uint32_t v)` inline helper
+   net_audio_send / net_video_send 的头部填充由 12+ 行字节移位替换为 3 行 be32_put 调用，可读性大幅提升。
+
+6. 视频池抽出两个 helper：video_pool_claim_slot() / video_pool_release_slot()
+   on_video_frame 从 37 行含嵌套锁的逻辑简化为线性 15 行；video_tx_thread 的末尾清理也复用同一 helper，逻辑一致且不再有重复代码。
+
+7. 文件顶部补充"尺寸说明"注释块，画出 G711(2048) ↔ PCM(4096) = AUDIO_MSG_PCM_MAX 的换算关系。
+
+三、修改效果
+可靠性
+第二次及以后的呼叫不再受上一次残留污染；eth0 异常时 Start 直接失败可被上层感知。
+可读性
+消除两处重复的大端序写入，on_video_frame 扁平化，静态魔数集中注释。
+可维护性
+会话级状态收敛到 4 个文件级变量 + 1 个 reset 函数，未来新增"每通话复位"字段只需在 reset_stream_state 追加。
+
+---
+
 
 ## 修改时间：2026 年 4 月 14 日 14:30
 修改文件：app/service/svc_voice.c、app/service/svc_intercom_stream.c、app/hal/drv_net_raw.c、app/service/svc_network.c、app/service/svc_audio.c、app/hal/drv_infrared.c、app/hal/drv_video_in.c
