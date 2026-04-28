@@ -6,20 +6,23 @@
 #include "log.h"
 
 #include "drv_net_raw.h"
+#include <arpa/inet.h>
 #include <net/if.h>
 #include <netpacket/packet.h>
+#include <netinet/in.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/socket.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
-#define MAC_HEAD_LEN  60
-#define MTU_LEN       1500
+#define ETH_HEADER_LEN        14
+#define ETH_FRAME_MAX_NO_FCS 1514
+#define RAW_PREFIX_LEN        60
+#define NET_RAW_MAX_PAYLOAD  (ETH_FRAME_MAX_NO_FCS - RAW_PREFIX_LEN)
+#define NET_RAW_RECV_BUF_LEN 2048
 
 int NetRawPromiscuousSet(const char *iface)
 {
@@ -45,6 +48,7 @@ int NetRawMacGet(const char *iface, char *mac_out)
 {
     int fd = socket(PF_INET, SOCK_DGRAM, 0);
     if (fd < 0) { LOG_E("socket fail"); return -1; }
+
     struct ifreq req;
     memset(&req, 0, sizeof(req));
     strncpy(req.ifr_name, iface, IFNAMSIZ - 1);
@@ -86,20 +90,28 @@ int NetRawIfrAddrConfig(int fd, const char *iface, struct sockaddr_ll *sll)
 
 int NetRawPacketHead(uint8_t *buf, const char *iface, int protocol)
 {
-    static char *mac_head = NULL;
-    if (!mac_head) {
-        mac_head = calloc(1, MAC_HEAD_LEN);
-        if (!mac_head) return -1;
-        /* 目的 MAC：01:01:01:01:01:01 */
-        mac_head[0] = mac_head[1] = mac_head[2] = 0x01;
-        mac_head[3] = mac_head[4] = mac_head[5] = 0x01;
-        if (NetRawMacGet(iface, &mac_head[6]) < 0) {
-            free(mac_head); mac_head = NULL; return -1;
+    static char *prefix = NULL;
+
+    if (!prefix) {
+        prefix = calloc(1, RAW_PREFIX_LEN);
+        if (!prefix) return -1;
+
+        /* Destination MAC is fixed to 01:01:01:01:01:01. */
+        prefix[0] = prefix[1] = prefix[2] = 0x01;
+        prefix[3] = prefix[4] = prefix[5] = 0x01;
+        if (NetRawMacGet(iface, &prefix[6]) < 0) {
+            free(prefix);
+            prefix = NULL;
+            return -1;
         }
     }
-    mac_head[12] = (char)(protocol / 256);
-    mac_head[13] = (char)(protocol % 256);
-    memcpy(buf, mac_head, MAC_HEAD_LEN);
+
+    /* Bytes [0..13] are the real Ethernet header.
+     * Bytes [14..59] are legacy zero padding kept for compatibility.
+     */
+    prefix[12] = (char)(protocol / 256);
+    prefix[13] = (char)(protocol % 256);
+    memcpy(buf, prefix, RAW_PREFIX_LEN);
     return 0;
 }
 
@@ -107,14 +119,15 @@ int NetRawPacketSend(int fd, struct sockaddr_ll *sll,
                      const uint8_t *data, int size,
                      const char *iface, int protocol)
 {
-    uint8_t pkg[1514];
+    uint8_t pkg[ETH_FRAME_MAX_NO_FCS];
     int sent = 0;
+
     while (size > 0) {
-        int chunk = (size > MTU_LEN) ? MTU_LEN : size;
+        int chunk = (size > NET_RAW_MAX_PAYLOAD) ? NET_RAW_MAX_PAYLOAD : size;
         memset(pkg, 0, sizeof(pkg));
-        NetRawPacketHead(pkg, iface, protocol);
-        memcpy(&pkg[MAC_HEAD_LEN], &data[sent], chunk);
-        if (sendto(fd, pkg, chunk + MAC_HEAD_LEN, 0,
+        if (NetRawPacketHead(pkg, iface, protocol) < 0) return -1;
+        memcpy(&pkg[RAW_PREFIX_LEN], &data[sent], (size_t)chunk);
+        if (sendto(fd, pkg, (size_t)(chunk + RAW_PREFIX_LEN), 0,
                    (struct sockaddr *)sll, sizeof(*sll)) < 0) {
             LOG_E("sendto fail"); return -1;
         }
@@ -126,26 +139,30 @@ int NetRawPacketSend(int fd, struct sockaddr_ll *sll,
 
 int NetRawPacketReceive(int fd, uint8_t *buf, int size, unsigned int timeout_ms)
 {
-    /* 使用栈缓冲避免多线程共享静态缓冲导致数据竞争
-     * 以太帧最大 1514B + 60B MAC 头，取 2048 保留余量 */
-    uint8_t rbuf[MAC_HEAD_LEN + 2048];
+    /* This helper returns only payload bytes.
+     * The incoming frame is expected to carry a fixed 60-byte prefix:
+     *   [0..13]  real Ethernet header
+     *   [14..59] reserved/padding bytes kept by the legacy protocol
+     */
+    uint8_t rbuf[NET_RAW_RECV_BUF_LEN];
     int recv_max = (int)sizeof(rbuf);
 
     fd_set fds;
     struct timeval tv;
     tv.tv_sec  = (long)(timeout_ms / 1000);
     tv.tv_usec = (long)((timeout_ms % 1000) * 1000);
-    FD_ZERO(&fds); FD_SET(fd, &fds);
+    FD_ZERO(&fds);
+    FD_SET(fd, &fds);
 
     int ret = select(fd + 1, &fds, NULL, NULL, &tv);
     if (ret <= 0) return ret;
 
     int n = (int)recvfrom(fd, rbuf, (size_t)recv_max, 0, NULL, NULL);
-    if (n <= MAC_HEAD_LEN) return -1;
+    if (n <= RAW_PREFIX_LEN) return -1;
 
-    int payload = n - MAC_HEAD_LEN;
+    int payload = n - RAW_PREFIX_LEN;
     if (payload > size) payload = size;
-    memcpy(buf, &rbuf[MAC_HEAD_LEN], (size_t)payload);
+    memcpy(buf, &rbuf[RAW_PREFIX_LEN], (size_t)payload);
     return payload;
 }
 
@@ -155,10 +172,11 @@ int NetRawFrameReceive(int fd, uint8_t *buf, int size, unsigned int timeout_ms)
     struct timeval tv;
     tv.tv_sec  = (long)(timeout_ms / 1000);
     tv.tv_usec = (long)((timeout_ms % 1000) * 1000);
-    FD_ZERO(&fds); FD_SET(fd, &fds);
+    FD_ZERO(&fds);
+    FD_SET(fd, &fds);
 
     int ret = select(fd + 1, &fds, NULL, NULL, &tv);
-    if (ret <= 0) return ret;   /* 0=超时，-1=错误 */
+    if (ret <= 0) return ret;
 
     int n = (int)recvfrom(fd, buf, (size_t)size, 0, NULL, NULL);
     return (n > 0) ? n : -1;
