@@ -56,6 +56,13 @@
 #define NET_CMD_START    0xAA
 #define NET_CMD_END      0x55
 #define NET_PACK_LEN     8
+#define NET_RECV_BUF_LEN           (1514 - 60)
+#define NET_RECV_TIMEOUT_MS        5000U
+#define NET_RECV_RESET_TIMEOUTS    2
+#define NET_RECV_RESET_COOLDOWN_MS 30000U
+#define NET_RECV_RESET_DOWN_US     (100 * 1000)
+#define NET_RECV_RESET_UP_US       (200 * 1000)
+#define NET_RECV_RETRY_US          (500 * 1000)
 
 #define DEVICE_OUTDOOR_1 7
 #define DEVICE_OUTDOOR_2 8
@@ -108,6 +115,20 @@ static uint8_t get_local_dev(void)
     uint8_t v = s_net.local_dev;
     pthread_mutex_unlock(&s_net.state_lock);
     return v;
+}
+
+static void set_recv_fd(int fd)
+{
+    pthread_mutex_lock(&s_net.state_lock);
+    s_net.recv_fd = fd;
+    pthread_mutex_unlock(&s_net.state_lock);
+}
+
+static uint64_t monotonic_ms_now(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000ULL + (uint64_t)ts.tv_nsec / 1000000ULL;
 }
 
 /* =========================================================
@@ -311,11 +332,38 @@ static int recv_sock_create(void)
     return fd;
 }
 
+static int recv_sock_reset(int *fd_io)
+{
+    if (!fd_io) return -1;
+
+    if (*fd_io >= 0) {
+        close(*fd_io);
+        *fd_io = -1;
+    }
+    set_recv_fd(-1);
+
+    if (eth_interface_state(NET_IFACE, 0) < 0)
+        LOG_W("eth down fail, continue recovery");
+    usleep(NET_RECV_RESET_DOWN_US);
+
+    if (eth_interface_state(NET_IFACE, 1) < 0)
+        LOG_W("eth up fail, continue recovery");
+    usleep(NET_RECV_RESET_UP_US);
+
+    int fd = recv_sock_create();
+    if (fd < 0) return -1;
+
+    *fd_io = fd;
+    set_recv_fd(fd);
+    return 0;
+}
+
 static void *net_recv_thread(void *arg)
 {
     (void)arg;
-    static uint8_t recv_buf[1024 + 73];
-    int eth_reset = 1;
+    static uint8_t recv_buf[NET_RECV_BUF_LEN];
+    int timeout_count = 0;
+    uint64_t last_reset_ms = 0;
 
     int fd = recv_sock_create();
     if (fd < 0) {
@@ -323,10 +371,7 @@ static void *net_recv_thread(void *arg)
         return NULL;
     }
 
-    pthread_mutex_lock(&s_net.state_lock);
-    s_net.recv_fd = fd;
-    pthread_mutex_unlock(&s_net.state_lock);
-
+    set_recv_fd(fd);
     LOG_I("recv thread start fd=%d", fd);
 
     while (1) {
@@ -336,27 +381,49 @@ static void *net_recv_thread(void *arg)
         if (!running) break;
 
         memset(recv_buf, 0, sizeof(recv_buf));
-        int recv_len = NetRawPacketReceive(fd, recv_buf, sizeof(recv_buf), 5000);
+        int recv_len = NetRawPacketReceive(fd, recv_buf, sizeof(recv_buf),
+                                           NET_RECV_TIMEOUT_MS);
 
         if (recv_len > 0) {
-            eth_reset = 0;
+            timeout_count = 0;
             raw_packet_handle(recv_buf, recv_len);
-        } else if (recv_len == 0 && eth_reset == 0) {
+        } else if (recv_len == 0) {
             /* select 超时且之前曾收到过数据 → 复位网口 */
-            eth_reset = 1;
-            LOG_W("recv timeout, reset eth0");
-            eth_interface_state(NET_IFACE, 0);
-            usleep(1000);
-            eth_interface_state(NET_IFACE, 1);
-            continue;
+            uint64_t now = monotonic_ms_now();
+            if (timeout_count < NET_RECV_RESET_TIMEOUTS)
+                timeout_count++;
+
+            if (timeout_count >= NET_RECV_RESET_TIMEOUTS &&
+                (last_reset_ms == 0 ||
+                 now - last_reset_ms >= NET_RECV_RESET_COOLDOWN_MS)) {
+                last_reset_ms = now;
+                LOG_W("recv timeout x%d, reset %s and recreate socket",
+                      timeout_count, NET_IFACE);
+                if (recv_sock_reset(&fd) == 0) {
+                    timeout_count = 0;
+                    continue;
+                }
+                LOG_E("recv socket recovery fail");
+            }
+        } else {
+            uint64_t now = monotonic_ms_now();
+            if (last_reset_ms == 0 ||
+                now - last_reset_ms >= NET_RECV_RESET_COOLDOWN_MS) {
+                last_reset_ms = now;
+                LOG_W("recv error=%d, recreate socket", recv_len);
+                if (recv_sock_reset(&fd) == 0) {
+                    timeout_count = 0;
+                    continue;
+                }
+                LOG_E("recv socket recovery fail");
+            }
+            usleep(NET_RECV_RETRY_US);
         }
 
         usleep(1000);
     }
 
-    pthread_mutex_lock(&s_net.state_lock);
-    s_net.recv_fd = -1;
-    pthread_mutex_unlock(&s_net.state_lock);
+    set_recv_fd(-1);
     close(fd);
     LOG_I("recv thread exit");
     return NULL;

@@ -125,6 +125,83 @@ HAL → Service → App：
 
 
 ## 修改日志：
+
+## Update Time: 2026-04-29
+
+更新时间：2026-04-29
+
+修改文件：
+`app/service/svc_network.c`
+
+修改位置：
+`net_recv_thread()`，起始位置约在 `svc_network.c:361`
+
+修改内容：
+
+1. 接收缓冲区调整
+- 将原 `1024 + 73` 接收缓冲区改为 `NET_RECV_BUF_LEN`
+- `NET_RECV_BUF_LEN` 定义为 `1514 - 60 = 1454`
+- 用于覆盖 raw 帧剥离 60 字节前缀后的最大单帧 payload
+
+2. 超时恢复策略重构
+- 移除原先依赖 `eth_reset` 的单次触发复位逻辑
+- 改为“连续超时计数”机制
+- 当前参数为：
+  - `NET_RECV_TIMEOUT_MS = 5000`
+  - `NET_RECV_RESET_TIMEOUTS = 2`
+
+3. 增加恢复冷却时间
+- 新增 `NET_RECV_RESET_COOLDOWN_MS = 30000`
+- 防止链路异常时频繁执行 `eth0 down/up`
+
+4. 恢复动作完整化
+- 新增 `recv_sock_reset(int *fd_io)`
+- 恢复流程包含：
+  - 关闭旧接收 socket
+  - 清空 `s_net.recv_fd`
+  - 执行 `eth0 down/up`
+  - 重新创建 raw socket
+  - 重新 bind 接口
+  - 更新新的 `recv_fd`
+
+5. 增加接收错误恢复
+- 除 `recv_len == 0` 的超时场景外，新增 `recv_len < 0` 错误处理分支
+- 底层接收返回错误时同样尝试重建 socket
+
+6. 接收 fd 更新统一封装
+- 新增 `set_recv_fd(int fd)`
+- 统一在加锁下更新 `s_net.recv_fd`
+
+7. 使用单调时钟节流恢复
+- 新增 `monotonic_ms_now()`
+- 使用 `CLOCK_MONOTONIC` 计算恢复冷却时间
+- 避免系统时间跳变影响恢复判断
+
+8. 恢复失败后的退避
+- 新增 `NET_RECV_RETRY_US = 500000`
+- 恢复失败时线程先短暂休眠，避免异常状态下高频重试
+
+修改后的行为：
+
+- 正常收到数据时，清零连续超时计数
+- 连续 2 次 5 秒超时后，若距离上次恢复已超过 30 秒，则执行一次网口恢复和接收 socket 重建
+- 若 `NetRawPacketReceive()` 返回错误值，也会按冷却时间限制执行 socket 重建
+- 线程退出前统一将 `s_net.recv_fd` 置为 `-1`
+
+说明：
+
+- 本次修改只涉及 `svc_network.c` 的接收线程恢复逻辑
+- 未修改发送线程的 socket 恢复逻辑
+- 当前在 Windows 拷贝环境下完成修改，未使用 Linux 交叉编译环境执行 `./make.sh` 验证
+   `svp_process_thread` 过去是一个 150 行的大函数，现拆为：
+   - `process_one_frame`：取帧→推理→决策→上报的单帧主干
+   - `fuse_svp_md`：SVP × MD IoU 融合，填 obj_boxes
+   - `md_box_to_pixel`：MD 网格→像素的坐标转换（含 +1 保护）
+   - `emit_one_box`：单框写入 box_info 与 event
+   - `dispatch_detection`：分发到 HAL 画框 + 事件总线 + 活动定时器
+
+---
+
 ## Update Time: 2026-04-28
 更新时间：2026-04-28
 修改文件：
